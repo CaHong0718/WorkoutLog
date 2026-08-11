@@ -30,15 +30,14 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
     on<ResumeWorkout>(_onResumeWorkout);
     on<DiscardInProgress>(_onDiscardInProgress, transformer: sequential());
 
-    // Home sits in the shell's IndexedStack, so it is never rebuilt from
-    // scratch: switching the active routine from the library, or editing days
-    // in the routine tab, would otherwise leave today's card stale.
+    // The shell keeps Home alive, so it is never rebuilt from scratch:
+    // switching the active routine from the library, or editing days in the
+    // routine tab, would otherwise leave today's card stale.
     // `skip(1)` drops the stream's replay of the current value — the page's own
     // `LoadHome` already covers it.
-    _routineChanges = _watchActiveRoutine().skip(1).listen(
-      (_) => add(const LoadHome()),
-      onError: (Object _) {},
-    );
+    _routineChanges = _watchActiveRoutine()
+        .skip(1)
+        .listen((_) => add(const LoadHome()), onError: (Object _) {});
   }
 
   final GetActiveRoutine _getActiveRoutine;
@@ -63,10 +62,7 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
     final routineResult = await _getActiveRoutine();
     if (routineResult.isErr) {
       emit(
-        state.copyWith(
-          isLoading: false,
-          failure: routineResult.failureOrNull,
-        ),
+        state.copyWith(isLoading: false, failure: routineResult.failureOrNull),
       );
       return;
     }

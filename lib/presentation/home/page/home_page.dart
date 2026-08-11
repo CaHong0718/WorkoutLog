@@ -9,6 +9,7 @@ import '../../../core/mvi/effect_listener.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../common/branch_reveal.dart';
 import '../../common/common_widgets.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_effect.dart';
@@ -40,45 +41,48 @@ class _HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = context.read<HomeBloc>();
 
-    return EffectListener<HomeEffect>(
-      stream: bloc.effects,
-      onEffect: _handleEffect,
-      child: Scaffold(
-        appBar: AppBar(
-          titleSpacing: 12,
-          title: BlocBuilder<HomeBloc, HomeState>(
-            buildWhen: (a, b) => a.routine?.name != b.routine?.name,
-            builder: (context, state) =>
-                _RoutineSwitcher(name: state.routine?.name),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: Text(
-                  DateTime.now().formatKo,
-                  style: context.type.label,
+    return OnBranchReveal(
+      onReveal: () => bloc.add(const LoadHome()),
+      child: EffectListener<HomeEffect>(
+        stream: bloc.effects,
+        onEffect: _handleEffect,
+        child: Scaffold(
+          appBar: AppBar(
+            titleSpacing: 12,
+            title: BlocBuilder<HomeBloc, HomeState>(
+              buildWhen: (a, b) => a.routine?.name != b.routine?.name,
+              builder: (context, state) =>
+                  _RoutineSwitcher(name: state.routine?.name),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Center(
+                  child: Text(
+                    DateTime.now().formatKo,
+                    style: context.type.label,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        body: BlocBuilder<HomeBloc, HomeState>(
-          builder: (context, state) {
-            if (state.isLoading && state.routine == null) {
-              return const LoadingView();
-            }
-            if (state.failure != null && state.routine == null) {
-              return ErrorView(
-                message: state.failure!.message,
-                onRetry: () => bloc.add(const LoadHome()),
-              );
-            }
-            if (!state.hasRoutine) {
-              return const EmptyView(message: '루틴이 없습니다');
-            }
-            return _HomeContent(state: state);
-          },
+            ],
+          ),
+          body: BlocBuilder<HomeBloc, HomeState>(
+            builder: (context, state) {
+              if (state.isLoading && state.routine == null) {
+                return const LoadingView();
+              }
+              if (state.failure != null && state.routine == null) {
+                return ErrorView(
+                  message: state.failure!.message,
+                  onRetry: () => bloc.add(const LoadHome()),
+                );
+              }
+              if (!state.hasRoutine) {
+                return const EmptyView(message: '루틴이 없습니다');
+              }
+              return _HomeContent(state: state);
+            },
+          ),
         ),
       ),
     );
@@ -95,9 +99,10 @@ class _HomeView extends StatelessWidget {
     }
   }
 
-  /// Reloads on return. Home lives in the shell's IndexedStack, so without this
-  /// it keeps the state it had *before* the workout: a session left running
-  /// would have no resume banner, and a finished one would still show it.
+  /// Reloads on return. The session opens on the root navigator, so coming back
+  /// changes no branch and fires no reveal; without this Home keeps the state it
+  /// had *before* the workout — a session left running would have no resume
+  /// banner, and a finished one would still show it.
   Future<void> _openSession(BuildContext context, int sessionId) async {
     final bloc = context.read<HomeBloc>();
 

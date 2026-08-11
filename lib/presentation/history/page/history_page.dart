@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/mvi/effect_listener.dart';
 import '../../../core/router/app_router.dart';
+import '../../common/branch_reveal.dart';
 import '../../common/common_widgets.dart';
 import '../bloc/history_bloc.dart';
 import '../bloc/history_effect.dart';
@@ -38,9 +39,7 @@ class HistoryPage extends StatelessWidget {
         BlocProvider(
           create: (_) => getIt<HistoryBloc>()..add(const LoadHistory()),
         ),
-        BlocProvider(
-          create: (_) => getIt<StatsBloc>()..add(const LoadStats()),
-        ),
+        BlocProvider(create: (_) => getIt<StatsBloc>()..add(const LoadStats())),
       ],
       child: const _HistoryView(),
     );
@@ -62,35 +61,41 @@ class _HistoryViewState extends State<_HistoryView> {
     final historyBloc = context.read<HistoryBloc>();
     final statsBloc = context.read<StatsBloc>();
 
-    return EffectListener<HistoryEffect>(
-      stream: historyBloc.effects,
-      onEffect: _handleHistoryEffect,
-      child: EffectListener<StatsEffect>(
-        stream: statsBloc.effects,
-        onEffect: _handleStatsEffect,
-        child: Scaffold(
-          appBar: AppBar(title: const Text(AppStrings.history)),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
-                child: SegmentedTabs(
-                  labels: const [
-                    AppStrings.tabCalendar,
-                    AppStrings.tabVolume,
-                    AppStrings.tabTrend,
-                  ],
-                  selectedIndex: _tab,
-                  onChanged: (index) => setState(() => _tab = index),
+    return OnBranchReveal(
+      onReveal: () {
+        historyBloc.add(const LoadHistory());
+        statsBloc.add(const LoadStats());
+      },
+      child: EffectListener<HistoryEffect>(
+        stream: historyBloc.effects,
+        onEffect: _handleHistoryEffect,
+        child: EffectListener<StatsEffect>(
+          stream: statsBloc.effects,
+          onEffect: _handleStatsEffect,
+          child: Scaffold(
+            appBar: AppBar(title: const Text(AppStrings.history)),
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
+                  child: SegmentedTabs(
+                    labels: const [
+                      AppStrings.tabCalendar,
+                      AppStrings.tabVolume,
+                      AppStrings.tabTrend,
+                    ],
+                    selectedIndex: _tab,
+                    onChanged: (index) => setState(() => _tab = index),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: IndexedStack(
-                  index: _tab,
-                  children: const [_CalendarTab(), _VolumeTab(), _TrendTab()],
+                Expanded(
+                  child: IndexedStack(
+                    index: _tab,
+                    children: const [_CalendarTab(), _VolumeTab(), _TrendTab()],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -115,10 +120,7 @@ class _HistoryViewState extends State<_HistoryView> {
     final historyBloc = context.read<HistoryBloc>();
     final statsBloc = context.read<StatsBloc>();
 
-    await context.pushNamed(
-      route,
-      pathParameters: {'sessionId': '$sessionId'},
-    );
+    await context.pushNamed(route, pathParameters: {'sessionId': '$sessionId'});
 
     historyBloc.add(const LoadHistory());
     statsBloc.add(const LoadStats());

@@ -20,6 +20,7 @@
 | 8 | Android 빌드 검증 · 마무리 | ✅ |
 | 9 | 실사용 피드백 반영 (키보드·기록 삭제·백그라운드 타이머·구분선) | ✅ |
 | 10 | 복수 루틴 · 루틴 가져오기/내보내기 | ✅ |
+| 11 | 하단 탭 좌우 스와이프 · 탭 전환 시 화면 갱신 | ✅ |
 
 ---
 
@@ -298,8 +299,8 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 - [x] 앱바 제목이 루틴 이름이고, 루틴 탭에는 전환 버튼이 붙는다
 - [x] 홈 앱바 제목도 활성 루틴 이름 + 탭하면 루틴 목록
 
-**홈은 활성 루틴 스트림을 구독한다.** 홈은 셸의 `IndexedStack`에 살아 있어 다시 만들어지지
-않는다. 다른 화면에서 루틴을 전환하거나 DAY를 고쳐도 오늘 카드가 낡은 채로 남기 때문에,
+**홈은 활성 루틴 스트림을 구독한다.** 홈은 셸 안에 살아 있어 다시 만들어지지 않는다
+(STEP 11). 다른 화면에서 루틴을 전환하거나 DAY를 고쳐도 오늘 카드가 낡은 채로 남기 때문에,
 `HomeBloc`이 `WatchActiveRoutine().skip(1)`을 듣고 `LoadHome`을 다시 던진다
 (`skip(1)`은 페이지가 이미 보낸 최초 로드와 중복되는 리플레이를 버린다).
 
@@ -372,6 +373,35 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 
 **검증 결과**: `flutter analyze` 무경고 · `flutter test` 103개 통과 ·
 `flutter build apk --debug` 성공.
+
+---
+
+## STEP 11 — 하단 탭 좌우 스와이프 · 탭 전환 시 화면 갱신
+
+증상: 홈에서 운동을 끝내고 `기록` 탭으로 넘어가도 캘린더가 그 세션을 **아직 진행 중**으로
+그렸다. 셸이 세 브랜치를 살려 두는데 각 페이지는 처음 만들어질 때 한 번만 읽기 때문이다.
+
+- [x] `StatefulShellRoute.indexedStack` → `StatefulShellRoute` + `navigatorContainerBuilder`.
+      `presentation/common/branch_pager.dart`가 브랜치를 `PageView`에 담아 좌우로 밀 수 있게 한다
+- [x] 세 브랜치 모두 `preload: true` — 없으면 처음 그 탭으로 미는 동안 빈 페이지가 끌려 들어온다
+- [x] `presentation/common/branch_reveal.dart` — 브랜치가 화면에 올라올 때마다 신호를 보내는
+      `BranchVisibility`(InheritedWidget) + 그걸 듣는 `OnBranchReveal`
+- [x] 홈 `LoadHome`, 기록 `LoadHistory`+`LoadStats`, 루틴 `LoadRoutine`을 각각 다시 던진다
+- [x] `test/tab_navigation_test.dart` — DB 없이 셸만 세워 스와이프·갱신 횟수를 검증 (4개)
+
+**첫 방문에는 신호를 보내지 않는다.** 그 순간 페이지가 만들어지면서 자기 초기 로드를 돌리므로
+이미 최신이다. 신호는 *돌아왔을 때*를 위한 것이다.
+
+**건너뛴 탭은 갱신하지 않는다.** 탭을 눌러 A→C로 가면 애니메이션이 B를 스쳐 지나가고
+`PageView.onPageChanged`가 B를 보고한다. `_settling` 플래그로 그 보고를 무시한다 —
+무시하지 않으면 브랜치가 B로 바뀌면서 애니메이션이 중간에 끊긴다.
+
+**`late` 초기화에 걸렸던 곳.** `late int _index = widget.navigationShell.currentIndex`로 두면
+첫 읽기가 `didUpdateWidget` 안에서 일어나 *이미 옮겨간* 인덱스를 집는다. 그래서 변화를 영영
+못 알아챈다. `initState`에서 값을 박아 둔다.
+
+기록 화면 안쪽의 `캘린더/볼륨/추이` 세그먼트는 그대로 `IndexedStack`이다. 같은 화면의 세 얼굴이라
+오갈 때 재조회가 없어야 한다.
 
 ---
 

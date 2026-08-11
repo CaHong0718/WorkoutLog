@@ -11,6 +11,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../domain/entity/enums.dart';
 import '../../../domain/entity/routine_day.dart';
 import '../../common/body_part_ui.dart';
+import '../../common/branch_reveal.dart';
 import '../../common/common_widgets.dart';
 import '../../common/volume_rail.dart';
 import '../bloc/routine_bloc.dart';
@@ -53,48 +54,52 @@ class _RoutineView extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = context.read<RoutineBloc>();
 
-    return EffectListener<RoutineEffect>(
-      stream: bloc.effects,
-      onEffect: _handleEffect,
-      child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<RoutineBloc, RoutineState>(
-            buildWhen: (a, b) => a.routine?.name != b.routine?.name,
-            builder: (context, state) => Text(
-              state.routine?.name ?? AppStrings.routineEdit,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          actions: [
-            if (_isTab)
-              IconButton(
-                onPressed: () => context.pushNamed(Routes.routineList),
-                icon: const Icon(Icons.swap_horiz),
-                tooltip: AppStrings.switchRoutine,
+    // Only the tab sits under a branch; a pushed routine gets a no-op.
+    return OnBranchReveal(
+      onReveal: () => bloc.add(LoadRoutine(routineId: routineId)),
+      child: EffectListener<RoutineEffect>(
+        stream: bloc.effects,
+        onEffect: _handleEffect,
+        child: Scaffold(
+          appBar: AppBar(
+            title: BlocBuilder<RoutineBloc, RoutineState>(
+              buildWhen: (a, b) => a.routine?.name != b.routine?.name,
+              builder: (context, state) => Text(
+                state.routine?.name ?? AppStrings.routineEdit,
+                overflow: TextOverflow.ellipsis,
               ),
-            IconButton(
-              onPressed: () => context.pushNamed(Routes.exerciseLibrary),
-              icon: const Icon(Icons.fitness_center_outlined),
-              tooltip: AppStrings.exerciseLibrary,
             ),
-          ],
-        ),
-        body: BlocBuilder<RoutineBloc, RoutineState>(
-          builder: (context, state) {
-            if (state.isLoading && !state.hasRoutine) {
-              return const LoadingView();
-            }
-            if (state.failure != null && !state.hasRoutine) {
-              return ErrorView(
-                message: state.failure!.message,
-                onRetry: () => bloc.add(LoadRoutine(routineId: routineId)),
-              );
-            }
-            if (!state.hasRoutine) {
-              return const EmptyView(message: '루틴이 없습니다');
-            }
-            return _RoutineContent(state: state);
-          },
+            actions: [
+              if (_isTab)
+                IconButton(
+                  onPressed: () => context.pushNamed(Routes.routineList),
+                  icon: const Icon(Icons.swap_horiz),
+                  tooltip: AppStrings.switchRoutine,
+                ),
+              IconButton(
+                onPressed: () => context.pushNamed(Routes.exerciseLibrary),
+                icon: const Icon(Icons.fitness_center_outlined),
+                tooltip: AppStrings.exerciseLibrary,
+              ),
+            ],
+          ),
+          body: BlocBuilder<RoutineBloc, RoutineState>(
+            builder: (context, state) {
+              if (state.isLoading && !state.hasRoutine) {
+                return const LoadingView();
+              }
+              if (state.failure != null && !state.hasRoutine) {
+                return ErrorView(
+                  message: state.failure!.message,
+                  onRetry: () => bloc.add(LoadRoutine(routineId: routineId)),
+                );
+              }
+              if (!state.hasRoutine) {
+                return const EmptyView(message: '루틴이 없습니다');
+              }
+              return _RoutineContent(state: state);
+            },
+          ),
         ),
       ),
     );
@@ -103,10 +108,7 @@ class _RoutineView extends StatelessWidget {
   void _handleEffect(BuildContext context, RoutineEffect effect) {
     switch (effect) {
       case OpenDayEditor(:final dayId):
-        context.pushNamed(
-          Routes.dayEdit,
-          pathParameters: {'dayId': '$dayId'},
-        );
+        context.pushNamed(Routes.dayEdit, pathParameters: {'dayId': '$dayId'});
       case ShowRoutineMessage(:final message):
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
@@ -140,10 +142,7 @@ class _RoutineContent extends StatelessWidget {
           const SizedBox(height: 4),
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              AppStrings.reorderHint,
-              style: context.type.caption,
-            ),
+            child: Text(AppStrings.reorderHint, style: context.type.caption),
           ),
           if (days.isEmpty)
             Padding(
@@ -259,7 +258,10 @@ class _RoutineSummaryCard extends StatelessWidget {
           Row(
             children: [
               _Metric(value: '${routine.dayCount}', unit: AppStrings.dayCount),
-              _Metric(value: '${state.weeklySets}', unit: AppStrings.weeklySets),
+              _Metric(
+                value: '${state.weeklySets}',
+                unit: AppStrings.weeklySets,
+              ),
               _Metric(
                 value: '${routine.sessionMinutes}',
                 unit: AppStrings.estimatedTime,

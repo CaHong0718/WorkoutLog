@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/common/app_shell.dart';
+import '../../presentation/common/branch_pager.dart';
 import '../platform/routine_file_io.dart';
 import '../../presentation/history/page/history_page.dart';
 import '../../presentation/history/page/session_detail_page.dart';
@@ -38,11 +39,17 @@ final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
   routes: [
-    StatefulShellRoute.indexedStack(
+    // Not `.indexedStack`: the branches live in a PageView so they can be
+    // swiped between. `preload` builds all three up front — a swipe would
+    // otherwise drag a blank page into view the first time it reaches a tab.
+    StatefulShellRoute(
       builder: (context, state, navigationShell) =>
           AppShell(navigationShell: navigationShell),
+      navigatorContainerBuilder: (context, navigationShell, children) =>
+          BranchPager(navigationShell: navigationShell, children: children),
       branches: [
         StatefulShellBranch(
+          preload: true,
           routes: [
             GoRoute(
               path: '/',
@@ -52,6 +59,7 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
         StatefulShellBranch(
+          preload: true,
           routes: [
             GoRoute(
               path: '/history',
@@ -61,6 +69,7 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
         StatefulShellBranch(
+          preload: true,
           routes: [
             GoRoute(
               path: '/routine',
@@ -75,9 +84,8 @@ final GoRouter appRouter = GoRouter(
       path: '/session/:sessionId',
       name: Routes.session,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => SessionPage(
-        sessionId: int.parse(state.pathParameters['sessionId']!),
-      ),
+      builder: (context, state) =>
+          SessionPage(sessionId: int.parse(state.pathParameters['sessionId']!)),
     ),
     GoRoute(
       path: '/history/session/:sessionId',
