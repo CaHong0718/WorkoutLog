@@ -93,6 +93,18 @@ class AbortSession {
       _repository.abortSession(sessionId);
 }
 
+/// Deletes a recorded session. Its set logs cascade away, so weekly volume and
+/// the calendar drop it too.
+@injectable
+class DeleteSession {
+  const DeleteSession(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<Result<void>> call(int sessionId) =>
+      _repository.deleteSession(sessionId);
+}
+
 @injectable
 class GetLastLogsForExercise {
   const GetLastLogsForExercise(this._repository);

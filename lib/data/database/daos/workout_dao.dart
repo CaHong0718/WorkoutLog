@@ -60,6 +60,10 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     ),
   );
 
+  /// Set logs cascade away with the session row.
+  Future<void> deleteSession(int sessionId) =>
+      (delete(workoutSessions)..where((t) => t.id.equals(sessionId))).go();
+
   /// Completed sets for [exerciseId], newest first.
   Future<List<SetLogRow>> lastLogsForExercise(int exerciseId, int limit) =>
       (select(setLogs)

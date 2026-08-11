@@ -8,3 +8,8 @@ sealed class SessionDetailIntent extends MviIntent {
 final class LoadSessionDetail extends SessionDetailIntent {
   const LoadSessionDetail();
 }
+
+/// Permanently removes this record. Confirmed by the page beforehand.
+final class DeleteSessionRecord extends SessionDetailIntent {
+  const DeleteSessionRecord();
+}

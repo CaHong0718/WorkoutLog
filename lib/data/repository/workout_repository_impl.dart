@@ -112,6 +112,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   );
 
   @override
+  Future<Result<void>> deleteSession(int sessionId) =>
+      runCatching(() => _dao.deleteSession(sessionId));
+
+  @override
   Future<Result<List<SetLog>>> getLastLogsForExercise(
     int exerciseId, {
     int limit = 6,

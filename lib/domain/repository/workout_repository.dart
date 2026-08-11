@@ -24,6 +24,9 @@ abstract interface class WorkoutRepository {
 
   Future<Result<void>> abortSession(int sessionId);
 
+  /// Permanently removes a session and every set logged under it.
+  Future<Result<void>> deleteSession(int sessionId);
+
   /// Most recent completed sets for [exerciseId], newest first — used to
   /// pre-fill the weight/rep inputs and to judge progression.
   Future<Result<List<SetLog>>> getLastLogsForExercise(

@@ -234,9 +234,7 @@ class _RoutineSummaryCard extends StatelessWidget {
           Row(
             children: [
               _Metric(value: '${routine.dayCount}', unit: AppStrings.dayCount),
-              Container(width: 1, height: 32, color: p.lineSoft),
               _Metric(value: '${state.weeklySets}', unit: AppStrings.weeklySets),
-              Container(width: 1, height: 32, color: p.lineSoft),
               _Metric(
                 value: '${routine.sessionMinutes}',
                 unit: AppStrings.estimatedTime,

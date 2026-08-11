@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:health_app/core/notification/rest_notifier.dart';
 import 'package:health_app/data/database/app_database.dart';
 import 'package:health_app/data/repository/exercise_repository_impl.dart';
 import 'package:health_app/data/repository/routine_repository_impl.dart';
@@ -13,6 +14,7 @@ import 'package:health_app/domain/usecase/routine_usecases.dart';
 import 'package:health_app/domain/usecase/workout_usecases.dart';
 import 'package:health_app/presentation/session/bloc/session_bloc.dart';
 import 'package:health_app/presentation/session/bloc/session_intent.dart';
+import 'package:health_app/presentation/session/bloc/session_state.dart';
 
 void main() {
   late AppDatabase db;
@@ -46,6 +48,9 @@ void main() {
     GetLastLogsForExercise(workoutRepo),
     GetExercisesByIds(exerciseRepo),
     SuggestProgression(workoutRepo),
+    // The real notifier: every platform call is guarded, so on the test host it
+    // degrades to a no-op. That resilience is part of what we want covered.
+    RestNotifier(),
   );
 
   group('SessionPlan', () {
@@ -108,6 +113,41 @@ void main() {
     test('resumeIndex는 기록이 없는 첫 세트를 가리킨다', () {
       final plan = SessionPlan.fromDay(dayOf('A'));
       expect(SessionPlan.resumeIndex(plan, const []), 0);
+    });
+  });
+
+  group('RestState — 벽시계 기준 카운트다운', () {
+    final start = DateTime(2026, 8, 11, 12);
+
+    test('백그라운드에 오래 있다 돌아와도 남은 시간이 정확하다', () {
+      final rest = RestState.start(120, from: start);
+      expect(rest.remainingSeconds, 120);
+      expect(rest.endsAt, start.add(const Duration(seconds: 120)));
+
+      // 화면을 끈 채 90초 — 그동안 tick은 한 번도 돌지 못했다고 가정
+      final resumed = rest.tick(start.add(const Duration(seconds: 90)));
+      expect(resumed.remainingSeconds, 30);
+      expect(resumed.isDone, isFalse);
+    });
+
+    test('휴식 시간을 넘겨서 복귀하면 0으로 끝나 있다', () {
+      final rest = RestState.start(75, from: start);
+      final late = rest.tick(start.add(const Duration(minutes: 5)));
+
+      expect(late.remainingSeconds, 0);
+      expect(late.isDone, isTrue);
+      expect(late.progress, 1);
+    });
+
+    test('+15초는 종료 시각 자체를 미룬다', () {
+      final now = start.add(const Duration(seconds: 10));
+      final rest = RestState.start(60, from: start).tick(now);
+      expect(rest.remainingSeconds, 50);
+
+      final extended = rest.extend(const Duration(seconds: 15), now: now);
+      expect(extended.totalSeconds, 75);
+      expect(extended.remainingSeconds, 65);
+      expect(extended.endsAt, start.add(const Duration(seconds: 75)));
     });
   });
 

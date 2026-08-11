@@ -47,11 +47,16 @@ class LoggedBlock extends Equatable {
 class SessionDetailState extends MviState {
   const SessionDetailState({
     this.isLoading = true,
+    this.isDeleting = false,
     this.failure,
     this.session,
   });
 
   final bool isLoading;
+
+  /// True while the record is being removed — blocks a second delete tap.
+  final bool isDeleting;
+
   final Failure? failure;
   final WorkoutSession? session;
 
@@ -98,17 +103,19 @@ class SessionDetailState extends MviState {
 
   SessionDetailState copyWith({
     bool? isLoading,
+    bool? isDeleting,
     Failure? failure,
     WorkoutSession? session,
     bool clearFailure = false,
   }) {
     return SessionDetailState(
       isLoading: isLoading ?? this.isLoading,
+      isDeleting: isDeleting ?? this.isDeleting,
       failure: clearFailure ? null : (failure ?? this.failure),
       session: session ?? this.session,
     );
   }
 
   @override
-  List<Object?> get props => [isLoading, failure, session];
+  List<Object?> get props => [isLoading, isDeleting, failure, session];
 }

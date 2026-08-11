@@ -38,7 +38,6 @@ class HistorySummaryCard extends StatelessWidget {
                   unit: AppStrings.sessionUnit,
                 ),
               ),
-              const MetricDivider(),
               const SizedBox(width: 14),
               Expanded(
                 child: MetricTile(
@@ -47,7 +46,6 @@ class HistorySummaryCard extends StatelessWidget {
                   unit: AppStrings.setUnit,
                 ),
               ),
-              const MetricDivider(),
               const SizedBox(width: 14),
               Expanded(
                 child: MetricTile(

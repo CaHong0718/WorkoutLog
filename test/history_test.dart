@@ -9,6 +9,7 @@ import 'package:health_app/data/database/app_database.dart';
 import 'package:health_app/data/repository/history_repository_impl.dart';
 import 'package:health_app/data/repository/routine_repository_impl.dart';
 import 'package:health_app/data/repository/workout_repository_impl.dart';
+import 'package:health_app/domain/entity/date_range.dart';
 import 'package:health_app/domain/entity/enums.dart';
 import 'package:health_app/domain/entity/routine.dart';
 import 'package:health_app/domain/entity/routine_day.dart';
@@ -17,11 +18,13 @@ import 'package:health_app/domain/entity/routine_item.dart';
 import 'package:health_app/domain/entity/set_log.dart';
 import 'package:health_app/domain/entity/workout_session.dart';
 import 'package:health_app/domain/usecase/history_usecases.dart';
+import 'package:health_app/domain/usecase/workout_usecases.dart';
 import 'package:health_app/domain/usecase/routine_usecases.dart';
 import 'package:health_app/presentation/history/bloc/history_bloc.dart';
 import 'package:health_app/presentation/history/bloc/history_intent.dart';
 import 'package:health_app/presentation/history/bloc/history_state.dart';
 import 'package:health_app/presentation/history/bloc/session_detail_bloc.dart';
+import 'package:health_app/presentation/history/bloc/session_detail_effect.dart';
 import 'package:health_app/presentation/history/bloc/session_detail_intent.dart';
 import 'package:health_app/presentation/history/bloc/session_detail_state.dart';
 import 'package:health_app/presentation/history/bloc/stats_bloc.dart';
@@ -72,7 +75,11 @@ void main() {
   );
 
   SessionDetailBloc makeDetailBloc(int sessionId) =>
-      SessionDetailBloc(sessionId, GetSessionDetail(historyRepo));
+      SessionDetailBloc(
+        sessionId,
+        GetSessionDetail(historyRepo),
+        DeleteSession(workoutRepo),
+      );
 
   /// Starts a session and backdates it, so a whole history can be built
   /// without touching the clock.
@@ -298,6 +305,47 @@ void main() {
       expect(exercise.logs.last.isCompleted, isFalse);
       expect(exercise.logs.first.summary, '60kg × 10');
       expect(exercise.logs.first.restSeconds, 118);
+    });
+
+    test('기록을 삭제하면 세트와 달력 마킹이 함께 사라진다', () async {
+      final dayB = dayOf('B');
+      final incline = dayB.blocks[0].items.single;
+      final session = await startOn('B', today);
+
+      await logSet(
+        session.id,
+        incline,
+        blockLabel: 'B1',
+        itemOrder: 0,
+        setIndex: 1,
+        weight: 60,
+        reps: 10,
+      );
+      await workoutRepo.completeSession(session.id);
+
+      final markedBefore = (await historyRepo.getWorkoutDates(
+        DateRange.month(today),
+      )).valueOrNull!;
+      expect(markedBefore, contains(today));
+
+      final bloc = makeDetailBloc(session.id);
+      addTearDown(bloc.close);
+      bloc.add(const LoadSessionDetail());
+      await bloc.stream.firstWhere((s) => s.hasSession);
+
+      final deleted = bloc.effects.first;
+      bloc.add(const DeleteSessionRecord());
+      expect(await deleted, isA<SessionRecordDeleted>());
+
+      final markedAfter = (await historyRepo.getWorkoutDates(
+        DateRange.month(today),
+      )).valueOrNull!;
+      expect(markedAfter, isNot(contains(today)));
+
+      // The set logs cascade away, so weekly volume drops with them.
+      final volume = (await historyRepo.getWeeklyVolume(today)).valueOrNull!;
+      expect(volume[BodyPart.chest] ?? 0, 0);
+      expect((await workoutRepo.getSession(session.id)).isErr, isTrue);
     });
   });
 

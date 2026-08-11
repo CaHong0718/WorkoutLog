@@ -70,12 +70,3 @@ class MetricTile extends StatelessWidget {
     );
   }
 }
-
-/// Thin vertical rule between two [MetricTile]s.
-class MetricDivider extends StatelessWidget {
-  const MetricDivider({super.key});
-
-  @override
-  Widget build(BuildContext context) =>
-      Container(width: 1, height: 34, color: context.palette.lineSoft);
-}

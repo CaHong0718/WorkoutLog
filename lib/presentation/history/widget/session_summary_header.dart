@@ -75,7 +75,6 @@ class SessionSummaryHeader extends StatelessWidget {
                       value: session.duration.koreanShort,
                     ),
                   ),
-                  const MetricDivider(),
                   const SizedBox(width: 14),
                   Expanded(
                     child: MetricTile(
@@ -84,7 +83,6 @@ class SessionSummaryHeader extends StatelessWidget {
                       unit: AppStrings.setUnit,
                     ),
                   ),
-                  const MetricDivider(),
                   const SizedBox(width: 14),
                   Expanded(
                     child: MetricTile(

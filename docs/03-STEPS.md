@@ -18,6 +18,7 @@
 | 6 | 루틴 편집 화면 | ✅ |
 | 7 | 히스토리 / 통계 화면 | ✅ |
 | 8 | Android 빌드 검증 · 마무리 | ✅ |
+| 9 | 실사용 피드백 반영 (키보드·기록 삭제·백그라운드 타이머·구분선) | ✅ |
 
 ---
 
@@ -208,15 +209,48 @@ DB에 쓰는 Intent 핸들러는 전부 `transformer: sequential()`. 블록 순�
 
 ---
 
+## STEP 9 — 실사용 피드백 반영
+
+- [x] **지표 사이 세로 구분선 제거** — `16 Sets | 45 Min | 7 Sets`의 구분선이 텍스트 사이에
+      정렬되지 않아 전부 제거했다. 홈·루틴·기록의 동일 컴포넌트를 모두 정리.
+- [x] **빈 공간 탭 시 키보드 닫기** — `core/widgets/dismiss_keyboard.dart`를
+      `MaterialApp.router`의 `builder`에 물려 전 화면(다이얼로그·바텀시트 포함)에 적용.
+      `HitTestBehavior.translucent`라 버튼·스크롤 제스처는 그대로 동작한다.
+- [x] **운동 기록 삭제** — 세션 상세 앱바에서 삭제(확인 다이얼로그). `set_logs`는 FK cascade로
+      함께 지워지고, 돌아오면 달력·주간 볼륨이 자동 갱신된다.
+- [x] **휴식 타이머 백그라운드 동작 + 알림** — 아래 별도 설명.
+
+### 휴식 타이머 설계 변경 (중요)
+
+문제: 화면을 끄거나 앱을 백그라운드로 보내면 `Timer.periodic`이 멈춰 카운트다운이 어긋났다.
+
+해결은 두 축이다.
+
+1. **표시는 벽시계 기준.** `RestState`가 남은 초를 세는 대신 **종료 시각(`endsAt`)** 을 들고 있고,
+   매 tick마다 `endsAt - now`로 다시 계산한다. 앱이 몇 분간 얼어 있었어도 복귀 즉시 정확하다.
+   (`RestState.tick(now)` / `extend(by)`)
+2. **알림은 시스템이 낸다.** `RestNotifier`가 휴식 시작 시점에 **종료 시각으로 알림을 예약**한다.
+   Dart 타이머가 아니라 `AlarmManager` 기반이라 화면이 꺼져 있어도, Doze 상태여도 울린다.
+   `exactAllowWhileIdle` → 거부되면 `inexactAllowWhileIdle`로 자동 폴백.
+
+`RestNotifier`의 모든 플랫폼 호출은 try/catch로 감싸 실패해도 운동 화면이 멈추지 않는다
+(테스트 호스트에서는 자동으로 no-op이 되며, 그 동작 자체를 테스트가 통과시킨다).
+
+권한은 앱 시작이 아니라 **세션 진입 시점**에 요청한다 — 랙 앞에 선 순간이 사용자가
+"왜 알림이 필요한지" 이해하는 시점이기 때문.
+
+Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIVE_BOOT_COMPLETED` 권한,
+`isCoreLibraryDesugaringEnabled = true` + `desugar_jdk_libs`(`zonedSchedule` 요구사항).
+
+---
+
 ## 이후 후보 (요청 시 착수)
 
-MVP는 STEP 8까지로 완성이다. 아래는 있으면 좋은 것들이며 우선순위 순.
+우선순위 순.
 
 - [ ] **앱 아이콘 · 스플래시** — `flutter_launcher_icons` 사용
-- [ ] **휴식 타이머 백그라운드 동작 + 로컬 알림** — 현재는 앱이 포그라운드일 때만 카운트다운한다.
-      화면을 끄거나 다른 앱으로 전환하면 타이머가 멈춘다. `flutter_local_notifications` +
-      Android 정확 알람 권한이 필요하다.
-- [ ] **과거 기록 수정** — 세션 상세는 현재 읽기 전용. `UpdateSet`/`DeleteSet` UseCase는 이미 있다.
+- [ ] **과거 기록 수정** — 삭제는 STEP 9에서 됐고, 세트별 무게·반복 수정은 아직.
+      `UpdateSet`/`DeleteSet` UseCase는 이미 있다.
 - [ ] **데이터 백업/복원** — SQLite 파일 내보내기 또는 JSON export
 - [ ] **4주 로테이션 알림** — 원문 설계의 "4주마다 종목 교체" 규칙을 앱이 알려주기
 - [ ] **루틴 복수 지원** — 스키마·`Routine.isActive`는 이미 대응돼 있고 UI만 없다

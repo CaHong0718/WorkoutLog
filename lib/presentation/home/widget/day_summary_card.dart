@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../domain/entity/enums.dart';
 import '../../../domain/entity/routine_day.dart';
@@ -16,7 +15,6 @@ class DaySummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = context.palette;
     final accent = day.primaryBodyPart.color(context);
     final volume = day.volumeByBodyPart;
 
@@ -53,9 +51,7 @@ class DaySummaryCard extends StatelessWidget {
           Row(
             children: [
               _Metric(value: '${day.totalSets}', unit: 'Sets'),
-              _MetricDivider(color: p.lineSoft),
               _Metric(value: '${day.estimatedMinutes}', unit: 'Min'),
-              _MetricDivider(color: p.lineSoft),
               _Metric(
                 value: '${volume[day.primaryBodyPart] ?? 0}',
                 unit: '${day.primaryBodyPart.label} Sets',
@@ -137,12 +133,3 @@ class _Metric extends StatelessWidget {
   }
 }
 
-class _MetricDivider extends StatelessWidget {
-  const _MetricDivider({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) =>
-      Container(width: 1, height: 34, color: color);
-}

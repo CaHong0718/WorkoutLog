@@ -117,6 +117,9 @@ abstract final class AppStrings {
   // History
   static const history = '운동 기록';
   static const sessionDetail = '세션 상세';
+  static const deleteRecord = '기록 삭제';
+  static const deleteRecordConfirm = '이 운동 기록을 삭제합니다. 기록된 세트가 모두 지워지고 되돌릴 수 없습니다.';
+  static const recordDeleted = '운동 기록을 삭제했습니다.';
   static const progressChart = '무게 추이';
   static const noRecordThisDay = '이 날은 운동 기록이 없습니다';
 

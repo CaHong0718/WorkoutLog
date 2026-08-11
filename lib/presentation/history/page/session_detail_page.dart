@@ -39,7 +39,22 @@ class _SessionDetailView extends StatelessWidget {
       stream: bloc.effects,
       onEffect: _handleEffect,
       child: Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.sessionDetail)),
+        appBar: AppBar(
+          title: const Text(AppStrings.sessionDetail),
+          actions: [
+            BlocBuilder<SessionDetailBloc, SessionDetailState>(
+              buildWhen: (a, b) =>
+                  a.hasSession != b.hasSession || a.isDeleting != b.isDeleting,
+              builder: (context, state) => IconButton(
+                onPressed: state.hasSession && !state.isDeleting
+                    ? () => _confirmDelete(context)
+                    : null,
+                icon: const Icon(Icons.delete_outline),
+                tooltip: AppStrings.deleteRecord,
+              ),
+            ),
+          ],
+        ),
         body: BlocBuilder<SessionDetailBloc, SessionDetailState>(
           builder: (context, state) {
             if (state.isLoading && !state.hasSession) {
@@ -71,8 +86,41 @@ class _SessionDetailView extends StatelessWidget {
     );
   }
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final bloc = context.read<SessionDetailBloc>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(AppStrings.deleteRecord),
+        content: const Text(AppStrings.deleteRecordConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text(AppStrings.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            child: const Text(AppStrings.delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed ?? false) bloc.add(const DeleteSessionRecord());
+  }
+
   void _handleEffect(BuildContext context, SessionDetailEffect effect) {
     switch (effect) {
+      case SessionRecordDeleted():
+        // The caller reloads on return, so the calendar and volume follow.
+        Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(content: Text(AppStrings.recordDeleted)));
       case ShowSessionDetailMessage(:final message):
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()

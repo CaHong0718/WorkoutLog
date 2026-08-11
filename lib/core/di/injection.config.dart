@@ -39,6 +39,7 @@ import '../../presentation/routine_edit/bloc/exercise_library_bloc.dart'
     as _i1038;
 import '../../presentation/routine_edit/bloc/routine_bloc.dart' as _i937;
 import '../../presentation/session/bloc/session_bloc.dart' as _i373;
+import '../notification/rest_notifier.dart' as _i204;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -48,6 +49,7 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final databaseModule = _$DatabaseModule();
+    gh.lazySingleton<_i204.RestNotifier>(() => _i204.RestNotifier());
     gh.lazySingleton<_i160.AppDatabase>(() => databaseModule.database);
     gh.lazySingleton<_i229.RoutineDao>(
       () => databaseModule.routineDao(gh<_i160.AppDatabase>()),
@@ -197,6 +199,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i250.AbortSession>(
       () => _i250.AbortSession(gh<_i611.WorkoutRepository>()),
     );
+    gh.factory<_i250.DeleteSession>(
+      () => _i250.DeleteSession(gh<_i611.WorkoutRepository>()),
+    );
     gh.factory<_i250.GetLastLogsForExercise>(
       () => _i250.GetLastLogsForExercise(gh<_i611.WorkoutRepository>()),
     );
@@ -235,24 +240,11 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i250.AbortSession>(),
       ),
     );
-    gh.factoryParam<_i918.SessionDetailBloc, int, dynamic>(
-      (sessionId, _) =>
-          _i918.SessionDetailBloc(sessionId, gh<_i839.GetSessionDetail>()),
-    );
     gh.factory<_i1038.ExerciseLibraryBloc>(
       () => _i1038.ExerciseLibraryBloc(
         gh<_i628.WatchExercises>(),
         gh<_i628.UpsertExercise>(),
         gh<_i628.DeleteExercise>(),
-      ),
-    );
-    gh.factory<_i1045.HistoryBloc>(
-      () => _i1045.HistoryBloc(
-        gh<_i839.GetWorkoutDates>(),
-        gh<_i839.GetSessions>(),
-        gh<_i839.GetSessionsOn>(),
-        gh<_i839.GetWeeklyVolume>(),
-        gh<_i839.GetTotalSessionCount>(),
       ),
     );
     gh.factoryParam<_i373.SessionBloc, int, dynamic>(
@@ -268,6 +260,23 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i250.GetLastLogsForExercise>(),
         gh<_i628.GetExercisesByIds>(),
         gh<_i250.SuggestProgression>(),
+        gh<_i204.RestNotifier>(),
+      ),
+    );
+    gh.factoryParam<_i918.SessionDetailBloc, int, dynamic>(
+      (sessionId, _) => _i918.SessionDetailBloc(
+        sessionId,
+        gh<_i839.GetSessionDetail>(),
+        gh<_i250.DeleteSession>(),
+      ),
+    );
+    gh.factory<_i1045.HistoryBloc>(
+      () => _i1045.HistoryBloc(
+        gh<_i839.GetWorkoutDates>(),
+        gh<_i839.GetSessions>(),
+        gh<_i839.GetSessionsOn>(),
+        gh<_i839.GetWeeklyVolume>(),
+        gh<_i839.GetTotalSessionCount>(),
       ),
     );
     return this;

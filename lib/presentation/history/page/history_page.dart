@@ -100,13 +100,25 @@ class _HistoryViewState extends State<_HistoryView> {
   void _handleHistoryEffect(BuildContext context, HistoryEffect effect) {
     switch (effect) {
       case OpenSessionDetail(:final sessionId):
-        context.pushNamed(
-          Routes.sessionDetail,
-          pathParameters: {'sessionId': '$sessionId'},
-        );
+        _openDetail(context, sessionId);
       case ShowHistoryMessage(:final message):
         _snack(context, message);
     }
+  }
+
+  /// Reloads on return so a deleted record disappears from the calendar,
+  /// the day panel and the weekly volume.
+  Future<void> _openDetail(BuildContext context, int sessionId) async {
+    final historyBloc = context.read<HistoryBloc>();
+    final statsBloc = context.read<StatsBloc>();
+
+    await context.pushNamed(
+      Routes.sessionDetail,
+      pathParameters: {'sessionId': '$sessionId'},
+    );
+
+    historyBloc.add(const LoadHistory());
+    statsBloc.add(const LoadStats());
   }
 
   void _handleStatsEffect(BuildContext context, StatsEffect effect) {

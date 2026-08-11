@@ -9,10 +9,32 @@ import '../../../domain/entity/set_log.dart';
 import '../../../domain/entity/workout_session.dart';
 
 /// Rest countdown between sets or superset rounds.
+///
+/// Anchored to [endsAt] rather than counted down tick by tick: the athlete
+/// trains with the screen off, and a backgrounded app gets no ticks. Reading
+/// the wall clock means the display is right the instant the app comes back,
+/// no matter how long it was frozen.
 class RestState extends Equatable {
-  const RestState({required this.totalSeconds, required this.remainingSeconds});
+  const RestState({
+    required this.totalSeconds,
+    required this.endsAt,
+    required this.remainingSeconds,
+  });
+
+  factory RestState.start(int seconds, {DateTime? from}) {
+    final base = from ?? DateTime.now();
+    return RestState(
+      totalSeconds: seconds,
+      endsAt: base.add(Duration(seconds: seconds)),
+      remainingSeconds: seconds,
+    );
+  }
 
   final int totalSeconds;
+
+  /// Wall-clock instant the rest is over.
+  final DateTime endsAt;
+
   final int remainingSeconds;
 
   bool get isDone => remainingSeconds <= 0;
@@ -22,13 +44,33 @@ class RestState extends Equatable {
       ? 1
       : ((totalSeconds - remainingSeconds) / totalSeconds).clamp(0.0, 1.0);
 
-  RestState copyWith({int? totalSeconds, int? remainingSeconds}) => RestState(
-    totalSeconds: totalSeconds ?? this.totalSeconds,
-    remainingSeconds: remainingSeconds ?? this.remainingSeconds,
+  /// Recomputes what is left from the clock.
+  RestState tick(DateTime now) => RestState(
+    totalSeconds: totalSeconds,
+    endsAt: endsAt,
+    remainingSeconds: _remainingAt(now),
   );
 
+  /// Pushes the end back by [by] — the "+15초" button.
+  RestState extend(Duration by, {DateTime? now}) {
+    final pushed = endsAt.add(by);
+    return RestState(
+      totalSeconds: totalSeconds + by.inSeconds,
+      endsAt: pushed,
+      remainingSeconds: _secondsUntil(pushed, now ?? DateTime.now()),
+    );
+  }
+
+  int _remainingAt(DateTime now) => _secondsUntil(endsAt, now);
+
+  /// Rounds up so the readout only hits 0 when the rest is genuinely over.
+  static int _secondsUntil(DateTime target, DateTime now) {
+    final millis = target.difference(now).inMilliseconds;
+    return millis <= 0 ? 0 : (millis / 1000).ceil();
+  }
+
   @override
-  List<Object?> get props => [totalSeconds, remainingSeconds];
+  List<Object?> get props => [totalSeconds, endsAt, remainingSeconds];
 }
 
 class SessionState extends MviState {

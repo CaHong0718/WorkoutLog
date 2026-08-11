@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/mvi/mvi_bloc.dart';
+import '../../../core/notification/rest_notifier.dart';
 import '../../../core/result/result.dart';
 import '../../../domain/entity/enums.dart';
 import '../../../domain/entity/exercise.dart';
@@ -31,15 +32,16 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     this._getLastLogsForExercise,
     this._getExercisesByIds,
     this._suggestProgression,
+    this._restNotifier,
   ) : super(const SessionState()) {
     on<LoadSession>(_onLoad);
     on<TickSecond>(_onTick);
     on<CompleteCurrentSet>(_onCompleteSet, transformer: sequential());
     on<SkipCurrentSet>(_onSkipSet, transformer: sequential());
     on<SkipBlock>(_onSkipBlock, transformer: sequential());
-    on<JumpToSet>(_onJumpToSet);
+    on<JumpToSet>(_onJumpToSet, transformer: sequential());
     on<SubstituteExercise>(_onSubstitute);
-    on<AddRest>(_onAddRest);
+    on<AddRest>(_onAddRest, transformer: sequential());
     on<SkipRest>(_onSkipRest, transformer: sequential());
     on<EditSetLog>(_onEditLog, transformer: sequential());
     on<DeleteSetLog>(_onDeleteLog, transformer: sequential());
@@ -58,6 +60,7 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
   final GetLastLogsForExercise _getLastLogsForExercise;
   final GetExercisesByIds _getExercisesByIds;
   final SuggestProgression _suggestProgression;
+  final RestNotifier _restNotifier;
 
   Timer? _ticker;
 
@@ -67,13 +70,18 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
   int? _lastLogId;
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
     _ticker?.cancel();
+    await _restNotifier.cancel();
     return super.close();
   }
 
   Future<void> _onLoad(LoadSession intent, Emitter<SessionState> emit) async {
     emit(state.copyWith(isLoading: true, clearFailure: true));
+
+    // Asked here rather than at launch: standing at the rack is when the
+    // request makes sense to the user.
+    unawaited(_restNotifier.ensurePermissions());
 
     final sessionResult = await _getSession(sessionId);
     if (sessionResult.isErr) {
@@ -142,7 +150,8 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     final session = state.session;
     if (session == null) return;
 
-    final elapsed = DateTime.now().difference(session.startedAt);
+    final now = DateTime.now();
+    final elapsed = now.difference(session.startedAt);
     final rest = state.rest;
 
     if (rest == null || rest.isDone) {
@@ -150,9 +159,15 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
       return;
     }
 
-    final next = rest.copyWith(remainingSeconds: rest.remainingSeconds - 1);
+    final next = rest.tick(now);
     emit(state.copyWith(elapsed: elapsed, rest: next));
-    if (next.isDone) emitEffect(const RestFinished());
+
+    // Only celebrate a rest that ended just now. Coming back to the app long
+    // after it lapsed should not fire a stale buzz — the scheduled
+    // notification already did that job.
+    if (next.isDone && now.difference(rest.endsAt).inSeconds <= 3) {
+      emitEffect(const RestFinished());
+    }
   }
 
   Future<void> _onCompleteSet(
@@ -245,12 +260,17 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
       ),
     );
     _restStartedAt = null;
+    await _restNotifier.cancel();
   }
 
-  void _onJumpToSet(JumpToSet intent, Emitter<SessionState> emit) {
+  Future<void> _onJumpToSet(
+    JumpToSet intent,
+    Emitter<SessionState> emit,
+  ) async {
     if (intent.index < 0 || intent.index > state.plan.length) return;
     emit(state.copyWith(currentIndex: intent.index, clearRest: true));
     _restStartedAt = null;
+    await _restNotifier.cancel();
   }
 
   void _onSubstitute(SubstituteExercise intent, Emitter<SessionState> emit) {
@@ -265,16 +285,15 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     emitEffect(ShowSessionMessage('${intent.exercise.name}(으)로 대체했습니다.'));
   }
 
-  void _onAddRest(AddRest intent, Emitter<SessionState> emit) {
+  Future<void> _onAddRest(AddRest intent, Emitter<SessionState> emit) async {
     final rest = state.rest;
     if (rest == null) return;
-    emit(
-      state.copyWith(
-        rest: rest.copyWith(
-          totalSeconds: rest.totalSeconds + intent.seconds,
-          remainingSeconds: rest.remainingSeconds + intent.seconds,
-        ),
-      ),
+
+    final extended = rest.extend(Duration(seconds: intent.seconds));
+    emit(state.copyWith(rest: extended));
+    await _restNotifier.scheduleRestEnd(
+      endsAt: extended.endsAt,
+      nextLabel: _upcomingLabel(state.currentIndex),
     );
   }
 
@@ -283,6 +302,7 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     Emitter<SessionState> emit,
   ) async {
     await _writeElapsedRest();
+    await _restNotifier.cancel();
     emit(state.copyWith(clearRest: true));
   }
 
@@ -317,6 +337,7 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     if (state.isFinishing) return;
     emit(state.copyWith(isFinishing: true));
     _ticker?.cancel();
+    await _restNotifier.cancel();
 
     final result = await _completeSession(sessionId, memo: intent.memo);
     if (result.isErr) {
@@ -337,6 +358,7 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     Emitter<SessionState> emit,
   ) async {
     _ticker?.cancel();
+    await _restNotifier.cancel();
     final result = await _abortSession(sessionId);
     if (result.isErr) {
       _startTicker();
@@ -355,21 +377,36 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     final nextIndex = state.currentIndex + 1;
     final startRest = restSeconds > 0 && nextIndex < state.plan.length;
     final session = (await _getSession(sessionId)).valueOrNull;
+    final rest = startRest ? RestState.start(restSeconds) : null;
 
     emit(
       state.copyWith(
         session: session,
         currentIndex: nextIndex,
-        rest: startRest
-            ? RestState(
-                totalSeconds: restSeconds,
-                remainingSeconds: restSeconds,
-              )
-            : null,
+        rest: rest,
         clearRest: !startRest,
       ),
     );
     _restStartedAt = startRest ? DateTime.now() : null;
+
+    if (rest != null) {
+      await _restNotifier.scheduleRestEnd(
+        endsAt: rest.endsAt,
+        nextLabel: _upcomingLabel(nextIndex),
+      );
+    } else {
+      await _restNotifier.cancel();
+    }
+  }
+
+  /// What the athlete does after the rest — shown on the lock screen so the
+  /// notification is useful without unlocking.
+  String _upcomingLabel(int index) {
+    if (index >= state.plan.length) return '계획한 세트를 모두 마쳤습니다';
+    final planned = state.plan[index];
+    final exercise =
+        state.substitutions[planned.item.id] ?? planned.item.exercise;
+    return '${planned.positionLabel} · ${exercise.name}';
   }
 
   /// Writes how long the athlete actually rested onto the previous set's log.
