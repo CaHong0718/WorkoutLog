@@ -17,7 +17,7 @@
 | 5 | 운동 세션 화면 (기록 + 휴식 타이머) | ✅ |
 | 6 | 루틴 편집 화면 | ✅ |
 | 7 | 히스토리 / 통계 화면 | ✅ |
-| 8 | Android 빌드 검증 · 마무리 | ⬜ |
+| 8 | Android 빌드 검증 · 마무리 | ✅ |
 
 ---
 
@@ -198,12 +198,28 @@ DB에 쓰는 Intent 핸들러는 전부 `transformer: sequential()`. 블록 순�
 
 ## STEP 8 — Android 빌드 검증 · 마무리
 
-- [ ] `flutter analyze` 무경고
-- [ ] `flutter test` 통과 (시드 볼륨 검증 포함)
-- [ ] `flutter build apk --debug` 성공
-- [ ] 에뮬레이터/실기기 실행 확인
-- [ ] 앱 이름 · 아이콘 · 패키지명 확정
-- [ ] `README.md` 작성 (빌드/실행 방법)
+- [x] `flutter analyze` 무경고
+- [x] `flutter test` 통과 — 63개 (시드 볼륨 검증 포함)
+- [x] `flutter build apk --debug` 성공
+- [x] 실기기 실행 확인 (Galaxy S21 · Android 15 / API 35)
+- [x] 앱 이름 `무분할 40분` · 패키지명 `com.yeoboya.health_app`
+- [x] `README.md` 작성
+- [ ] 앱 아이콘 (기본 Flutter 아이콘 상태 — 디자인 필요)
+
+---
+
+## 이후 후보 (요청 시 착수)
+
+MVP는 STEP 8까지로 완성이다. 아래는 있으면 좋은 것들이며 우선순위 순.
+
+- [ ] **앱 아이콘 · 스플래시** — `flutter_launcher_icons` 사용
+- [ ] **휴식 타이머 백그라운드 동작 + 로컬 알림** — 현재는 앱이 포그라운드일 때만 카운트다운한다.
+      화면을 끄거나 다른 앱으로 전환하면 타이머가 멈춘다. `flutter_local_notifications` +
+      Android 정확 알람 권한이 필요하다.
+- [ ] **과거 기록 수정** — 세션 상세는 현재 읽기 전용. `UpdateSet`/`DeleteSet` UseCase는 이미 있다.
+- [ ] **데이터 백업/복원** — SQLite 파일 내보내기 또는 JSON export
+- [ ] **4주 로테이션 알림** — 원문 설계의 "4주마다 종목 교체" 규칙을 앱이 알려주기
+- [ ] **루틴 복수 지원** — 스키마·`Routine.isActive`는 이미 대응돼 있고 UI만 없다
 
 ---
 
