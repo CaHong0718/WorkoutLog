@@ -21,7 +21,7 @@ class SessionHeader extends StatelessWidget {
         : (state.elapsed.inSeconds / target.inSeconds).clamp(0.0, 1.0);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
       color: p.plane,
       child: Column(
         children: [
@@ -31,7 +31,6 @@ class SessionHeader extends StatelessWidget {
               Text(
                 state.elapsed.clock,
                 style: context.type.metric.copyWith(
-                  fontSize: 26,
                   color: overtime ? p.warn : p.ink,
                 ),
               ),

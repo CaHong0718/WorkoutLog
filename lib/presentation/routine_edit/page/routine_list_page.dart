@@ -153,7 +153,7 @@ class _RoutineListBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 96),
       children: [
         Text(AppStrings.routineListHint, style: context.type.caption),
         const SizedBox(height: 14),

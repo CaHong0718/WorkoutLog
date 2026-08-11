@@ -56,6 +56,7 @@ push가 실패하면 커밋만 남기고 알려준다 — 자격증명 프롬프
 | 문서 | 언제 |
 |---|---|
 | [`docs/03-STEPS.md`](docs/03-STEPS.md) | **항상 여기부터.** 진행 현황과 다음 할 일 |
+| [`design/DESIGN.md`](design/DESIGN.md) | **UI를 그리기 전에.** 색·타이포·여백·radius·컴포넌트 규칙 |
 | [`docs/00-ARCHITECTURE.md`](docs/00-ARCHITECTURE.md) | 코드를 쓰기 전. 계층 규약·폴더 구조·MVI 계약·명명 규칙 |
 | [`docs/01-DOMAIN-MODEL.md`](docs/01-DOMAIN-MODEL.md) | 엔티티·Repository·Drift 매핑을 다룰 때 |
 | [`docs/02-ROUTINE-SEED.md`](docs/02-ROUTINE-SEED.md) | 시드 루틴·주간 볼륨 목표·디자인 토큰을 다룰 때 |
@@ -70,6 +71,25 @@ push가 실패하면 커밋만 남기고 알려준다 — 자격증명 프롬프
 요약: `docs/04` 스키마대로 `routines/<이름>.json`을 쓰고 →
 `dart run tools/validate_routine.dart <파일>`로 검증 → 경로와 볼륨 요약을 보고한다.
 **앱에 HTML 파서를 넣지 않는다.** 자유 형식을 읽는 일은 대화가, 스키마는 앱이 맡는 경계다.
+
+## 디자인 토큰
+
+`design/DESIGN.md`가 UI의 유일한 기준이다. 색·크기·여백을 위젯에 직접 쓰지 않는다.
+
+| 가져올 것 | 어디서 |
+|---|---|
+| 색 | `context.palette` — `lib/core/theme/app_palette.dart` |
+| 글자 | `context.type` — `lib/core/theme/app_typography.dart` |
+| 여백·radius·모션 | `AppLayout` `AppRadius` `AppMotion` — `lib/core/theme/app_metrics.dart` |
+
+**DESIGN.md의 10장(기술 스택)은 이 앱에 해당하지 않는다.** Expo/React Native 기준으로 쓰여
+있는데 이 앱은 Flutter다. 1~9장과 11장의 토큰 값만 가져온다.
+
+팔레트 필드 이름은 가이드보다 먼저 생겨서 서로 다르다. `app_palette.dart` 상단 주석에
+대응표가 있다(`plane`=bg, `ink2`=textSecondary, `line`=border …).
+
+자주 걸리는 규칙: **weight는 600까지**, 섹션 라벨에 uppercase·letter-spacing 금지,
+카드에 border와 shadow 동시 금지, 화면당 Primary 버튼 1개, 액센트는 하나뿐이다.
 
 ## 검증 (커밋 전 필수)
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_metrics.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entity/enums.dart';
@@ -29,7 +30,7 @@ class VolumeRail extends StatelessWidget {
   Widget build(BuildContext context) {
     if (segments.isEmpty) return const SizedBox.shrink();
     return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(AppRadius.badge),
       child: SizedBox(
         height: height,
         child: Row(
@@ -47,10 +48,10 @@ class VolumeRail extends StatelessWidget {
                       segment.label,
                       maxLines: 1,
                       style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        height: 16 / 12,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
-                        letterSpacing: 0.2,
                       ),
                     ),
                   ),
@@ -87,35 +88,35 @@ class VolumeProgressRow extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 34,
+            width: 38,
             child: Text(
               bodyPart.label,
-              style: context.type.caption.copyWith(
-                color: p.ink2,
-                fontWeight: FontWeight.w700,
-              ),
+              style: context.type.label.copyWith(color: p.ink2),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(AppRadius.full),
               child: Stack(
                 children: [
-                  Container(height: 8, color: p.surface3),
+                  Container(
+                    height: AppLayout.progressHeight,
+                    color: p.surface2,
+                  ),
                   FractionallySizedBox(
                     widthFactor: ratio,
-                    child: Container(height: 8, color: color),
+                    child: Container(
+                      height: AppLayout.progressHeight,
+                      color: color,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 10),
-          Text(
-            '$done',
-            style: context.type.numeric.copyWith(fontSize: 13.5),
-          ),
+          Text('$done', style: context.type.label.copyWith(color: p.ink)),
           Text(
             ' / $target',
             style: context.type.caption.copyWith(

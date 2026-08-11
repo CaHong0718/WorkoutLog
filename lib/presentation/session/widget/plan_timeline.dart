@@ -66,7 +66,9 @@ class _BlockGroup extends StatelessWidget {
     final isSkipped = state.skippedBlocks.contains(blockIndex);
     final isCurrent = state.currentSet?.blockIndex == blockIndex;
     final canSkip =
-        first.isCuttable && !isSkipped && planIndexes.any((i) => i >= state.currentIndex);
+        first.isCuttable &&
+        !isSkipped &&
+        planIndexes.any((i) => i >= state.currentIndex);
 
     return Opacity(
       opacity: isSkipped ? 0.45 : 1,
@@ -183,7 +185,7 @@ class _PlanRow extends StatelessWidget {
                 exercise.name,
                 style: context.type.caption.copyWith(
                   color: isCurrent ? p.ink : p.ink2,
-                  fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w400,
+                  fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w400,
                   decoration: isSkipped ? TextDecoration.lineThrough : null,
                 ),
                 overflow: TextOverflow.ellipsis,

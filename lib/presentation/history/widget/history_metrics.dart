@@ -53,10 +53,7 @@ class MetricTile extends StatelessWidget {
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.type.metric.copyWith(
-                  fontSize: 24,
-                  color: color ?? p.ink,
-                ),
+                style: context.type.metric.copyWith(color: color ?? p.ink),
               ),
             ),
             if (unit != null)

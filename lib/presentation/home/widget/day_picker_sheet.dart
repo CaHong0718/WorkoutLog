@@ -64,7 +64,7 @@ class DayPickerSheet extends StatelessWidget {
                   day.code,
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
                 ),

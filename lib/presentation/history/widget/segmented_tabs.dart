@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_metrics.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 
@@ -22,12 +23,12 @@ class SegmentedTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    // 4 + 36 + 4 keeps every segment on a 44pt touch target.
     return Container(
-      padding: const EdgeInsets.all(3),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: p.surface2,
-        borderRadius: BorderRadius.circular(11),
-        border: Border.all(color: p.line),
+        borderRadius: BorderRadius.circular(AppRadius.full),
       ),
       child: Row(
         children: [
@@ -61,22 +62,18 @@ class _Segment extends StatelessWidget {
     final p = context.palette;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppRadius.full),
       child: Container(
         height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? p.surface : null,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? p.line : Colors.transparent,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          border: Border.all(color: isSelected ? p.line : Colors.transparent),
         ),
         child: Text(
           label,
           style: context.type.label.copyWith(
-            fontSize: 12.5,
-            letterSpacing: 0.6,
             color: isSelected ? p.ink : p.ink3,
           ),
         ),

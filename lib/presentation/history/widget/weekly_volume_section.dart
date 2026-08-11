@@ -86,7 +86,7 @@ class WeeklyVolumeSection extends StatelessWidget {
                       style: context.type.label,
                     ),
                   ),
-                  Text('$done', style: context.type.metric.copyWith(fontSize: 30)),
+                  Text('$done', style: context.type.metric),
                   Text(
                     ' / $target ${AppStrings.setUnit}',
                     style: context.type.caption.copyWith(color: p.ink3),
@@ -142,7 +142,8 @@ class WeeklyVolumeSection extends StatelessWidget {
                             RailSegment(
                               flex: state.weeklyVolume[part]!,
                               color: part.color(context),
-                              label: '${part.label} ${state.weeklyVolume[part]}',
+                              label:
+                                  '${part.label} ${state.weeklyVolume[part]}',
                             ),
                       ],
                     ),

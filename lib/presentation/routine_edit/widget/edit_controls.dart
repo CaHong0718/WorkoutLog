@@ -217,7 +217,7 @@ class _Chip extends StatelessWidget {
       ),
       labelStyle: context.type.caption.copyWith(
         color: selected ? color : context.palette.ink2,
-        fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
       ),
       visualDensity: VisualDensity.compact,
     );

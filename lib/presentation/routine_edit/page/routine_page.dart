@@ -128,7 +128,7 @@ class _RoutineContent extends StatelessWidget {
     final days = state.days;
 
     return ReorderableListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       buildDefaultDragHandles: false,
       itemCount: days.length,
       onReorderItem: (oldIndex, newIndex) =>
@@ -301,7 +301,7 @@ class _Metric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value, style: context.type.metric.copyWith(fontSize: 26)),
+          Text(value, style: context.type.metric),
           const SizedBox(height: 3),
           Text(unit, style: context.type.label),
         ],
@@ -349,7 +349,7 @@ class _DayCard extends StatelessWidget {
               day.code,
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: Colors.white,
                 height: 1,
               ),

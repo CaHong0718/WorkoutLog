@@ -31,10 +31,7 @@ class ExerciseTrendSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (state.trendExercises.isEmpty) {
       return SectionCard(
-        child: Text(
-          AppStrings.noTrendExercise,
-          style: context.type.caption,
-        ),
+        child: Text(AppStrings.noTrendExercise, style: context.type.caption),
       );
     }
 
@@ -173,9 +170,7 @@ class _TrendBody extends StatelessWidget {
               ),
             ),
             Text(
-              delta == 0
-                  ? '—'
-                  : '${delta > 0 ? '+' : ''}${_trim(delta)}kg',
+              delta == 0 ? '—' : '${delta > 0 ? '+' : ''}${_trim(delta)}kg',
               style: context.type.numeric.copyWith(
                 fontSize: 13,
                 color: deltaColor,
@@ -266,7 +261,7 @@ class _TrendBody extends StatelessWidget {
                   TextStyle(
                     color: p.surface,
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
             ],

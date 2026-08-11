@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'app_palette.dart';
 
-/// Text styles mirroring the reference document's type scale.
+/// The type scale from `design/DESIGN.md`.
 ///
-/// Every numeric style uses tabular figures so weights and timers do not
-/// jitter as digits change.
+/// Weights stop at 600 and there is no large title — the guide's two firmest
+/// typographic rules. The getter names predate the guide; the comment on each
+/// says which of its tokens it carries.
+///
+/// Every numeric style uses tabular figures so weights and timers do not jitter
+/// as digits change.
 class AppTypography {
   const AppTypography._(this._p);
 
@@ -16,89 +20,103 @@ class AppTypography {
 
   static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 
-  /// Small uppercase section label above a title.
+  /// `label` — section label above a card. No uppercase, no letter-spacing:
+  /// both read as shouting and the guide rules them out.
   TextStyle get eyebrow => TextStyle(
-    fontSize: 12,
-    height: 1.2,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 2.2,
-    color: _p.accent,
+    fontSize: 13,
+    height: 18 / 13,
+    fontWeight: FontWeight.w500,
+    color: _p.ink2,
   );
 
-  /// Uppercase micro label (block codes, units).
+  /// `micro` — badges, statistic keys, weekday initials.
   TextStyle get label => TextStyle(
-    fontSize: 11,
-    height: 1.2,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 1.4,
-    color: _p.ink3,
+    fontSize: 12,
+    height: 16 / 12,
+    fontWeight: FontWeight.w500,
+    color: _p.ink2,
   );
 
-  /// Large screen title.
+  /// `heading` — screen title. Sized like a card title on purpose.
   TextStyle get title => TextStyle(
-    fontSize: 26,
-    height: 1.15,
-    fontWeight: FontWeight.w800,
-    letterSpacing: -0.5,
-    color: _p.ink,
-  );
-
-  TextStyle get sectionTitle => TextStyle(
     fontSize: 18,
-    height: 1.25,
-    fontWeight: FontWeight.w700,
+    height: 24 / 18,
+    fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
     color: _p.ink,
   );
 
+  /// `heading` — card title.
+  TextStyle get sectionTitle => title;
+
+  /// `subhead` — list-row title, input value.
   TextStyle get cardTitle => TextStyle(
-    fontSize: 15,
-    height: 1.35,
-    fontWeight: FontWeight.w700,
+    fontSize: 16,
+    height: 22 / 16,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.1,
     color: _p.ink,
   );
 
+  /// `body`.
   TextStyle get body => TextStyle(
-    fontSize: 14,
-    height: 1.55,
+    fontSize: 15,
+    height: 22 / 15,
     fontWeight: FontWeight.w400,
     color: _p.ink2,
   );
 
+  /// `caption` — subtitles, timestamps.
   TextStyle get caption => TextStyle(
-    fontSize: 12.5,
-    height: 1.45,
+    fontSize: 13,
+    height: 18 / 13,
     fontWeight: FontWeight.w400,
     color: _p.ink3,
   );
 
-  /// Hero number (set counts, weekly volume).
+  /// `title` — statistic values. The largest text in the app apart from the
+  /// rest countdown.
   TextStyle get metric => TextStyle(
-    fontSize: 34,
-    height: 1,
-    fontWeight: FontWeight.w800,
-    letterSpacing: -1,
+    fontSize: 22,
+    height: 28 / 22,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.3,
     fontFeatures: tabular,
     color: _p.ink,
   );
 
-  /// Inline number (weight × reps).
+  /// `subhead` — inline number (weight × reps).
   TextStyle get numeric => TextStyle(
-    fontSize: 15,
-    height: 1.2,
-    fontWeight: FontWeight.w700,
+    fontSize: 16,
+    height: 22 / 16,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.1,
     fontFeatures: tabular,
     color: _p.ink,
   );
 
-  /// Rest timer readout.
+  /// `timer` — rest countdown.
   TextStyle get timer => TextStyle(
-    fontSize: 48,
-    height: 1,
-    fontWeight: FontWeight.w800,
-    letterSpacing: -1.5,
+    fontSize: 24,
+    height: 30 / 24,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.4,
     fontFeatures: tabular,
     color: _p.ink,
+  );
+
+  /// `button` — button label.
+  TextStyle get button => const TextStyle(
+    fontSize: 15,
+    height: 20 / 15,
+    fontWeight: FontWeight.w600,
+  );
+
+  /// `tab` — bottom-navigation label.
+  TextStyle get tab => const TextStyle(
+    fontSize: 11,
+    height: 14 / 11,
+    fontWeight: FontWeight.w500,
   );
 }
 

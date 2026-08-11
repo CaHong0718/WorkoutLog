@@ -103,7 +103,7 @@ class _LibraryContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
           child: TextField(
             onChanged: (query) => bloc.add(SearchLibrary(query)),
             decoration: const InputDecoration(
@@ -114,7 +114,7 @@ class _LibraryContent extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: BodyPartSelector(
             value: state.bodyPart,
             includeAll: true,
@@ -122,7 +122,7 @@ class _LibraryContent extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
           child: Text(
             '${results.length}개 · ${AppStrings.customBadge} ${state.customCount}개',
             style: context.type.label,
@@ -216,7 +216,10 @@ class _ExerciseTile extends StatelessWidget {
           _LibraryAction.delete => onDelete(),
         },
         itemBuilder: (context) => const [
-          PopupMenuItem(value: _LibraryAction.edit, child: Text(AppStrings.edit)),
+          PopupMenuItem(
+            value: _LibraryAction.edit,
+            child: Text(AppStrings.edit),
+          ),
           PopupMenuItem(
             value: _LibraryAction.delete,
             child: Text(AppStrings.delete),

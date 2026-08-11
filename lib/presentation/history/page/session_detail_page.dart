@@ -21,8 +21,9 @@ class SessionDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<SessionDetailBloc>(param1: sessionId)
-        ..add(const LoadSessionDetail()),
+      create: (_) =>
+          getIt<SessionDetailBloc>(param1: sessionId)
+            ..add(const LoadSessionDetail()),
       child: const _SessionDetailView(),
     );
   }
@@ -70,7 +71,7 @@ class _SessionDetailView extends StatelessWidget {
             return RefreshIndicator(
               onRefresh: () async => bloc.add(const LoadSessionDetail()),
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                 children: [
                   SessionSummaryHeader(session: state.session!),
                   const SizedBox(height: 20),
@@ -120,7 +121,9 @@ class _SessionDetailView extends StatelessWidget {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text(AppStrings.recordDeleted)));
+          ..showSnackBar(
+            const SnackBar(content: Text(AppStrings.recordDeleted)),
+          );
       case ShowSessionDetailMessage(:final message):
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()

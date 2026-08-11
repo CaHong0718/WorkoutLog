@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/extensions/duration_x.dart';
+import '../../../core/theme/app_metrics.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../bloc/session_state.dart';
@@ -29,29 +30,33 @@ class RestTimerCard extends StatelessWidget {
     final remaining = Duration(seconds: rest.remainingSeconds.clamp(0, 9999));
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 18),
+      padding: const EdgeInsets.all(AppLayout.cardPadding),
       decoration: BoxDecoration(
         color: p.accentWash,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: p.accentFill.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(AppRadius.card),
       ),
       child: Column(
         children: [
-          Text(AppStrings.rest, style: context.type.eyebrow),
-          const SizedBox(height: 14),
+          Text(
+            AppStrings.rest,
+            style: context.type.eyebrow.copyWith(color: p.accent),
+          ),
+          const SizedBox(height: 12),
+          // The ring is sized to the readout inside it. The type scale tops out
+          // at 24 for a timer, so a 150px ring would leave the number swimming.
           SizedBox(
-            width: 150,
-            height: 150,
+            width: 120,
+            height: 120,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox.expand(
                   child: CircularProgressIndicator(
                     value: 1 - rest.progress,
-                    strokeWidth: 8,
+                    strokeWidth: AppLayout.progressHeight,
                     strokeCap: StrokeCap.round,
-                    backgroundColor: p.surface3,
-                    valueColor: AlwaysStoppedAnimation(p.accentFill),
+                    backgroundColor: p.surface2,
+                    valueColor: AlwaysStoppedAnimation(p.accent),
                   ),
                 ),
                 Text(remaining.mmss, style: context.type.timer),
@@ -64,7 +69,7 @@ class RestTimerCard extends StatelessWidget {
             style: context.type.caption.copyWith(color: p.ink2),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -77,7 +82,6 @@ class RestTimerCard extends StatelessWidget {
               Expanded(
                 child: FilledButton(
                   onPressed: onSkip,
-                  style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
                   child: const Text(AppStrings.skipRest),
                 ),
               ),

@@ -127,7 +127,7 @@ class _DayEditContent extends StatelessWidget {
     final day = state.day!;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
         _DayMetaCard(day: day, onEdit: () => _editMeta(context, day)),
         const SizedBox(height: 20),
@@ -160,7 +160,9 @@ class _DayEditContent extends StatelessWidget {
         ],
         const SizedBox(height: 4),
         OutlinedButton.icon(
-          onPressed: state.isSaving ? null : () => bloc.add(const CreateBlock()),
+          onPressed: state.isSaving
+              ? null
+              : () => bloc.add(const CreateBlock()),
           icon: const Icon(Icons.add, size: 18),
           label: const Text(AppStrings.addBlock),
         ),

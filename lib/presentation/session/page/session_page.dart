@@ -97,7 +97,7 @@ class _SessionView extends StatelessWidget {
         SessionHeader(state: state),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
             children: [
               if (state.isResting)
                 RestTimerCard(
@@ -138,10 +138,7 @@ class _SessionView extends StatelessWidget {
                 onJump: (index) => bloc.add(JumpToSet(index)),
               ),
               const SizedBox(height: 8),
-              Text(
-                AppStrings.cutRuleHint,
-                style: context.type.caption,
-              ),
+              Text(AppStrings.cutRuleHint, style: context.type.caption),
             ],
           ),
         ),

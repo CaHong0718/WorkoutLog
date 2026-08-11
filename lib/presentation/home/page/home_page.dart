@@ -7,6 +7,7 @@ import '../../../core/di/injection.dart';
 import '../../../core/extensions/date_time_x.dart';
 import '../../../core/mvi/effect_listener.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_metrics.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../common/branch_reveal.dart';
@@ -161,7 +162,7 @@ class _HomeContent extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () async => bloc.add(const LoadHome()),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           if (state.hasInProgress) ...[
             ResumeBanner(
@@ -172,7 +173,7 @@ class _HomeContent extends StatelessWidget {
             const SizedBox(height: 16),
           ],
           const Eyebrow('Today'),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppLayout.labelGap),
           DaySummaryCard(day: day),
           const SizedBox(height: 12),
           Row(
@@ -208,13 +209,13 @@ class _HomeContent extends StatelessWidget {
             AppStrings.cutRuleHint,
             style: context.type.caption.copyWith(color: context.palette.ink3),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppLayout.sectionGap),
           const Eyebrow('Blocks'),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppLayout.labelGap),
           BlockPreviewList(day: day),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppLayout.sectionGap),
           const Eyebrow('This Week'),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppLayout.labelGap),
           WeeklyVolumePanel(
             done: state.weeklyVolume,
             target: state.weeklyTarget,

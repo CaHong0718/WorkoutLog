@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/mvi/effect_listener.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_metrics.dart';
 import '../../common/branch_reveal.dart';
 import '../../common/common_widgets.dart';
 import '../bloc/history_bloc.dart';
@@ -77,7 +78,7 @@ class _HistoryViewState extends State<_HistoryView> {
             body: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
+                  padding: const EdgeInsets.fromLTRB(20, 2, 20, 12),
                   child: SegmentedTabs(
                     labels: const [
                       AppStrings.tabCalendar,
@@ -162,7 +163,7 @@ class _CalendarTab extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () async => bloc.add(const LoadHistory()),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
             children: [
               HistorySummaryCard(
                 totalSessions: state.totalSessions,
@@ -170,9 +171,9 @@ class _CalendarTab extends StatelessWidget {
                 streakWeeks: state.streakWeeks,
                 monthWorkouts: state.monthWorkoutCount,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: AppLayout.sectionGap),
               const Eyebrow('Calendar'),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppLayout.labelGap),
               MonthCalendar(
                 month: state.month,
                 markedDates: state.workoutDates,
@@ -224,7 +225,7 @@ class _VolumeTab extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () async => bloc.add(const LoadStats()),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
             children: [
               WeeklyVolumeSection(
                 state: state,
@@ -260,10 +261,10 @@ class _TrendTab extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () async => bloc.add(const LoadStats()),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
             children: [
               const Eyebrow(AppStrings.progressChart),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppLayout.labelGap),
               ExerciseTrendSection(
                 state: state,
                 onSelect: (id) => bloc.add(SelectTrendExercise(id)),

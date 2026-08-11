@@ -103,7 +103,7 @@ class _DayTag extends StatelessWidget {
         code,
         style: const TextStyle(
           fontSize: 24,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           color: Colors.white,
           height: 1,
         ),
@@ -124,7 +124,7 @@ class _Metric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value, style: context.type.metric.copyWith(fontSize: 28)),
+          Text(value, style: context.type.metric),
           const SizedBox(height: 3),
           Text(unit, style: context.type.label),
         ],
@@ -132,4 +132,3 @@ class _Metric extends StatelessWidget {
     );
   }
 }
-

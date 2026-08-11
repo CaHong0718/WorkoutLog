@@ -21,7 +21,12 @@ bool _isBodyweightInput(String text) {
 }
 
 class CompletedSetValues {
-  const CompletedSetValues({this.weight, this.reps, this.rir, this.durationSeconds});
+  const CompletedSetValues({
+    this.weight,
+    this.reps,
+    this.rir,
+    this.durationSeconds,
+  });
 
   final double? weight;
   final int? reps;
@@ -175,11 +180,14 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
             ],
           ),
           const SizedBox(height: 6),
-          Text(widget.exercise.name, style: context.type.title.copyWith(fontSize: 22)),
+          Text(widget.exercise.name, style: context.type.title),
           const SizedBox(height: 6),
           Row(
             children: [
-              BodyPartChip(widget.exercise.bodyPart, trailing: widget.exercise.subTarget),
+              BodyPartChip(
+                widget.exercise.bodyPart,
+                trailing: widget.exercise.subTarget,
+              ),
               const SizedBox(width: 8),
               Text(item.prescription, style: context.type.numeric),
               if (item.targetRir != null) ...[
@@ -364,10 +372,7 @@ class _NumberRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(
-          width: 40,
-          child: Text(label, style: context.type.label),
-        ),
+        SizedBox(width: 40, child: Text(label, style: context.type.label)),
         _StepButton(icon: Icons.remove, onTap: onDecrement),
         const SizedBox(width: 8),
         Expanded(

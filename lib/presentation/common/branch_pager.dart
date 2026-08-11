@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/app_metrics.dart';
 import 'branch_reveal.dart';
 
 /// Holds the bottom navigation's branches in a [PageView] so they can be
@@ -27,8 +28,6 @@ class BranchPager extends StatefulWidget {
 }
 
 class _BranchPagerState extends State<BranchPager> {
-  static const _settleDuration = Duration(milliseconds: 240);
-
   late final PageController _controller;
   late final List<_Reveal> _reveals;
 
@@ -83,8 +82,8 @@ class _BranchPagerState extends State<BranchPager> {
     _settling = true;
     await _controller.animateToPage(
       index,
-      duration: _settleDuration,
-      curve: Curves.easeOutCubic,
+      duration: AppMotion.normal,
+      curve: Curves.easeOut,
     );
     _settling = false;
   }

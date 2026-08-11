@@ -43,7 +43,7 @@ class WeeklyVolumePanel extends StatelessWidget {
                   ],
                 ),
               ),
-              Text('$doneTotal', style: context.type.metric.copyWith(fontSize: 26)),
+              Text('$doneTotal', style: context.type.metric),
               Text(
                 ' / $targetTotal',
                 style: context.type.caption.copyWith(

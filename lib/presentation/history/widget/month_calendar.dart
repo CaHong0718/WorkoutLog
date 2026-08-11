@@ -76,7 +76,7 @@ class MonthCalendar extends StatelessWidget {
                     child: Text(
                       label,
                       style: context.type.label.copyWith(
-                        color: label == '일' ? p.warn : p.ink3,
+                        color: label == '일' ? p.danger : p.ink3,
                       ),
                     ),
                   ),
@@ -152,7 +152,7 @@ class MonthCalendar extends StatelessWidget {
                 '$dayNumber',
                 style: context.type.numeric.copyWith(
                   fontSize: 13.5,
-                  fontWeight: isMarked ? FontWeight.w700 : FontWeight.w400,
+                  fontWeight: isMarked ? FontWeight.w600 : FontWeight.w400,
                   color: isMarked ? p.ink : p.ink3,
                 ),
               ),

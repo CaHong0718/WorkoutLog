@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens carried over from `무분할-40분-루틴.html`.
+/// Colour tokens from `design/DESIGN.md`.
+///
+/// The field names predate the guide; the values are the guide's. The mapping:
+/// `plane`=bg, `surface`=surface, `surface2`/`surface3`=bgSubtle, `ink`=text,
+/// `ink2`=textSecondary, `ink3`=textTertiary, `line`/`lineSoft`=border,
+/// `lineStrong`=borderStrong, `accent`/`accentFill`=accent,
+/// `accentWash`=accentSoft.
 ///
 /// Access with `context.palette` (see [AppPaletteX]).
 @immutable
@@ -15,11 +21,13 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.ink3,
     required this.line,
     required this.lineSoft,
+    required this.lineStrong,
     required this.accent,
     required this.accentFill,
     required this.accentWash,
     required this.onFill,
     required this.warn,
+    required this.danger,
     required this.back,
     required this.chest,
     required this.shoulder,
@@ -28,10 +36,16 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.abs,
   });
 
-  /// Page background, one step behind [surface].
+  /// Page background. In light it matches [surface] — cards are told apart by
+  /// their border, not by a darker page behind them.
   final Color plane;
   final Color surface;
+
+  /// Subtle fill inside a card: icon boxes, inputs, progress tracks.
   final Color surface2;
+
+  /// Second subtle fill. Same value as [surface2] in this system — the guide
+  /// has one subtle step, and stacking two of them was never doing any work.
   final Color surface3;
 
   /// Primary text.
@@ -40,21 +54,34 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Secondary text.
   final Color ink2;
 
-  /// Tertiary text, labels.
+  /// Tertiary text, placeholders, chevrons.
   final Color ink3;
 
   final Color line;
   final Color lineSoft;
 
+  /// Heavier border: secondary buttons, toggles in the off position.
+  final Color lineStrong;
+
+  /// The one accent. [accentFill] is the same colour — the guide allows a
+  /// single accent, so text-accent and fill-accent no longer diverge.
   final Color accent;
   final Color accentFill;
+
+  /// Opaque accent tint for active inputs and selected surfaces.
   final Color accentWash;
 
   /// Text drawn on top of [accentFill].
   final Color onFill;
+
+  /// Caution: an overrun timer, a block that cannot be cut, an import notice.
   final Color warn;
 
-  // Body-part identity colors.
+  /// Errors and destructive actions.
+  final Color danger;
+
+  // Body-part identity colours. Not accents — they carry information, so they
+  // stay distinct from each other and from [accent].
   final Color back;
   final Color chest;
   final Color shoulder;
@@ -63,49 +90,55 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color abs;
 
   static const AppPalette light = AppPalette(
-    plane: Color(0xFFE7E9EE),
-    surface: Color(0xFFFAFBFC),
-    surface2: Color(0xFFF1F3F6),
-    surface3: Color(0xFFE9ECF1),
-    ink: Color(0xFF13161B),
-    ink2: Color(0xFF4C5461),
-    ink3: Color(0xFF7E8797),
-    line: Color(0xFFD5D9E1),
-    lineSoft: Color(0xFFE3E6EC),
-    accent: Color(0xFF0F6B55),
-    accentFill: Color(0xFF2FA98C),
-    accentWash: Color(0x212FA98C),
+    plane: Color(0xFFFFFFFF),
+    surface: Color(0xFFFFFFFF),
+    surface2: Color(0xFFF7F7F8),
+    surface3: Color(0xFFF7F7F8),
+    ink: Color(0xFF18181B),
+    ink2: Color(0xFF71717A),
+    ink3: Color(0xFFA1A1AA),
+    line: Color(0xFFE9E9EC),
+    lineSoft: Color(0xFFE9E9EC),
+    lineStrong: Color(0xFFD4D4D8),
+    accent: Color(0xFF2563EB),
+    accentFill: Color(0xFF2563EB),
+    accentWash: Color(0xFFEFF4FF),
     onFill: Color(0xFFFFFFFF),
-    warn: Color(0xFFB4531B),
-    back: Color(0xFF3B7DD8),
-    chest: Color(0xFFD94F70),
-    shoulder: Color(0xFFE0912F),
-    legs: Color(0xFF2FA98C),
-    arms: Color(0xFF8A6BD1),
-    abs: Color(0xFF7E8797),
+    warn: Color(0xFFCA8A04),
+    danger: Color(0xFFDC2626),
+    back: Color(0xFF0891B2),
+    chest: Color(0xFFE11D48),
+    shoulder: Color(0xFFD97706),
+    legs: Color(0xFF059669),
+    arms: Color(0xFF7C3AED),
+    abs: Color(0xFF71717A),
   );
 
   static const AppPalette dark = AppPalette(
-    plane: Color(0xFF0C0E12),
-    surface: Color(0xFF171A20),
-    surface2: Color(0xFF1D2129),
-    surface3: Color(0xFF232830),
-    ink: Color(0xFFEDEFF3),
-    ink2: Color(0xFFA3ABBA),
-    ink3: Color(0xFF6C7585),
-    line: Color(0xFF282D37),
-    lineSoft: Color(0xFF20242C),
-    accent: Color(0xFF3FCCA6),
-    accentFill: Color(0xFF23A484),
-    accentWash: Color(0x2923A484),
-    onFill: Color(0xFF0C0E12),
-    warn: Color(0xFFE0975F),
-    back: Color(0xFF4C8AE0),
-    chest: Color(0xFFDC5F7D),
-    shoulder: Color(0xFFBF7E22),
-    legs: Color(0xFF23A484),
-    arms: Color(0xFF907AD8),
-    abs: Color(0xFF6C7585),
+    plane: Color(0xFF09090B),
+    surface: Color(0xFF161619),
+    // Must stay brighter than surface, or icon boxes and inputs sink into the
+    // card they sit on. This has bitten before.
+    surface2: Color(0xFF202024),
+    surface3: Color(0xFF202024),
+    ink: Color(0xFFFAFAFA),
+    ink2: Color(0xFFA1A1AA),
+    ink3: Color(0xFF71717A),
+    line: Color(0xFF26262A),
+    lineSoft: Color(0xFF26262A),
+    lineStrong: Color(0xFF3F3F46),
+    accent: Color(0xFF3B82F6),
+    accentFill: Color(0xFF3B82F6),
+    accentWash: Color(0xFF17233D),
+    onFill: Color(0xFFFFFFFF),
+    warn: Color(0xFFEAB308),
+    danger: Color(0xFFEF4444),
+    back: Color(0xFF06B6D4),
+    chest: Color(0xFFF43F5E),
+    shoulder: Color(0xFFF59E0B),
+    legs: Color(0xFF10B981),
+    arms: Color(0xFF8B5CF6),
+    abs: Color(0xFFA1A1AA),
   );
 
   @override
@@ -119,11 +152,13 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? ink3,
     Color? line,
     Color? lineSoft,
+    Color? lineStrong,
     Color? accent,
     Color? accentFill,
     Color? accentWash,
     Color? onFill,
     Color? warn,
+    Color? danger,
     Color? back,
     Color? chest,
     Color? shoulder,
@@ -141,11 +176,13 @@ class AppPalette extends ThemeExtension<AppPalette> {
       ink3: ink3 ?? this.ink3,
       line: line ?? this.line,
       lineSoft: lineSoft ?? this.lineSoft,
+      lineStrong: lineStrong ?? this.lineStrong,
       accent: accent ?? this.accent,
       accentFill: accentFill ?? this.accentFill,
       accentWash: accentWash ?? this.accentWash,
       onFill: onFill ?? this.onFill,
       warn: warn ?? this.warn,
+      danger: danger ?? this.danger,
       back: back ?? this.back,
       chest: chest ?? this.chest,
       shoulder: shoulder ?? this.shoulder,
@@ -169,11 +206,13 @@ class AppPalette extends ThemeExtension<AppPalette> {
       ink3: mix(ink3, other.ink3),
       line: mix(line, other.line),
       lineSoft: mix(lineSoft, other.lineSoft),
+      lineStrong: mix(lineStrong, other.lineStrong),
       accent: mix(accent, other.accent),
       accentFill: mix(accentFill, other.accentFill),
       accentWash: mix(accentWash, other.accentWash),
       onFill: mix(onFill, other.onFill),
       warn: mix(warn, other.warn),
+      danger: mix(danger, other.danger),
       back: mix(back, other.back),
       chest: mix(chest, other.chest),
       shoulder: mix(shoulder, other.shoulder),

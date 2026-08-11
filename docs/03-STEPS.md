@@ -21,6 +21,7 @@
 | 9 | 실사용 피드백 반영 (키보드·기록 삭제·백그라운드 타이머·구분선) | ✅ |
 | 10 | 복수 루틴 · 루틴 가져오기/내보내기 | ✅ |
 | 11 | 하단 탭 좌우 스와이프 · 탭 전환 시 화면 갱신 | ✅ |
+| 12 | `design/DESIGN.md` 디자인 시스템 적용 | ✅ |
 
 ---
 
@@ -405,6 +406,39 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 
 ---
 
+## STEP 12 — `design/DESIGN.md` 디자인 시스템 적용
+
+기존 토큰은 `무분할-40분-루틴.html`에서 가져온 것이었다. 그 자리를 `design/DESIGN.md`가
+대신한다. **토큰 값만 바꾸고 이름은 그대로 뒀다** — 팔레트·타이포 이름이 350곳에서 쓰이고
+있어, 이름까지 갈아엎으면 롤백이 어려워진다. 대응표는 `app_palette.dart` 상단에 있다.
+
+- [x] `app_palette.dart` — 청록 액센트 → 파랑 하나. zinc 계열 무채색.
+      `lineStrong`(Secondary 버튼)·`danger`(에러) 추가, `warn`은 주의 전용으로 분리
+- [x] `app_typography.dart` — weight 상한 600, Large title 제거, 섹션 라벨의
+      uppercase·letter-spacing 제거
+- [x] `app_metrics.dart` (신규) — `AppRadius` `AppLayout` `AppMotion`
+- [x] `app_theme.dart` — 버튼 3종·테두리 없는 입력(포커스 시 액센트 틴트)·배지·탭바 49
+- [x] `common_widgets.dart` — 카드 radius 18 / 패딩 20, `LoadingView`를 스켈레톤으로,
+      `SkeletonBlock` 추가
+- [x] 화면 좌우 패딩 16 → 20, 섹션 간격 32, 라벨→카드 10
+- [x] `test/design_system_test.dart` — 라이트/다크 양쪽에서 공용 표면이 예외 없이 그려지는지 (6개)
+
+**라이트 모드에서 페이지와 카드가 둘 다 흰색이다.** 가이드가 그렇게 정했다(`bg`=`surface`=
+`#FFFFFF`). 카드는 1px 테두리로만 구분된다. 다크는 `bg` < `surface` < `bgSubtle` 순으로
+밝아져야 하며, 이 순서가 깨지면 카드 위의 입력 필드가 배경에 묻힌다.
+
+**부위 색은 액센트가 아니다.** 가이드의 "액센트는 하나" 규칙은 액션 색 이야기고, 가슴·등·하체
+색은 정보다. Tailwind 600/500 계열로 다시 맞추되 액센트 파랑과 겹치지 않게 등을 시안으로 옮겼다.
+
+**휴식 타이머가 작아졌다.** 타입 스케일의 최대가 24라 링을 150 → 120으로 줄여 비율을 맞췄다.
+운동 중 멀리서 읽기 어렵다면 여기가 먼저 되돌릴 곳이다.
+
+**아직 적용하지 않은 것**: 가이드 8장의 "그룹 리스트" 패턴(행을 카드 하나로 묶고 내부 구분선을
+없애며 32×32 아이콘 박스를 두는 것). 루틴 DAY 목록·기록 세션 목록을 다시 짜야 해서
+기능 회귀 위험이 크다. 별도 STEP으로 다룬다.
+
+---
+
 ## 이후 후보 (요청 시 착수)
 
 우선순위 순.
@@ -415,6 +449,8 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 - [ ] **데이터 백업/복원** — SQLite 파일 내보내기 또는 JSON export
       (STEP 10의 코덱을 기록까지 확장하면 된다)
 - [ ] **4주 로테이션 알림** — 원문 설계의 "4주마다 종목 교체" 규칙을 앱이 알려주기
+- [ ] **그룹 리스트 패턴** — `design/DESIGN.md` 8장. 행을 카드로 묶고 내부 구분선을 없앤다.
+      STEP 12에서 미룬 것 (루틴 DAY 목록 · 기록 세션 목록 · 종목 라이브러리)
 
 ---
 

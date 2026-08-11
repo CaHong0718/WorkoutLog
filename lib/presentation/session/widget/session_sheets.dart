@@ -48,11 +48,15 @@ class LeaveSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppStrings.leaveSessionTitle, style: context.type.sectionTitle),
+            Text(
+              AppStrings.leaveSessionTitle,
+              style: context.type.sectionTitle,
+            ),
             const SizedBox(height: 4),
             Text(
               [
-                if (session != null) 'DAY ${session.dayCode} · ${session.dayTitle}',
+                if (session != null)
+                  'DAY ${session.dayCode} · ${session.dayTitle}',
                 '$done${AppStrings.setUnit} 완료',
                 '${state.elapsed.koreanShort} 경과',
               ].join(' · '),
@@ -64,8 +68,7 @@ class LeaveSheet extends StatelessWidget {
               title: AppStrings.keepSession,
               description: AppStrings.keepSessionHint,
               emphasized: true,
-              onTap: () =>
-                  Navigator.of(context).pop(LeaveChoice.keepForLater),
+              onTap: () => Navigator.of(context).pop(LeaveChoice.keepForLater),
             ),
             const SizedBox(height: 10),
             ChoiceTile(
@@ -195,7 +198,7 @@ class _Stat extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: context.type.metric.copyWith(fontSize: 24)),
+        Text(value, style: context.type.metric),
         const SizedBox(height: 2),
         Text(label, style: context.type.label),
       ],
@@ -230,7 +233,10 @@ class SessionResultDialog extends StatelessWidget {
     final p = context.palette;
 
     return AlertDialog(
-      title: Text('DAY ${session.dayCode} 완료', style: context.type.sectionTitle),
+      title: Text(
+        'DAY ${session.dayCode} 완료',
+        style: context.type.sectionTitle,
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +248,10 @@ class SessionResultDialog extends StatelessWidget {
           ),
           if (suggestions.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text('다음 세션 증량 제안', style: context.type.label.copyWith(color: p.accent)),
+            Text(
+              '다음 세션 증량 제안',
+              style: context.type.label.copyWith(color: p.accent),
+            ),
             const SizedBox(height: 8),
             for (final suggestion in suggestions)
               Padding(
@@ -305,7 +314,10 @@ class SubstituteSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(AppStrings.switchExercise, style: context.type.sectionTitle),
+                Text(
+                  AppStrings.switchExercise,
+                  style: context.type.sectionTitle,
+                ),
                 const SizedBox(height: 4),
                 Text('기구가 없으면 30초 안에 갈아탑니다.', style: context.type.caption),
               ],

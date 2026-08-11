@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_metrics.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entity/enums.dart';
@@ -33,7 +34,12 @@ extension BodyPartUi on BodyPart {
 
 /// Small rounded tag showing a body part in its identity color.
 class BodyPartChip extends StatelessWidget {
-  const BodyPartChip(this.bodyPart, {this.trailing, this.dense = false, super.key});
+  const BodyPartChip(
+    this.bodyPart, {
+    this.trailing,
+    this.dense = false,
+    super.key,
+  });
 
   final BodyPart bodyPart;
 
@@ -44,25 +50,19 @@ class BodyPartChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = bodyPart.color(context);
-    final text = trailing == null ? bodyPart.label : '${bodyPart.label} $trailing';
+    final text = trailing == null
+        ? bodyPart.label
+        : '${bodyPart.label} $trailing';
+    // Badge spec: micro type, radius 10, no border. The fill is a wash of the
+    // identity colour rather than the neutral one, because which body part this
+    // is *is* the content of the badge.
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: dense ? 7 : 9,
-        vertical: dense ? 2 : 3.5,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: dense ? 8 : 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(AppRadius.badge),
       ),
-      child: Text(
-        text,
-        style: context.type.label.copyWith(
-          color: color,
-          fontSize: dense ? 10.5 : 11.5,
-          letterSpacing: 0.4,
-        ),
-      ),
+      child: Text(text, style: context.type.label.copyWith(color: color)),
     );
   }
 }
