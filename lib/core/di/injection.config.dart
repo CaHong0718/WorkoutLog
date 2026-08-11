@@ -31,6 +31,10 @@ import '../../domain/usecase/history_usecases.dart' as _i839;
 import '../../domain/usecase/routine_usecases.dart' as _i15;
 import '../../domain/usecase/workout_usecases.dart' as _i250;
 import '../../presentation/home/bloc/home_bloc.dart' as _i315;
+import '../../presentation/routine_edit/bloc/day_edit_bloc.dart' as _i514;
+import '../../presentation/routine_edit/bloc/exercise_library_bloc.dart'
+    as _i1038;
+import '../../presentation/routine_edit/bloc/routine_bloc.dart' as _i937;
 import '../../presentation/session/bloc/session_bloc.dart' as _i373;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -157,6 +161,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i628.DeleteExercise>(
       () => _i628.DeleteExercise(gh<_i930.ExerciseRepository>()),
     );
+    gh.factory<_i937.RoutineBloc>(
+      () => _i937.RoutineBloc(
+        gh<_i15.WatchActiveRoutine>(),
+        gh<_i15.UpsertDay>(),
+        gh<_i15.DeleteDay>(),
+        gh<_i15.ReorderDays>(),
+      ),
+    );
     gh.factory<_i250.GetInProgressSession>(
       () => _i250.GetInProgressSession(gh<_i611.WorkoutRepository>()),
     );
@@ -188,6 +200,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i250.SuggestProgression>(
       () => _i250.SuggestProgression(gh<_i611.WorkoutRepository>()),
     );
+    gh.factoryParam<_i514.DayEditBloc, int, dynamic>(
+      (dayId, _) => _i514.DayEditBloc(
+        dayId,
+        gh<_i15.GetDayDetail>(),
+        gh<_i628.GetAllExercises>(),
+        gh<_i15.UpsertDay>(),
+        gh<_i15.UpsertBlock>(),
+        gh<_i15.DeleteBlock>(),
+        gh<_i15.ReorderBlocks>(),
+        gh<_i15.UpsertItem>(),
+        gh<_i15.DeleteItem>(),
+        gh<_i15.ReorderItems>(),
+      ),
+    );
     gh.factory<_i315.HomeBloc>(
       () => _i315.HomeBloc(
         gh<_i15.GetActiveRoutine>(),
@@ -196,6 +222,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i839.GetWeeklyVolume>(),
         gh<_i250.StartSession>(),
         gh<_i250.AbortSession>(),
+      ),
+    );
+    gh.factory<_i1038.ExerciseLibraryBloc>(
+      () => _i1038.ExerciseLibraryBloc(
+        gh<_i628.WatchExercises>(),
+        gh<_i628.UpsertExercise>(),
+        gh<_i628.DeleteExercise>(),
       ),
     );
     gh.factoryParam<_i373.SessionBloc, int, dynamic>(

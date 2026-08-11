@@ -58,6 +58,62 @@ abstract final class AppStrings {
   static const repRange = '반복 구간';
   static const alternatives = '대체 종목';
 
+  // Routine editing — day list
+  static const dayEditTitle = 'DAY 편집';
+  static const dayInfo = 'DAY 정보';
+  static const dayCode = 'DAY 코드';
+  static const dayTitleField = '제목';
+  static const daySubtitle = '부제';
+  static const dayDescription = '설명';
+  static const primaryBodyPart = '메인 부위';
+  static const weeklySets = '주간 세트';
+  static const dayCount = 'DAY 수';
+  static const noDays = 'DAY가 없습니다. DAY를 추가하세요.';
+  static const reorderHint = '손잡이를 끌어 순서를 바꿉니다';
+  static const deleteDayConfirm = 'DAY를 삭제하면 블록과 종목도 함께 사라집니다. 이미 기록한 운동은 그대로 남습니다.';
+
+  // Routine editing — blocks
+  static const blockLabel = '블록 라벨';
+  static const blockName = '블록 이름';
+  static const blockTypeField = '블록 타입';
+  static const blockOrder = '블록 순서';
+  static const roundCount = '라운드 수';
+  static const cuttable = '시간 부족 시 컷 가능';
+  static const noBlocks = '블록이 없습니다. 블록을 추가하세요.';
+  static const noItems = '종목이 없습니다';
+  static const deleteBlockConfirm = '블록을 삭제하면 안에 있는 종목도 함께 사라집니다.';
+  static const deleteItemConfirm = '이 종목을 블록에서 뺄까요?';
+
+  // Routine editing — items
+  static const setCount = '세트 수';
+  static const repModeField = '목표 방식';
+  static const repModeRange = '반복 구간';
+  static const repModeAmrap = '가능한 만큼';
+  static const repModeDuration = '시간';
+  static const repMinField = '최소 반복';
+  static const repMaxField = '최대 반복';
+  static const durationMinutes = '수행 시간(분)';
+  static const useBlockRest = '블록 휴식 사용';
+  static const targetRir = '목표 RIR';
+  static const noteField = '메모';
+  static const addAlternative = '대체 종목 추가';
+  static const noAlternatives = '지정된 대체 종목이 없습니다';
+
+  // Exercise library
+  static const selectExercise = '종목 선택';
+  static const searchExercise = '종목 검색';
+  static const allBodyParts = '전체';
+  static const newExercise = '새 종목';
+  static const editExercise = '종목 편집';
+  static const exerciseNameField = '종목 이름';
+  static const bodyPartField = '부위';
+  static const subTargetField = '세부 타깃';
+  static const equipmentField = '기구';
+  static const customBadge = '커스텀';
+  static const deleteExerciseConfirm = '종목을 삭제할까요? 루틴에서 사용 중이면 삭제할 수 없습니다.';
+  static const noExercises = '조건에 맞는 종목이 없습니다';
+  static const supersetRoundsHint = '슈퍼세트로 바꾸면 블록 안 종목의 세트 수가 라운드 수에 맞춰집니다.';
+
   // History
   static const history = '운동 기록';
   static const sessionDetail = '세션 상세';
