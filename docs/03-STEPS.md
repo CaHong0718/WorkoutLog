@@ -11,7 +11,7 @@
 |---|---|---|
 | 0 | 프로젝트 골격 · 설계 문서 | ✅ |
 | 1 | Core 레이어 | ✅ |
-| 2 | Domain 레이어 | ⬜ |
+| 2 | Domain 레이어 | ✅ |
 | 3 | Data 레이어 (Drift + 시드) | ⬜ |
 | 4 | 홈 / 오늘의 루틴 화면 | ⬜ |
 | 5 | 운동 세션 화면 (기록 + 휴식 타이머) | ⬜ |
@@ -67,7 +67,7 @@ dev_dependencies:
 - [x] `core/di/injection.dart` — `configureDependencies()`
 - [x] `core/constants/app_strings.dart` — 한국어 문자열
 - [x] `core/extensions/` — `DateTime` (주 시작일, 날짜 절삭), `Duration` (mm:ss 포맷)
-- [ ] `presentation/common/body_part_ui.dart` — `BodyPart` → 색상/라벨 (STEP 2에서 BodyPart 정의 후)
+- [x] `presentation/common/body_part_ui.dart` — `BodyPart` → 색상/라벨 (STEP 2에서 BodyPart 정의 후)
 
 **완료 조건**: 빈 홈 화면이 테마 적용된 상태로 뜬다.
 
@@ -77,25 +77,37 @@ dev_dependencies:
 
 `01-DOMAIN-MODEL.md`의 §2·§3·§5를 그대로 코드로 옮긴다.
 
-- [ ] `domain/entity/` — `body_part.dart`, `exercise.dart`, `routine.dart`, `routine_day.dart`,
-      `routine_block.dart`, `routine_item.dart`, `workout_session.dart`, `set_log.dart`,
-      `session_status.dart`, `exercise_progress_point.dart`
-- [ ] Repository 인터페이스 4종 (`RoutineRepository`, `ExerciseRepository`, `WorkoutRepository`, `HistoryRepository`)
-- [ ] UseCase — 아래 목록
+- [x] `domain/entity/` — `enums.dart`(BodyPart·BlockType·RepMode·SessionStatus), `exercise.dart`,
+      `routine.dart`, `routine_day.dart`, `routine_block.dart`, `routine_item.dart`,
+      `workout_session.dart`, `set_log.dart`, `exercise_progress_point.dart`,
+      `progression_suggestion.dart`, `date_range.dart`
+- [x] Repository 인터페이스 4종 (`RoutineRepository`, `ExerciseRepository`, `WorkoutRepository`, `HistoryRepository`)
+- [x] UseCase — 아래 목록
+
+UseCase는 영역별로 한 파일에 모았다(`domain/usecase/*_usecases.dart`). 클래스는 여전히 1개 = 1 UseCase.
 
 ```
-routine:  GetActiveRoutine, WatchActiveRoutine, GetRoutineDays, GetDayDetail,
-          GetNextDay, UpsertDay, DeleteDay, UpsertBlock, DeleteBlock,
-          ReorderBlocks, UpsertItem, DeleteItem, ReorderItems
-exercise: GetAllExercises, WatchExercises, SearchExercisesByBodyPart,
-          UpsertExercise, DeleteExercise
-workout:  GetInProgressSession, StartSession, LogSet, UpdateSet, DeleteSet,
-          WatchSession, CompleteSession, AbortSession, GetLastLogsForExercise
-history:  GetSessions, GetSessionDetail, GetWeeklyVolume,
-          GetExerciseProgress, GetWorkoutDates
+routine_usecases.dart
+  GetActiveRoutine, WatchActiveRoutine, GetRoutineDays, GetDayDetail, GetNextDay,
+  UpsertDay, DeleteDay, ReorderDays, UpsertBlock, DeleteBlock, ReorderBlocks,
+  UpsertItem, DeleteItem, ReorderItems
+exercise_usecases.dart
+  GetAllExercises, WatchExercises, GetExercisesByBodyPart, SearchExercises,
+  GetExercisesByIds, UpsertExercise, DeleteExercise
+workout_usecases.dart
+  GetInProgressSession, StartSession, GetSession, WatchSession, LogSet, UpdateSet,
+  DeleteSet, CompleteSession, AbortSession, GetLastLogsForExercise, SuggestProgression
+history_usecases.dart
+  GetSessions, GetSessionDetail, GetSessionsOn, GetWeeklyVolume,
+  GetExerciseProgress, GetWorkoutDates, GetTotalSessionCount
 ```
 
-**완료 조건**: Domain 폴더 어디에도 `package:flutter` / `package:drift` import가 없다.
+`SuggestProgression`은 이중 프로그레션 규칙(모든 세트가 반복 상단 도달 → +2.5%, 1.25kg 단위 올림)을
+구현한 유일한 계산형 UseCase다.
+
+`DateRange`는 Flutter의 `DateTimeRange` 대신 도메인이 직접 소유한다(계층 순수성 유지).
+
+**완료 조건**: Domain 폴더 어디에도 `package:flutter` / `package:drift` import가 없다. → 확인 완료
 
 ---
 
