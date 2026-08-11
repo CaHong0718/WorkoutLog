@@ -13,6 +13,13 @@ import '../../common/common_widgets.dart';
 /// Weight increment of the stepper buttons — one 1.25 kg plate per side.
 const double _weightStep = 2.5;
 
+/// A blank field and a typed `0` both mean the set carried no external load,
+/// so both are logged as 맨몸 rather than as `0kg`.
+bool _isBodyweightInput(String text) {
+  final value = double.tryParse(text);
+  return value == null || value == 0;
+}
+
 class CompletedSetValues {
   const CompletedSetValues({this.weight, this.reps, this.rir, this.durationSeconds});
 
@@ -78,7 +85,9 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
         logs.where((l) => l.setIndex == widget.planned.setIndex).firstOrNull ??
         logs.firstOrNull;
 
-    _weight.text = match?.weight == null ? '' : _trim(match!.weight!);
+    _weight.text = (match == null || match.isBodyweight)
+        ? ''
+        : _trim(match.weight!);
     _reps.text = match?.reps?.toString() ?? _defaultReps();
     _rir = widget.planned.item.targetRir;
     setState(() {});
@@ -116,7 +125,9 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
     }
     widget.onComplete(
       CompletedSetValues(
-        weight: double.tryParse(_weight.text),
+        weight: _isBodyweightInput(_weight.text)
+            ? null
+            : double.tryParse(_weight.text),
         reps: int.tryParse(_reps.text),
         rir: _rir,
       ),
@@ -204,6 +215,7 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
               onDecrement: () => _bumpWeight(-_weightStep),
               onIncrement: () => _bumpWeight(_weightStep),
               decimal: true,
+              zeroSuffix: AppStrings.bodyweight,
             ),
             const SizedBox(height: 10),
             _NumberRow(
@@ -334,6 +346,7 @@ class _NumberRow extends StatelessWidget {
     required this.onDecrement,
     required this.onIncrement,
     this.decimal = false,
+    this.zeroSuffix,
   });
 
   final String label;
@@ -342,6 +355,10 @@ class _NumberRow extends StatelessWidget {
   final VoidCallback onDecrement;
   final VoidCallback onIncrement;
   final bool decimal;
+
+  /// Replaces [suffix] while the field is blank or zero, so the weight row can
+  /// say 맨몸 instead of kg for a set that carries no load.
+  final String? zeroSuffix;
 
   @override
   Widget build(BuildContext context) {
@@ -354,20 +371,25 @@ class _NumberRow extends StatelessWidget {
         _StepButton(icon: Icons.remove, onTap: onDecrement),
         const SizedBox(width: 8),
         Expanded(
-          child: TextField(
-            controller: controller,
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(
-                decimal ? RegExp(r'[0-9.]') : RegExp(r'[0-9]'),
+          child: ValueListenableBuilder(
+            valueListenable: controller,
+            builder: (context, value, _) => TextField(
+              controller: controller,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  decimal ? RegExp(r'[0-9.]') : RegExp(r'[0-9]'),
+                ),
+              ],
+              style: context.type.numeric.copyWith(fontSize: 19),
+              decoration: InputDecoration(
+                suffixText: zeroSuffix != null && _isBodyweightInput(value.text)
+                    ? zeroSuffix
+                    : suffix,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
-            ],
-            style: context.type.numeric.copyWith(fontSize: 19),
-            decoration: InputDecoration(
-              suffixText: suffix,
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ),

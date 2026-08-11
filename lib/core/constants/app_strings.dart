@@ -32,13 +32,22 @@ abstract final class AppStrings {
   static const totalSets = '총 세트';
   static const estimatedTime = '예상 시간';
 
-  // Session
+  // Leaving / resuming a session
   static const sessionInProgress = '진행 중인 운동이 있습니다';
+  static const keepSession = '나중에 이어서 하기';
+  static const keepSessionHint = '기록을 그대로 두고 나갑니다. 홈 맨 위 배너에서 다시 들어올 수 있어요.';
+  static const continueSession = '계속 운동하기';
+  static const leaveSessionTitle = '운동을 멈추고 나갈까요?';
+  static const startNewSession = '새로 시작하기';
+  static const resumeSessionHint = '하던 세트부터 이어서 진행합니다.';
+
+  // Session
   static const rest = '휴식';
   static const restDone = '휴식 완료';
   static const addFifteen = '+15초';
   static const skipRest = '휴식 건너뛰기';
   static const weight = '무게';
+  static const bodyweight = '맨몸';
   static const reps = '반복';
   static const rir = 'RIR';
   static const setUnit = '세트';
@@ -202,5 +211,5 @@ abstract final class AppStrings {
   // Rules surfaced in the UI (from the reference document)
   static const cutRuleHint = '시간이 부족하면 뒤 블록부터 자릅니다. B1은 자르지 않습니다.';
   static const progressionHint = '목표 반복 상단을 모든 세트에서 채우면 다음 세션에 무게를 2.5~5% 올리세요.';
-  static const legsFirstWeeksHint = '하체는 첫 3주 동안 RIR 2~3으로 유지합니다.';
+  static const rirHint = 'RIR은 세트를 멈춘 뒤 더 할 수 있었던 반복 수입니다. 2면 2회 여유, 0은 실패 직전.';
 }

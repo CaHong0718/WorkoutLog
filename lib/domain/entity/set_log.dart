@@ -48,6 +48,8 @@ class SetLog extends Equatable {
   final int setIndex;
 
   /// kg. Null for body-weight movements.
+  ///
+  /// A stored `0` means the same thing — see [isBodyweight].
   final double? weight;
 
   final int? reps;
@@ -69,11 +71,18 @@ class SetLog extends Equatable {
   /// Tonnage of this set (kg × reps).
   double get volume => (weight ?? 0) * (reps ?? 0);
 
-  /// Epley estimate. Null unless both weight and reps are present.
+  /// No external load: the weight is missing or `0`.
+  ///
+  /// The session screen writes `null`, but rows saved before that — and any
+  /// import — can carry a literal `0`. Both mean 맨몸, so every read path
+  /// asks here instead of comparing against null.
+  bool get isBodyweight => weight == null || weight == 0;
+
+  /// Epley estimate. Null for body-weight sets and when reps are missing.
   double? get estimated1RM {
     final w = weight;
     final r = reps;
-    if (w == null || r == null || r <= 0) return null;
+    if (isBodyweight || w == null || r == null || r <= 0) return null;
     return w * (1 + r / 30);
   }
 
@@ -84,7 +93,7 @@ class SetLog extends Equatable {
       final s = (durationSeconds! % 60).toString().padLeft(2, '0');
       return '$m:$s';
     }
-    final left = weight == null ? '맨몸' : '${_trim(weight!)}kg';
+    final left = isBodyweight ? '맨몸' : '${_trim(weight!)}kg';
     return reps == null ? left : '$left × $reps';
   }
 

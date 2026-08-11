@@ -226,7 +226,7 @@ class _ItemEditSheetState extends State<ItemEditSheet> {
           onChanged: (value) => setState(() => _hasTargetRir = value),
           contentPadding: EdgeInsets.zero,
           title: Text(AppStrings.targetRir, style: context.type.body),
-          subtitle: Text(AppStrings.legsFirstWeeksHint, style: context.type.caption),
+          subtitle: Text(AppStrings.rirHint, style: context.type.caption),
         ),
         if (_hasTargetRir)
           NumberStepper(

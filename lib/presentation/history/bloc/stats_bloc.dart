@@ -150,7 +150,7 @@ class StatsBloc extends MviBloc<StatsIntent, StatsState, StatsEffect> {
     for (final session in sessions) {
       if (session.status != SessionStatus.completed) continue;
       for (final log in session.completedLogs) {
-        if (log.weight == null) continue;
+        if (log.isBodyweight) continue;
         found.putIfAbsent(
           log.exerciseId,
           () => TrendExercise(

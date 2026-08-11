@@ -151,17 +151,18 @@ class SuggestProgression {
           .toList();
 
       if (lastSetLogs.length < item.sets) {
+        final first = lastSetLogs.firstOrNull;
         return ProgressionSuggestion.hold(
           item.exerciseId,
           name,
-          currentWeight: lastSetLogs.firstOrNull?.weight,
+          currentWeight: (first == null || first.isBodyweight) ? null : first.weight,
           reason: '지난 세션에서 목표 세트를 다 채우지 않았습니다.',
         );
       }
 
       final weights = lastSetLogs
-          .map((log) => log.weight)
-          .whereType<double>()
+          .where((log) => !log.isBodyweight)
+          .map((log) => log.weight!)
           .toList();
       if (weights.isEmpty) {
         return ProgressionSuggestion.hold(

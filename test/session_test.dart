@@ -319,5 +319,23 @@ void main() {
       expect(log.bodyPart, BodyPart.abs);
       expect(after.isResting, isFalse);
     });
+
+    test('무게 0으로 기록한 세트는 맨몸으로 읽힌다', () async {
+      final session = (await workoutRepo.startSession(dayOf('A').id))
+          .valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      bloc.add(const CompleteCurrentSet(weight: 0, reps: 12));
+      final after = await bloc.stream.firstWhere((s) => s.currentIndex == 1);
+
+      final log = after.session!.setLogs.single;
+      expect(log.isBodyweight, isTrue);
+      expect(log.summary, '맨몸 × 12');
+      expect(log.estimated1RM, isNull, reason: '실린 무게가 없으면 1RM 추정이 없다');
+    });
   });
 }

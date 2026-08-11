@@ -69,7 +69,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
     final points = <ExerciseProgressPoint>[];
     byDate.forEach((date, logs) {
-      final weighted = logs.where((l) => l.weight != null).toList();
+      final weighted = logs.where((l) => !l.isBodyweight).toList();
       if (weighted.isEmpty) return;
       weighted.sort((a, b) => b.weight!.compareTo(a.weight!));
       final top = weighted.first;
