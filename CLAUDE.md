@@ -17,7 +17,24 @@
   ```
   타입: `feat` `fix` `refactor` `chore` `docs` `test` `style`
   스코프: `core` `domain` `data` `home` `session` `routine` `history` `db` `theme`
-- 커밋·푸시는 사용자가 요청할 때만 한다.
+- **작업 하나가 끝나면 검증을 통과시킨 뒤 커밋하고 `origin main`에 push한다.**
+  요청을 기다리지 않는다. 브랜치를 따로 파지 않고 `main`에 바로 쌓는다.
+
+### 자동 커밋 훅
+
+`.claude/settings.json`의 `Stop` 훅이 매 턴이 끝날 때
+`.claude/hooks/auto-commit.sh`를 돌린다. 남아 있는 변경을 전부
+`chore: 작업 자동 저장 <시각>`으로 커밋하고 push한다.
+
+훅은 안전장치일 뿐이다. **작업이 끝났으면 위 규약대로 직접 커밋해서**
+훅이 쓸어 담을 게 없게 만든다. 그래야 히스토리에 의미 있는 메시지가 남는다.
+
+훅이 건드리지 않는 경우: `main`이 아닌 브랜치, 변경 없음. 둘 다 조용히 넘어간다.
+push가 실패하면 커밋만 남기고 알려준다 — 자격증명 프롬프트는 뜨지 않는다
+(`GIT_TERMINAL_PROMPT=0`).
+
+작업이 아직 안 끝났는데 턴이 끝나면(질문·중간 보고) 훅이 미완성 상태를
+커밋한다. 그게 싫으면 `.claude/settings.json`에서 `hooks.Stop`을 지운다.
 
 ## 언어
 
