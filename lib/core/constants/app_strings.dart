@@ -120,6 +120,45 @@ abstract final class AppStrings {
   static const progressChart = '무게 추이';
   static const noRecordThisDay = '이 날은 운동 기록이 없습니다';
 
+  // History — tabs
+  static const tabCalendar = '달력';
+  static const tabVolume = '볼륨';
+  static const tabTrend = '추이';
+
+  // History — summary
+  static const totalSessionCount = '총 세션';
+  static const weekSetCount = '이번 주 세트';
+  static const streakWeeks = '연속 주';
+  static const monthWorkoutCount = '이번 달 운동';
+  static const sessionUnit = '회';
+  static const weekUnit = '주';
+  static const noSessionsYet = '아직 운동 기록이 없습니다';
+  static const pickDateHint = '날짜를 누르면 그날의 기록이 보입니다';
+
+  // History — session detail
+  static const workoutDuration = '소요 시간';
+  static const completedSetCount = '완료 세트';
+  static const totalVolume = '총 볼륨';
+  static const sessionMemo = '메모';
+  static const skippedSet = '건너뜀';
+  static const actualRest = '휴식';
+  static const noSetLogs = '기록된 세트가 없습니다';
+
+  // History — weekly volume
+  static const weeklyTarget = '주간 목표';
+  static const thisWeek = '이번 주';
+  static const volumeShare = '부위별 분포';
+  static const noWeekVolume = '이 주에는 완료한 세트가 없습니다';
+
+  // History — trend
+  static const selectTrendExercise = '종목 선택';
+  static const changeExercise = '종목 변경';
+  static const topWeight = '최고 중량';
+  static const estimated1RM = '추정 1RM';
+  static const trendNeedsMoreData = '기록이 2회 이상 쌓이면 추이가 그려집니다';
+  static const noTrendExercise = '무게를 기록한 종목이 아직 없습니다';
+  static const latestRecord = '최근 기록';
+
   // Rules surfaced in the UI (from the reference document)
   static const cutRuleHint = '시간이 부족하면 뒤 블록부터 자릅니다. B1은 자르지 않습니다.';
   static const progressionHint = '목표 반복 상단을 모든 세트에서 채우면 다음 세션에 무게를 2.5~5% 올리세요.';

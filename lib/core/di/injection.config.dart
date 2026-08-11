@@ -30,6 +30,9 @@ import '../../domain/usecase/exercise_usecases.dart' as _i628;
 import '../../domain/usecase/history_usecases.dart' as _i839;
 import '../../domain/usecase/routine_usecases.dart' as _i15;
 import '../../domain/usecase/workout_usecases.dart' as _i250;
+import '../../presentation/history/bloc/history_bloc.dart' as _i1045;
+import '../../presentation/history/bloc/session_detail_bloc.dart' as _i918;
+import '../../presentation/history/bloc/stats_bloc.dart' as _i122;
 import '../../presentation/home/bloc/home_bloc.dart' as _i315;
 import '../../presentation/routine_edit/bloc/day_edit_bloc.dart' as _i514;
 import '../../presentation/routine_edit/bloc/exercise_library_bloc.dart'
@@ -214,6 +217,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i15.ReorderItems>(),
       ),
     );
+    gh.factory<_i122.StatsBloc>(
+      () => _i122.StatsBloc(
+        gh<_i15.GetActiveRoutine>(),
+        gh<_i839.GetWeeklyVolume>(),
+        gh<_i839.GetSessions>(),
+        gh<_i839.GetExerciseProgress>(),
+      ),
+    );
     gh.factory<_i315.HomeBloc>(
       () => _i315.HomeBloc(
         gh<_i15.GetActiveRoutine>(),
@@ -224,11 +235,24 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i250.AbortSession>(),
       ),
     );
+    gh.factoryParam<_i918.SessionDetailBloc, int, dynamic>(
+      (sessionId, _) =>
+          _i918.SessionDetailBloc(sessionId, gh<_i839.GetSessionDetail>()),
+    );
     gh.factory<_i1038.ExerciseLibraryBloc>(
       () => _i1038.ExerciseLibraryBloc(
         gh<_i628.WatchExercises>(),
         gh<_i628.UpsertExercise>(),
         gh<_i628.DeleteExercise>(),
+      ),
+    );
+    gh.factory<_i1045.HistoryBloc>(
+      () => _i1045.HistoryBloc(
+        gh<_i839.GetWorkoutDates>(),
+        gh<_i839.GetSessions>(),
+        gh<_i839.GetSessionsOn>(),
+        gh<_i839.GetWeeklyVolume>(),
+        gh<_i839.GetTotalSessionCount>(),
       ),
     );
     gh.factoryParam<_i373.SessionBloc, int, dynamic>(
