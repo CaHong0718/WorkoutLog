@@ -30,6 +30,7 @@ import '../../domain/usecase/exercise_usecases.dart' as _i628;
 import '../../domain/usecase/history_usecases.dart' as _i839;
 import '../../domain/usecase/routine_usecases.dart' as _i15;
 import '../../domain/usecase/workout_usecases.dart' as _i250;
+import '../../presentation/home/bloc/home_bloc.dart' as _i315;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -185,6 +186,16 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i250.SuggestProgression>(
       () => _i250.SuggestProgression(gh<_i611.WorkoutRepository>()),
+    );
+    gh.factory<_i315.HomeBloc>(
+      () => _i315.HomeBloc(
+        gh<_i15.GetActiveRoutine>(),
+        gh<_i15.GetNextDay>(),
+        gh<_i250.GetInProgressSession>(),
+        gh<_i839.GetWeeklyVolume>(),
+        gh<_i250.StartSession>(),
+        gh<_i250.AbortSession>(),
+      ),
     );
     return this;
   }
