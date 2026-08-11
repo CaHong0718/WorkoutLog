@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -15,25 +17,45 @@ import 'home_state.dart';
 class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
   HomeBloc(
     this._getActiveRoutine,
+    this._watchActiveRoutine,
     this._getNextDay,
     this._getInProgressSession,
     this._getWeeklyVolume,
     this._startSession,
     this._abortSession,
   ) : super(const HomeState()) {
-    on<LoadHome>(_onLoad);
+    on<LoadHome>(_onLoad, transformer: sequential());
     on<SelectDay>(_onSelectDay);
     on<StartWorkout>(_onStartWorkout, transformer: sequential());
     on<ResumeWorkout>(_onResumeWorkout);
     on<DiscardInProgress>(_onDiscardInProgress, transformer: sequential());
+
+    // Home sits in the shell's IndexedStack, so it is never rebuilt from
+    // scratch: switching the active routine from the library, or editing days
+    // in the routine tab, would otherwise leave today's card stale.
+    // `skip(1)` drops the stream's replay of the current value — the page's own
+    // `LoadHome` already covers it.
+    _routineChanges = _watchActiveRoutine().skip(1).listen(
+      (_) => add(const LoadHome()),
+      onError: (Object _) {},
+    );
   }
 
   final GetActiveRoutine _getActiveRoutine;
+  final WatchActiveRoutine _watchActiveRoutine;
   final GetNextDay _getNextDay;
   final GetInProgressSession _getInProgressSession;
   final GetWeeklyVolume _getWeeklyVolume;
   final StartSession _startSession;
   final AbortSession _abortSession;
+
+  late final StreamSubscription<void> _routineChanges;
+
+  @override
+  Future<void> close() async {
+    await _routineChanges.cancel();
+    return super.close();
+  }
 
   Future<void> _onLoad(LoadHome intent, Emitter<HomeState> emit) async {
     emit(state.copyWith(isLoading: true, clearFailure: true));

@@ -18,6 +18,7 @@ import 'routine_state.dart';
 class RoutineBloc extends MviBloc<RoutineIntent, RoutineState, RoutineEffect> {
   RoutineBloc(
     this._watchActiveRoutine,
+    this._watchRoutine,
     this._upsertDay,
     this._deleteDay,
     this._reorderDays,
@@ -29,6 +30,7 @@ class RoutineBloc extends MviBloc<RoutineIntent, RoutineState, RoutineEffect> {
   }
 
   final WatchActiveRoutine _watchActiveRoutine;
+  final WatchRoutine _watchRoutine;
   final UpsertDay _upsertDay;
   final DeleteDay _deleteDay;
   final ReorderDays _reorderDays;
@@ -43,7 +45,9 @@ class RoutineBloc extends MviBloc<RoutineIntent, RoutineState, RoutineEffect> {
 
     emit(state.copyWith(isLoading: true, clearFailure: true));
     await emit.forEach<Routine>(
-      _watchActiveRoutine(),
+      intent.routineId == null
+          ? _watchActiveRoutine()
+          : _watchRoutine(intent.routineId!),
       onData: (routine) =>
           state.copyWith(isLoading: false, routine: routine, clearFailure: true),
       onError: (error, _) => state.copyWith(

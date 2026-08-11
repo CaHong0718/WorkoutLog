@@ -31,6 +31,26 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Routine exchange files (docs/04-ROUTINE-EXCHANGE.md).
+
+                 Only application/json is claimed, deliberately. Filtering on
+                 */* would put Workout Log in the share sheet of every photo
+                 and link on the phone; a .json that some app labels as
+                 text/plain can still be imported through 루틴 목록 →
+                 가져오기. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="application/json"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="content" android:mimeType="application/json"/>
+                <data android:scheme="file" android:mimeType="application/json"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

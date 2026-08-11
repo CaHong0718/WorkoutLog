@@ -6,7 +6,10 @@ plugins {
 
 android {
     namespace = "com.shyang.workout_log"
-    compileSdk = flutter.compileSdkVersion
+    // receive_sharing_intent requires API 37; Flutter's default is still 36.
+    // Compiling against a newer SDK does not change runtime behaviour —
+    // targetSdk and minSdk stay where Flutter puts them.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

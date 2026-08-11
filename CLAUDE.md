@@ -42,6 +42,17 @@
 | [`docs/00-ARCHITECTURE.md`](docs/00-ARCHITECTURE.md) | 코드를 쓰기 전. 계층 규약·폴더 구조·MVI 계약·명명 규칙 |
 | [`docs/01-DOMAIN-MODEL.md`](docs/01-DOMAIN-MODEL.md) | 엔티티·Repository·Drift 매핑을 다룰 때 |
 | [`docs/02-ROUTINE-SEED.md`](docs/02-ROUTINE-SEED.md) | 시드 루틴·주간 볼륨 목표·디자인 토큰을 다룰 때 |
+| [`docs/04-ROUTINE-EXCHANGE.md`](docs/04-ROUTINE-EXCHANGE.md) | 루틴 `.json` 가져오기/내보내기 포맷을 다룰 때. **HTML→JSON 변환 시 이 스키마가 유일한 기준** |
+
+## 루틴을 파일로 뽑아 달라고 하면
+
+사용자가 운동 루틴 문서(HTML·표·메모 무엇이든)를 주면서 "루틴 파일로 뽑아줘",
+"이거 앱에 넣게 해줘", "루틴 추가하고 싶어" 라고 하면 **`routine-file` 스킬을 쓴다.**
+`.claude/skills/routine-file/SKILL.md`에 절차·자주 틀리는 것·검증 방법이 다 있다.
+
+요약: `docs/04` 스키마대로 `routines/<이름>.json`을 쓰고 →
+`dart run tools/validate_routine.dart <파일>`로 검증 → 경로와 볼륨 요약을 보고한다.
+**앱에 HTML 파서를 넣지 않는다.** 자유 형식을 읽는 일은 대화가, 스키마는 앱이 맡는 경계다.
 
 ## 검증 (커밋 전 필수)
 
@@ -80,7 +91,20 @@ Dart 패키지명은 `workout_log`(`package:workout_log/...`), Drift DB 파일�
 **DB 파일명은 바꾸지 않는다.** 바꾸면 앱이 빈 DB를 새로 만들고 기존 운동 기록에 영영 닿지 못한다.
 저장소 폴더명만 아직 `health_app`인데, 이건 로컬 경로일 뿐 빌드 산출물과 무관하다.
 
-`무분할 40분`은 앱 이름이 아니라 **시드 루틴의 이름**이다. DB에 들어 있고 사용자가 바꿀 수 있다.
+`무분할 40분`은 앱 이름이 아니라 **시드 루틴의 이름**이다. DB에 들어 있고 사용자가 바꿀 수 있으며,
+루틴은 여러 개를 두고 갈아 끼운다(STEP 10). 앱은 루틴을 담는 그릇이지 특정 루틴 전용이 아니다.
+
+### 건드리면 빌드가 깨지는 안드로이드 설정
+
+둘 다 이유가 있어 들어간 것이다. 정리한다고 지우지 말 것.
+
+| 설정 | 이유 |
+|---|---|
+| `app/build.gradle.kts`의 `compileSdk = 37` (`flutter.compileSdkVersion` 아님) | `receive_sharing_intent` 1.9.0이 API 37을 요구한다. 1.8.0으로 내리면 JVM 타깃이 Java 11 / Kotlin 21로 어긋나 컴파일이 깨진다 |
+| `gradle.properties`의 `kotlin.incremental=false` | share_plus·flutter_file_dialog·receive_sharing_intent가 각자 Kotlin Gradle Plugin을 적용해 증분 캐시가 충돌한다(`Storage for [...] is already registered`). 빼면 세 플러그인 모두 빌드가 깨진다 |
+
+`file_picker`는 쓰지 않는다 — `share_plus`와 `win32` 버전이 충돌해 2020년 버전으로 강등된다.
+파일 선택은 `flutter_file_dialog`다.
 
 ## 아이콘
 

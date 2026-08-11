@@ -49,6 +49,26 @@ extension RoutineRowMapper on RoutineRow {
   );
 }
 
+extension RoutineMapper on Routine {
+  /// Always inserts as inactive. Activation goes through
+  /// `RoutineDao.setActiveRoutine`, which clears the other flags in the same
+  /// transaction — two active routines would make the home screen ambiguous.
+  RoutinesCompanion toInsertCompanion() => RoutinesCompanion.insert(
+    name: name,
+    description: Value(description),
+    sessionMinutes: Value(sessionMinutes),
+    isActive: const Value(false),
+  );
+
+  /// Metadata only; days live in their own tables.
+  RoutinesCompanion toUpdateCompanion() => RoutinesCompanion(
+    name: Value(name),
+    description: Value(description),
+    sessionMinutes: Value(sessionMinutes),
+    updatedAt: Value(DateTime.now()),
+  );
+}
+
 extension RoutineDayRowMapper on RoutineDayRow {
   RoutineDay toEntity({List<RoutineBlock> blocks = const []}) => RoutineDay(
     id: id,

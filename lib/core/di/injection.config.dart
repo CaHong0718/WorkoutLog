@@ -18,12 +18,14 @@ import '../../data/database/daos/history_dao.dart' as _i615;
 import '../../data/database/daos/routine_dao.dart' as _i229;
 import '../../data/database/daos/workout_dao.dart' as _i535;
 import '../../data/di/database_module.dart' as _i883;
+import '../../data/exchange/routine_codec.dart' as _i480;
 import '../../data/repository/exercise_repository_impl.dart' as _i928;
 import '../../data/repository/history_repository_impl.dart' as _i916;
 import '../../data/repository/routine_repository_impl.dart' as _i64;
 import '../../data/repository/workout_repository_impl.dart' as _i1004;
 import '../../domain/repository/exercise_repository.dart' as _i930;
 import '../../domain/repository/history_repository.dart' as _i148;
+import '../../domain/repository/routine_exchange.dart' as _i372;
 import '../../domain/repository/routine_repository.dart' as _i667;
 import '../../domain/repository/workout_repository.dart' as _i611;
 import '../../domain/usecase/exercise_usecases.dart' as _i628;
@@ -38,8 +40,11 @@ import '../../presentation/routine_edit/bloc/day_edit_bloc.dart' as _i514;
 import '../../presentation/routine_edit/bloc/exercise_library_bloc.dart'
     as _i1038;
 import '../../presentation/routine_edit/bloc/routine_bloc.dart' as _i937;
+import '../../presentation/routine_edit/bloc/routine_list_bloc.dart' as _i191;
 import '../../presentation/session/bloc/session_bloc.dart' as _i373;
 import '../notification/rest_notifier.dart' as _i204;
+import '../platform/routine_file_io.dart' as _i358;
+import '../platform/shared_routine_receiver.dart' as _i235;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -50,7 +55,12 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final databaseModule = _$DatabaseModule();
     gh.lazySingleton<_i204.RestNotifier>(() => _i204.RestNotifier());
+    gh.lazySingleton<_i358.RoutineFileIo>(() => const _i358.RoutineFileIo());
     gh.lazySingleton<_i160.AppDatabase>(() => databaseModule.database);
+    gh.lazySingleton<_i372.RoutineExchange>(() => const _i480.RoutineCodec());
+    gh.factory<_i15.ParseRoutineFile>(
+      () => _i15.ParseRoutineFile(gh<_i372.RoutineExchange>()),
+    );
     gh.lazySingleton<_i229.RoutineDao>(
       () => databaseModule.routineDao(gh<_i160.AppDatabase>()),
     );
@@ -62,6 +72,10 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i615.HistoryDao>(
       () => databaseModule.historyDao(gh<_i160.AppDatabase>()),
+    );
+    gh.lazySingleton<_i235.SharedRoutineReceiver>(
+      () => _i235.SharedRoutineReceiver(gh<_i358.RoutineFileIo>()),
+      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i148.HistoryRepository>(
       () => _i916.HistoryRepositoryImpl(gh<_i615.HistoryDao>()),
@@ -80,6 +94,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i64.RoutineRepositoryImpl(
         gh<_i229.RoutineDao>(),
         gh<_i160.AppDatabase>(),
+      ),
+    );
+    gh.factory<_i15.ExportRoutine>(
+      () => _i15.ExportRoutine(
+        gh<_i667.RoutineRepository>(),
+        gh<_i372.RoutineExchange>(),
       ),
     );
     gh.factory<_i839.GetSessions>(
@@ -117,6 +137,33 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i15.WatchActiveRoutine>(
       () => _i15.WatchActiveRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.GetRoutines>(
+      () => _i15.GetRoutines(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.WatchRoutines>(
+      () => _i15.WatchRoutines(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.WatchRoutine>(
+      () => _i15.WatchRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.CreateRoutine>(
+      () => _i15.CreateRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.UpdateRoutine>(
+      () => _i15.UpdateRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.DeleteRoutine>(
+      () => _i15.DeleteRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.SetActiveRoutine>(
+      () => _i15.SetActiveRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.DuplicateRoutine>(
+      () => _i15.DuplicateRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.ImportRoutine>(
+      () => _i15.ImportRoutine(gh<_i667.RoutineRepository>()),
     );
     gh.factory<_i15.GetRoutineDays>(
       () => _i15.GetRoutineDays(gh<_i667.RoutineRepository>()),
@@ -217,6 +264,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i250.SuggestProgression>(
       () => _i250.SuggestProgression(gh<_i611.WorkoutRepository>()),
     );
+    gh.factory<_i937.RoutineBloc>(
+      () => _i937.RoutineBloc(
+        gh<_i15.WatchActiveRoutine>(),
+        gh<_i15.WatchRoutine>(),
+        gh<_i15.UpsertDay>(),
+        gh<_i15.DeleteDay>(),
+        gh<_i15.ReorderDays>(),
+      ),
+    );
     gh.factoryParam<_i514.DayEditBloc, int, dynamic>(
       (dayId, _) => _i514.DayEditBloc(
         dayId,
@@ -231,12 +287,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i15.ReorderItems>(),
       ),
     );
-    gh.factory<_i937.RoutineBloc>(
-      () => _i937.RoutineBloc(
+    gh.factory<_i315.HomeBloc>(
+      () => _i315.HomeBloc(
+        gh<_i15.GetActiveRoutine>(),
         gh<_i15.WatchActiveRoutine>(),
-        gh<_i15.UpsertDay>(),
-        gh<_i15.DeleteDay>(),
-        gh<_i15.ReorderDays>(),
+        gh<_i15.GetNextDay>(),
+        gh<_i250.GetInProgressSession>(),
+        gh<_i839.GetWeeklyVolume>(),
+        gh<_i250.StartSession>(),
+        gh<_i250.AbortSession>(),
       ),
     );
     gh.factory<_i1038.ExerciseLibraryBloc>(
@@ -246,21 +305,25 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i628.DeleteExercise>(),
       ),
     );
+    gh.factory<_i191.RoutineListBloc>(
+      () => _i191.RoutineListBloc(
+        gh<_i15.WatchRoutines>(),
+        gh<_i15.SetActiveRoutine>(),
+        gh<_i15.CreateRoutine>(),
+        gh<_i15.UpdateRoutine>(),
+        gh<_i15.DeleteRoutine>(),
+        gh<_i15.DuplicateRoutine>(),
+        gh<_i15.ParseRoutineFile>(),
+        gh<_i15.ImportRoutine>(),
+        gh<_i15.ExportRoutine>(),
+        gh<_i358.RoutineFileIo>(),
+      ),
+    );
     gh.factoryParam<_i918.SessionDetailBloc, int, dynamic>(
       (sessionId, _) => _i918.SessionDetailBloc(
         sessionId,
         gh<_i839.GetSessionDetail>(),
         gh<_i250.DeleteSession>(),
-      ),
-    );
-    gh.factory<_i315.HomeBloc>(
-      () => _i315.HomeBloc(
-        gh<_i15.GetActiveRoutine>(),
-        gh<_i15.GetNextDay>(),
-        gh<_i250.GetInProgressSession>(),
-        gh<_i839.GetWeeklyVolume>(),
-        gh<_i250.StartSession>(),
-        gh<_i250.AbortSession>(),
       ),
     );
     gh.factoryParam<_i373.SessionBloc, int, dynamic>(

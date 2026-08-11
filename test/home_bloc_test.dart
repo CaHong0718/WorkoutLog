@@ -31,6 +31,7 @@ void main() {
 
     bloc = HomeBloc(
       GetActiveRoutine(routineRepo),
+      WatchActiveRoutine(routineRepo),
       GetNextDay(routineRepo),
       GetInProgressSession(workoutRepo),
       GetWeeklyVolume(historyRepo),

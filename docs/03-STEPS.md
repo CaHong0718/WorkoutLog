@@ -19,6 +19,7 @@
 | 7 | 히스토리 / 통계 화면 | ✅ |
 | 8 | Android 빌드 검증 · 마무리 | ✅ |
 | 9 | 실사용 피드백 반영 (키보드·기록 삭제·백그라운드 타이머·구분선) | ✅ |
+| 10 | 복수 루틴 · 루틴 가져오기/내보내기 | ✅ |
 
 ---
 
@@ -244,6 +245,136 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 
 ---
 
+## STEP 10 — 복수 루틴 · 루틴 가져오기/내보내기
+
+앱을 "무분할 40분 전용"에서 **루틴을 갈아 끼울 수 있는 그릇**으로 바꿨다.
+무분할 40분은 여전히 기본으로 깔리는 시드일 뿐, 고정이 아니다.
+
+포맷 명세는 [`04-ROUTINE-EXCHANGE.md`](04-ROUTINE-EXCHANGE.md)가 유일한 기준이다.
+
+**DB 스키마는 바꾸지 않았다.** `routines` 테이블에 이미 여러 행이 들어갈 수 있고
+`isActive`·`getNextDay(routineId)`도 루틴별로 분리돼 있었다. `schemaVersion`은 1 그대로라
+마이그레이션이 없고, 기존 설치본의 운동 기록이 그대로 남는다.
+
+### STEP 10-1 — 교환 포맷 코덱
+
+- [x] `domain/entity/routine_package.dart` — 저장 전 루틴 그래프(`RoutinePackage` /
+      `RoutineDayDraft` / `RoutineBlockDraft` / `RoutineItemDraft` / `ExerciseDraft`).
+      대체 종목을 **이름**으로 들고 있다는 점이 기존 엔티티와 다르다(id가 아직 없으므로).
+- [x] `domain/repository/routine_exchange.dart` — `decode` / `encode` / `fileNameFor` 포트
+- [x] `data/exchange/routine_codec.dart` — 구현. `dart:convert` + domain만 import한다.
+      **flutter·drift를 import하지 않는다** (검증 CLI가 이 파일을 그대로 쓰기 때문)
+- [x] 오류는 **전부 모아** 경로와 함께 보고한다:
+      `routine.days[1].blocks[0].items[2].repMax: repMin(12)보다 작습니다 (8)`.
+      첫 오류에서 멈추면 손으로 쓴 파일을 한 번에 하나씩 고치게 된다
+- [x] 알 수 없는 enum 값은 기본값으로 떨어뜨리지 않고 **오류**로 보고 (`legs` → `leg` 오타 사고 방지)
+- [x] 경고는 가져오기를 막지 않는다 — 슈퍼세트 세트/라운드 불일치 보정, 미해결 대체 종목
+
+### STEP 10-2 — 루틴 CRUD · 가져오기/내보내기 (domain + data)
+
+- [x] `RoutineRepository`에 `getRoutines` / `watchRoutines` / `watchRoutine` /
+      `createRoutine` / `updateRoutine` / `deleteRoutine` / `setActiveRoutine` /
+      `importRoutine` / `exportRoutine` / `duplicateRoutine` 추가
+- [x] `setActiveRoutine`은 한 트랜잭션에서 전부 `false` → 대상만 `true`
+- [x] `importRoutine`은 **단일 트랜잭션**. 종목 대조는 이름 정확 일치(`04` §7.1)
+- [x] `deleteRoutine` 방어 3종 — 마지막 루틴 거부 / 진행 중 세션 있는 루틴 거부 /
+      활성 루틴을 지우면 남은 것을 자동 활성화
+- [x] `duplicateRoutine` = export → import (` 복사본`, 겹치면 ` 복사본 2`)
+- [x] UseCase 추가, `dart run build_runner build`
+
+**감시 스트림을 `async*`로 쓰지 않는다 (중요).**
+`_watchRoutineGraph`는 원래 `async*` + `await for (updates)`였는데, 제너레이터가 `await for`에서
+대기 중일 때 **구독 취소가 영영 끝나지 않는다.** 그 스트림을 듣는 Bloc의 `close()`가 멎고
+테스트가 30초 타임아웃으로 죽었다. 지금은 `StreamController` + `asyncMap`이다 —
+취소가 즉시 끝나고, `asyncMap`이 로드를 직렬화해 편집이 몰려도 순서가 뒤집히지 않는다.
+
+### STEP 10-3 — 루틴 목록 · 선택 UI
+
+- [x] `RoutineListBloc` + `routine_list_page.dart`, 라우트 `/routines`
+- [x] 루틴 카드: 이름 · DAY 수 · 주간 세트 · 부위 볼륨 레일 · `사용 중` 배지
+- [x] 카드 액션: 활성화 / 정보 편집 / 복제 / 내보내기 / 삭제
+- [x] `RoutinePage(routineId)` — null이면 활성 루틴(루틴 탭), id면 그 루틴.
+      **비활성 루틴도 편집된다** — 쓰던 루틴을 유지한 채 새 루틴을 짜는 흐름
+- [x] 앱바 제목이 루틴 이름이고, 루틴 탭에는 전환 버튼이 붙는다
+- [x] 홈 앱바 제목도 활성 루틴 이름 + 탭하면 루틴 목록
+
+**홈은 활성 루틴 스트림을 구독한다.** 홈은 셸의 `IndexedStack`에 살아 있어 다시 만들어지지
+않는다. 다른 화면에서 루틴을 전환하거나 DAY를 고쳐도 오늘 카드가 낡은 채로 남기 때문에,
+`HomeBloc`이 `WatchActiveRoutine().skip(1)`을 듣고 `LoadHome`을 다시 던진다
+(`skip(1)`은 페이지가 이미 보낸 최초 로드와 중복되는 리플레이를 버린다).
+
+### STEP 10-4 — 파일 가져오기 · 내보내기
+
+- [x] `flutter_file_dialog` + `share_plus` 추가.
+      **`file_picker`는 쓰지 않는다** — `share_plus`와 `win32` 버전이 충돌해 `file_picker`가
+      3.0.4(2020년)로 강등된다. `flutter_file_dialog`는 Android/iOS 전용이라 이 프로젝트에 맞고
+      충돌이 없다
+- [x] `core/platform/routine_file_io.dart` — 선택·읽기·공유. 모든 플랫폼 호출을 try/catch로
+      감싸 실패해도 "아무 일도 안 일어남"으로 떨어진다(`rest_notifier.dart`와 같은 규칙).
+      4MB 상한을 둬 잘못 고른 큰 파일을 통째로 읽지 않는다
+- [x] 파일 선택 시 확장자 필터를 걸지 않는다 — `.json`을 `text/plain`으로 내보내는 앱이 있어
+      필터를 걸면 파일이 아예 안 보인다. 잘못 고르면 코덱이 읽을 수 있는 오류를 낸다
+- [x] 가져오기는 **미리보기 → 확인** 2단계. 루틴명·DAY·총 세트·부위 볼륨·경고를 먼저 보여준다
+- [x] 내보내기: `루틴이름_yyyyMMdd.json` → 공유 시트 (share_plus가 임시 파일을 대신 쓴다)
+
+### STEP 10-5 — 다른 앱에서 공유받기
+
+- [x] `receive_sharing_intent` + `core/platform/shared_routine_receiver.dart`
+- [x] `AndroidManifest.xml`에 `application/json` SEND / VIEW 인텐트 필터.
+      **`*/*`로 열지 않는다** — 사진·링크 공유 시트마다 Workout Log가 끼어든다.
+      `text/plain`으로 오는 `.json`은 앱 안의 `가져오기`로 넣으면 된다
+- [x] 콜드 스타트(`getInitialMedia`)와 실행 중(`getMediaStream`) 양쪽 수신 → 같은 미리보기로 연결
+- [x] 수신 후 `reset()`으로 인텐트를 소비 표시 (앱에 다시 들어올 때 같은 파일이 또 열리지 않게)
+- [x] 플러그인 실패가 앱 기동을 막지 않는다. 첫 프레임 뒤에 `start()` — 라우터가 붙은 다음이라야
+      공유가 앱을 띄운 경우에도 push할 대상이 있다
+
+**안드로이드 빌드 설정 2가지가 이 STEP에서 바뀌었다.**
+
+| 설정 | 이유 |
+|---|---|
+| `app/build.gradle.kts` `compileSdk = 37` | `receive_sharing_intent` 1.9.0이 API 37을 요구한다. 1.8.0으로 내리면 JVM 타깃이 Java 11 / Kotlin 21로 어긋나 컴파일이 깨진다. `targetSdk`·`minSdk`는 그대로라 런타임 동작은 변하지 않는다 |
+| `gradle.properties` `kotlin.incremental=false` | share_plus·flutter_file_dialog·receive_sharing_intent가 각자 Kotlin Gradle Plugin을 적용해 증분 캐시가 충돌한다(`Storage for [...] is already registered`). 빼면 세 플러그인 모두 빌드가 깨지는 것을 확인했다 |
+
+`android.suppressUnsupportedCompileSdk=37`은 AGP 9.0.1이 내는 "권장 최대 36" 경고를 끈다.
+
+### STEP 10-6 — 검증 CLI · 테스트 · 문서
+
+- [x] `tools/validate_routine.dart` — `dart run tools/validate_routine.dart <파일.json>`.
+      앱과 **같은 코덱**으로 검증하고 DAY·총 세트·부위별 볼륨을 찍는다. 폰에 넣기 전 단계
+- [x] `test/routine_exchange_test.dart` (23개) — 시드 루틴 export→import 왕복 동일성,
+      왕복 후에도 주간 70세트, 종목 재사용/신규 생성, 오류 경로 보고, 경고 처리,
+      활성 전환, 삭제 방어 3종, 복제
+- [x] `test/routine_list_test.dart` (12개) — Bloc 관점의 목록·가져오기·내보내기.
+      플랫폼 다이얼로그만 가짜로 두고 나머지는 인메모리 SQLite 실물
+- [x] `README.md`에 루틴 가져오기/내보내기 사용법 추가
+
+### STEP 10-7 — 변환을 저장소에 상주시키기
+
+"루틴 문서를 파일로 뽑아줘"는 앞으로 반복해서 요청될 작업이다. 세션이 바뀌어도 매번 같은
+품질로 나오도록 **환경을 저장소에 박아뒀다.** 어느 컴퓨터에서 클론하든 그대로 따라온다.
+
+- [x] `.claude/skills/routine-file/SKILL.md` — 변환 스킬. 절차(스키마 읽기 → 종목 이름 확인 →
+      작성 → CLI 검증 → 인계), 원문에 없는 값을 채우는 기준, 자주 틀리는 것,
+      거부당한 파일 진단법
+- [x] `CLAUDE.md`에 진입점 한 단락 — 스킬 목록을 못 봐도 걸리도록 이중으로 건다
+- [x] `routines/` — 루틴 파일 보관함 + `README.md`
+- [x] `routines/무분할-40분.json` — 시드 루틴 내보내기. **작성 예시 겸 복구 지점**.
+      슈퍼세트·시간 슬롯·대체 종목·`isCuttable`이 전부 들어 있어 형식을 그대로 흉내 낼 수 있다
+- [x] `test/routine_export_file_test.dart` — 위 파일이 시드와 어긋나면 실패한다.
+      예시가 낡으면 그걸 보고 쓴 루틴이 전부 틀어지므로 손으로 관리하지 않는다
+      ```bash
+      UPDATE_ROUTINE_EXPORT=1 flutter test test/routine_export_file_test.dart
+      ```
+
+종목 이름은 `routines/무분할-40분.json`(실사용 27개)과, 빠짐없는 목록이 필요하면
+`lib/data/database/seed/routine_seed.dart`를 `_ExerciseSpec\(\s*'([^']+)'`로 멀티라인 Grep한다
+(29개). **이름이 한 글자만 달라도 새 종목이 생겨 무게 추이가 갈라진다.**
+
+**검증 결과**: `flutter analyze` 무경고 · `flutter test` 103개 통과 ·
+`flutter build apk --debug` 성공.
+
+---
+
 ## 이후 후보 (요청 시 착수)
 
 우선순위 순.
@@ -252,8 +383,8 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 - [ ] **과거 기록 수정** — 삭제는 STEP 9에서 됐고, 세트별 무게·반복 수정은 아직.
       `UpdateSet`/`DeleteSet` UseCase는 이미 있다.
 - [ ] **데이터 백업/복원** — SQLite 파일 내보내기 또는 JSON export
+      (STEP 10의 코덱을 기록까지 확장하면 된다)
 - [ ] **4주 로테이션 알림** — 원문 설계의 "4주마다 종목 교체" 규칙을 앱이 알려주기
-- [ ] **루틴 복수 지원** — 스키마·`Routine.isActive`는 이미 대응돼 있고 UI만 없다
 
 ---
 

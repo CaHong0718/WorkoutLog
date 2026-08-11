@@ -44,7 +44,12 @@ class _HomeView extends StatelessWidget {
       onEffect: _handleEffect,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(AppStrings.appName),
+          titleSpacing: 12,
+          title: BlocBuilder<HomeBloc, HomeState>(
+            buildWhen: (a, b) => a.routine?.name != b.routine?.name,
+            builder: (context, state) =>
+                _RoutineSwitcher(name: state.routine?.name),
+          ),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16),
@@ -90,6 +95,39 @@ class _HomeView extends StatelessWidget {
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(message)));
     }
+  }
+}
+
+/// The app bar shows *which routine is in use*, not the product name — that is
+/// the one piece of context the home screen cannot infer from its own cards
+/// once more than one routine exists. Tapping opens the library.
+class _RoutineSwitcher extends StatelessWidget {
+  const _RoutineSwitcher({required this.name});
+
+  final String? name;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => context.pushNamed(Routes.routineList),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                name ?? AppStrings.appName,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.expand_more, size: 20, color: context.palette.ink3),
+          ],
+        ),
+      ),
+    );
   }
 }
 

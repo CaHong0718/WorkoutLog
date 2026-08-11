@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/common/app_shell.dart';
+import '../platform/routine_file_io.dart';
 import '../../presentation/history/page/history_page.dart';
 import '../../presentation/history/page/session_detail_page.dart';
 import '../../presentation/home/page/home_page.dart';
 import '../../presentation/routine_edit/page/day_edit_page.dart';
 import '../../presentation/routine_edit/page/exercise_library_page.dart';
+import '../../presentation/routine_edit/page/routine_list_page.dart';
 import '../../presentation/routine_edit/page/routine_page.dart';
 import '../../presentation/session/page/session_page.dart';
 
@@ -14,7 +16,16 @@ import '../../presentation/session/page/session_page.dart';
 abstract final class Routes {
   static const home = 'home';
   static const history = 'history';
+
+  /// The routine tab — always shows the active routine.
   static const routine = 'routine';
+
+  /// The library of every routine.
+  static const routineList = 'routineList';
+
+  /// One routine by id, active or not.
+  static const routineDetail = 'routineDetail';
+
   static const session = 'session';
   static const sessionDetail = 'sessionDetail';
   static const dayEdit = 'dayEdit';
@@ -75,6 +86,28 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => SessionDetailPage(
         sessionId: int.parse(state.pathParameters['sessionId']!),
       ),
+    ),
+    GoRoute(
+      path: '/routines',
+      name: Routes.routineList,
+      parentNavigatorKey: _rootNavigatorKey,
+      // `extra` carries a file shared from another app; the page turns it
+      // straight into an import preview.
+      builder: (context, state) => RoutineListPage(
+        pendingImport: state.extra is PickedRoutineFile
+            ? state.extra! as PickedRoutineFile
+            : null,
+      ),
+      routes: [
+        GoRoute(
+          path: ':routineId',
+          name: Routes.routineDetail,
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => RoutinePage(
+            routineId: int.parse(state.pathParameters['routineId']!),
+          ),
+        ),
+      ],
     ),
     GoRoute(
       path: '/routine/day/:dayId',

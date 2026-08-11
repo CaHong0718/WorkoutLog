@@ -63,6 +63,7 @@ void main() {
   RoutineBloc makeRoutineBloc() {
     final bloc = RoutineBloc(
       WatchActiveRoutine(routineRepo),
+      WatchRoutine(routineRepo),
       UpsertDay(routineRepo),
       DeleteDay(routineRepo),
       ReorderDays(routineRepo),

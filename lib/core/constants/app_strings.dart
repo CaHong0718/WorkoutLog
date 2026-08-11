@@ -49,6 +49,41 @@ abstract final class AppStrings {
   static const switchExercise = '대체 종목으로 변경';
   static const lastRecord = '지난 기록';
 
+  // Routine library
+  static const routineList = '내 루틴';
+  static const activeRoutine = '사용 중';
+  static const switchRoutine = '루틴 전환';
+  static const newRoutine = '새 루틴';
+  static const routineInfo = '루틴 정보';
+  static const routineNameField = '루틴 이름';
+  static const routineDescriptionField = '설명';
+  static const sessionMinutesField = '1회 목표 시간(분)';
+  static const activateRoutine = '이 루틴 사용';
+  static const duplicateRoutine = '복제';
+  static const exportRoutine = '내보내기';
+  static const importRoutine = '가져오기';
+  static const importFromFile = '파일에서 가져오기';
+  static const routineActivated = '루틴을 전환했습니다.';
+  static const routineDeleted = '루틴을 삭제했습니다.';
+  static const routineDuplicated = '루틴을 복제했습니다.';
+  static const routineExported = '루틴 파일을 만들었습니다.';
+  static const deleteRoutineConfirm =
+      '루틴과 그 안의 DAY·블록·종목이 모두 사라집니다. 이미 기록한 운동은 그대로 남습니다.';
+  static const noRoutineFilePicked = '파일을 읽지 못했습니다.';
+  static const exportFailed = '내보내기를 마치지 못했습니다.';
+  static const routineListHint = '사용 중인 루틴 하나가 홈과 운동 화면에 나옵니다. 나머지는 그대로 보관됩니다.';
+
+  // Routine import
+  static const importPreview = '가져올 루틴';
+  static const importConfirm = '이 루틴 추가';
+  static const importAndActivate = '추가하고 바로 사용';
+  static const importErrorTitle = '루틴 파일을 읽을 수 없습니다';
+  static const importWarningTitle = '확인해 주세요';
+  static const importErrorHint = '아래 위치를 고쳐서 다시 시도하세요.';
+  static const importedExercises = '종목';
+  static const importReuseSuffix = '개 재사용';
+  static const importCreateSuffix = '개 새로 추가';
+
   // Routine editing
   static const routineEdit = '루틴 편집';
   static const addDay = 'DAY 추가';

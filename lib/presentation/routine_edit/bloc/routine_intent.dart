@@ -5,10 +5,18 @@ sealed class RoutineIntent extends MviIntent {
   const RoutineIntent();
 }
 
-/// Subscribes to the active routine; every later edit arrives through the
-/// same stream, so the overview never shows a stale set count.
+/// Subscribes to one routine; every later edit arrives through the same
+/// stream, so the overview never shows a stale set count.
+///
+/// [routineId] null means "whichever routine is active" — the routine tab.
+/// A concrete id lets a routine be edited without switching to it first.
 final class LoadRoutine extends RoutineIntent {
-  const LoadRoutine();
+  const LoadRoutine({this.routineId});
+
+  final int? routineId;
+
+  @override
+  List<Object?> get props => [routineId];
 }
 
 /// Appends [day] to the routine and opens its editor.

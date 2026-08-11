@@ -26,6 +26,16 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
             ..limit(1))
           .getSingleOrNull();
 
+  Future<List<RoutineRow>> allRoutines() =>
+      (select(routines)
+            ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]))
+          .get();
+
+  Future<RoutineRow?> findRoutine(int routineId) =>
+      (select(routines)
+            ..where((t) => t.id.equals(routineId)))
+          .getSingleOrNull();
+
   Future<List<RoutineDayRow>> daysOf(int routineId) =>
       (select(routineDays)
             ..where((t) => t.routineId.equals(routineId))
@@ -56,6 +66,28 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
     return (select(exercises)..where((t) => t.id.isIn(ids.toList()))).get();
   }
 
+  /// Batch name lookup used by import to reconcile against the library.
+  /// Duplicate names would break `getSingleOrNull`, so this returns rows.
+  Future<List<ExerciseRow>> exercisesByNames(Iterable<String> names) {
+    if (names.isEmpty) return Future.value(const []);
+    return (select(exercises)..where((t) => t.name.isIn(names.toList()))).get();
+  }
+
+  /// A routine with a live session cannot be deleted: the session rebuilds its
+  /// plan from the day graph, so removing it mid-workout breaks the screen.
+  Future<bool> hasInProgressSession(int routineId) async {
+    final row =
+        await (select(workoutSessions)
+              ..where(
+                (t) =>
+                    t.routineId.equals(routineId) &
+                    t.status.equals('inProgress'),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
   /// Latest completed session of [routineId] — the anchor for the rotation.
   Future<WorkoutSessionRow?> lastCompletedSession(int routineId) =>
       (select(workoutSessions)
@@ -73,6 +105,30 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
           .getSingleOrNull();
 
   // ── write ───────────────────────────────────────────────────────────────
+
+  Future<int> insertRoutine(RoutinesCompanion companion) =>
+      into(routines).insert(companion);
+
+  Future<void> updateRoutine(int id, RoutinesCompanion companion) =>
+      (update(routines)..where((t) => t.id.equals(id))).write(companion);
+
+  Future<void> deleteRoutine(int id) =>
+      (delete(routines)..where((t) => t.id.equals(id))).go();
+
+  /// Clears every flag before setting one, in a single transaction — two
+  /// active routines would make `findActiveRoutine` pick arbitrarily.
+  Future<void> setActiveRoutine(int id) => transaction(() async {
+    await update(routines).write(const RoutinesCompanion(isActive: Value(false)));
+    await (update(routines)..where((t) => t.id.equals(id))).write(
+      RoutinesCompanion(
+        isActive: const Value(true),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  });
+
+  Future<int> insertExercise(ExercisesCompanion companion) =>
+      into(exercises).insert(companion);
 
   Future<int> upsertDay(int id, RoutineDaysCompanion companion) async {
     if (id == 0) return into(routineDays).insert(companion);

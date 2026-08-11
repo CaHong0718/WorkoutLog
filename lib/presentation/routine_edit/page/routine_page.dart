@@ -20,21 +20,34 @@ import '../bloc/routine_state.dart';
 import '../widget/day_meta_sheet.dart';
 import '../widget/edit_controls.dart';
 
-/// Routine overview — the entry point of the "루틴" tab.
+/// Routine overview — the day list of one routine.
+///
+/// [routineId] null is the "루틴" tab: it follows whichever routine is active.
+/// A concrete id opens a routine straight from the library, so a new program
+/// can be built without switching the one in use.
 class RoutinePage extends StatelessWidget {
-  const RoutinePage({super.key});
+  const RoutinePage({this.routineId, super.key});
+
+  final int? routineId;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<RoutineBloc>()..add(const LoadRoutine()),
-      child: const _RoutineView(),
+      create: (_) =>
+          getIt<RoutineBloc>()..add(LoadRoutine(routineId: routineId)),
+      child: _RoutineView(routineId: routineId),
     );
   }
 }
 
 class _RoutineView extends StatelessWidget {
-  const _RoutineView();
+  const _RoutineView({required this.routineId});
+
+  final int? routineId;
+
+  /// The tab owns the library entry point; a pushed routine already came from
+  /// there and gets a back button instead.
+  bool get _isTab => routineId == null;
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +58,20 @@ class _RoutineView extends StatelessWidget {
       onEffect: _handleEffect,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(AppStrings.routineEdit),
+          title: BlocBuilder<RoutineBloc, RoutineState>(
+            buildWhen: (a, b) => a.routine?.name != b.routine?.name,
+            builder: (context, state) => Text(
+              state.routine?.name ?? AppStrings.routineEdit,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           actions: [
+            if (_isTab)
+              IconButton(
+                onPressed: () => context.pushNamed(Routes.routineList),
+                icon: const Icon(Icons.swap_horiz),
+                tooltip: AppStrings.switchRoutine,
+              ),
             IconButton(
               onPressed: () => context.pushNamed(Routes.exerciseLibrary),
               icon: const Icon(Icons.fitness_center_outlined),
@@ -62,7 +87,7 @@ class _RoutineView extends StatelessWidget {
             if (state.failure != null && !state.hasRoutine) {
               return ErrorView(
                 message: state.failure!.message,
-                onRetry: () => bloc.add(const LoadRoutine()),
+                onRetry: () => bloc.add(LoadRoutine(routineId: routineId)),
               );
             }
             if (!state.hasRoutine) {
