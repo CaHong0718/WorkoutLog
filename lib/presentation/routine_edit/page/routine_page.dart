@@ -13,6 +13,7 @@ import '../../../domain/entity/routine_day.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/branch_reveal.dart';
 import '../../common/common_widgets.dart';
+import '../../common/drag_proxy.dart';
 import '../../common/volume_rail.dart';
 import '../bloc/routine_bloc.dart';
 import '../bloc/routine_effect.dart';
@@ -120,6 +121,9 @@ class _RoutineView extends StatelessWidget {
 class _RoutineContent extends StatelessWidget {
   const _RoutineContent({required this.state});
 
+  /// Space below each day card. The drag proxy subtracts it again.
+  static const double _dayGap = 10;
+
   final RoutineState state;
 
   @override
@@ -130,6 +134,10 @@ class _RoutineContent extends StatelessWidget {
     return ReorderableListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       buildDefaultDragHandles: false,
+      // Days are cards: the lifted one keeps its rounded border instead of
+      // being boxed into the framework's square proxy. The gap matches the
+      // spacing below each item so the shadow stops at the card's edge.
+      proxyDecorator: roundedDragProxy(bottomGap: _dayGap),
       itemCount: days.length,
       onReorderItem: (oldIndex, newIndex) =>
           bloc.add(MoveDay(oldIndex: oldIndex, newIndex: newIndex)),
@@ -173,7 +181,7 @@ class _RoutineContent extends StatelessWidget {
         final day = days[index];
         return Padding(
           key: ValueKey(day.id),
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(bottom: _dayGap),
           child: _DayCard(
             day: day,
             index: index,

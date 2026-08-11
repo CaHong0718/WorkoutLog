@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_strings.dart';
+import '../../../core/theme/app_metrics.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../domain/entity/routine_block.dart';
+import '../../common/drag_proxy.dart';
 
 /// Drag the blocks of a day into a new order.
 ///
@@ -63,6 +65,10 @@ class _BlockReorderSheetState extends State<BlockReorderSheet> {
             Expanded(
               child: ReorderableListView.builder(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                proxyDecorator: roundedDragProxy(
+                  radius: AppRadius.input,
+                  filled: true,
+                ),
                 itemCount: _blocks.length,
                 onReorderItem: (oldIndex, newIndex) {
                   widget.onReorder(oldIndex, newIndex);

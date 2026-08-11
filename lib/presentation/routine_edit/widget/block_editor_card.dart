@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_strings.dart';
+import '../../../core/theme/app_metrics.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../domain/entity/exercise.dart';
@@ -8,6 +9,7 @@ import '../../../domain/entity/routine_block.dart';
 import '../../../domain/entity/routine_item.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/common_widgets.dart';
+import '../../common/drag_proxy.dart';
 
 /// One editable block: header with its budget, then its exercise slots as a
 /// drag-reorderable list.
@@ -118,6 +120,12 @@ class BlockEditorCard extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               buildDefaultDragHandles: false,
               padding: EdgeInsets.zero,
+              // The rows have no surface of their own, so the lifted one takes
+              // a rounded fill rather than the framework's square slab.
+              proxyDecorator: roundedDragProxy(
+                radius: AppRadius.input,
+                filled: true,
+              ),
               itemCount: block.items.length,
               onReorderItem: onReorderItems,
               itemBuilder: (context, index) {
