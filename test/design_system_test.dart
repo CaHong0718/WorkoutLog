@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_log/core/theme/app_metrics.dart';
+import 'package:workout_log/core/theme/app_palette.dart';
 import 'package:workout_log/core/theme/app_theme.dart';
 import 'package:workout_log/domain/entity/enums.dart';
 import 'package:workout_log/presentation/common/body_part_ui.dart';
@@ -14,24 +16,57 @@ void main() {
     ('light', AppTheme.light()),
     ('dark', AppTheme.dark()),
   ]) {
-    testWidgets('$name: tab bar fits its 49px height', (tester) async {
+    testWidgets('$name: tab bar fits its 49px height plus the top inset', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         host(
           theme,
           Scaffold(
-            bottomNavigationBar: NavigationBar(
-              selectedIndex: 0,
-              destinations: const [
-                NavigationDestination(icon: Icon(Icons.today), label: '오늘'),
-                NavigationDestination(icon: Icon(Icons.insights), label: '기록'),
-                NavigationDestination(icon: Icon(Icons.list_alt), label: '루틴'),
-              ],
+            bottomNavigationBar: ColoredBox(
+              color: theme.extension<AppPalette>()!.surface,
+              child: Padding(
+                padding: const EdgeInsets.only(top: AppLayout.tabTopInset),
+                child: NavigationBar(
+                  selectedIndex: 0,
+                  destinations: const [
+                    NavigationDestination(icon: Icon(Icons.today), label: '오늘'),
+                    NavigationDestination(
+                      icon: Icon(Icons.insights),
+                      label: '기록',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.list_alt),
+                      label: '루틴',
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+
+      // The inset has to land inside the bar, not as a gap above it.
+      expect(
+        tester.getSize(find.byType(NavigationBar)).height,
+        AppLayout.tabBarHeight,
+      );
+      expect(
+        tester
+            .getSize(
+              find
+                  .ancestor(
+                    of: find.byType(NavigationBar),
+                    matching: find.byType(ColoredBox),
+                  )
+                  .first,
+            )
+            .height,
+        AppLayout.tabBarHeight + AppLayout.tabTopInset,
+      );
     });
 
     testWidgets('$name: shared surfaces render', (tester) async {

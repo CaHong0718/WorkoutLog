@@ -29,6 +29,15 @@ abstract final class AppLayout {
   static const double minTouchTarget = 44;
   static const double headerHeight = 48;
   static const double tabBarHeight = 49;
+
+  /// Breathing room above the tab bar's contents.
+  ///
+  /// The guide asks for 4 above the icon and notes it reads as 2 once the
+  /// column re-centres. Flutter centres the icon inside its indicator pill, so
+  /// padding the icon would slide it out of that pill; insetting the whole bar
+  /// by 2 lands the same 2 the guide is after and keeps pill, icon and label
+  /// travelling together.
+  static const double tabTopInset = 2;
   static const double buttonHeight = 52;
   static const double inputHeight = 44;
   static const double iconBox = 32;
