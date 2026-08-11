@@ -75,8 +75,10 @@ Android만 대상으로 한다. 앱 이름 `Workout Log`, applicationId `com.shy
 applicationId를 바꾸면 안드로이드가 별개 앱으로 취급해 **기존 설치본의 운동 기록이 전부 끊긴다.**
 앞으로는 바꾸지 않는다.
 
-Dart 패키지명은 아직 `health_app`이다(`pubspec.yaml`의 `name`, `package:health_app/...` import).
-앱 동작에는 영향이 없지만 이름이 어긋나 있다는 점만 알아둔다.
+Dart 패키지명은 `workout_log`(`package:workout_log/...`), Drift DB 파일명도 `workout_log.sqlite`다.
+
+**DB 파일명은 바꾸지 않는다.** 바꾸면 앱이 빈 DB를 새로 만들고 기존 운동 기록에 영영 닿지 못한다.
+저장소 폴더명만 아직 `health_app`인데, 이건 로컬 경로일 뿐 빌드 산출물과 무관하다.
 
 `무분할 40분`은 앱 이름이 아니라 **시드 루틴의 이름**이다. DB에 들어 있고 사용자가 바꿀 수 있다.
 

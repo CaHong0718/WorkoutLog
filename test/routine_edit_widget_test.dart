@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:health_app/core/theme/app_theme.dart';
-import 'package:health_app/domain/entity/enums.dart';
-import 'package:health_app/domain/entity/exercise.dart';
-import 'package:health_app/domain/entity/routine_block.dart';
-import 'package:health_app/domain/entity/routine_item.dart';
-import 'package:health_app/presentation/routine_edit/widget/block_editor_card.dart';
-import 'package:health_app/presentation/routine_edit/widget/exercise_picker_sheet.dart';
-import 'package:health_app/presentation/routine_edit/widget/item_edit_sheet.dart';
+import 'package:workout_log/core/theme/app_theme.dart';
+import 'package:workout_log/domain/entity/enums.dart';
+import 'package:workout_log/domain/entity/exercise.dart';
+import 'package:workout_log/domain/entity/routine_block.dart';
+import 'package:workout_log/domain/entity/routine_item.dart';
+import 'package:workout_log/presentation/routine_edit/widget/block_editor_card.dart';
+import 'package:workout_log/presentation/routine_edit/widget/exercise_picker_sheet.dart';
+import 'package:workout_log/presentation/routine_edit/widget/item_edit_sheet.dart';
 
 /// Widget-level checks for the editing surfaces. Deliberately free of the
 /// database: these only assert that the layouts build and hand back the right

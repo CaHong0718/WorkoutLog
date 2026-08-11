@@ -1,18 +1,18 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:health_app/data/database/app_database.dart';
-import 'package:health_app/data/repository/history_repository_impl.dart';
-import 'package:health_app/data/repository/routine_repository_impl.dart';
-import 'package:health_app/data/repository/workout_repository_impl.dart';
-import 'package:health_app/domain/entity/enums.dart';
-import 'package:health_app/domain/entity/set_log.dart';
-import 'package:health_app/domain/usecase/history_usecases.dart';
-import 'package:health_app/domain/usecase/routine_usecases.dart';
-import 'package:health_app/domain/usecase/workout_usecases.dart';
-import 'package:health_app/presentation/home/bloc/home_bloc.dart';
-import 'package:health_app/presentation/home/bloc/home_effect.dart';
-import 'package:health_app/presentation/home/bloc/home_intent.dart';
-import 'package:health_app/presentation/home/bloc/home_state.dart';
+import 'package:workout_log/data/database/app_database.dart';
+import 'package:workout_log/data/repository/history_repository_impl.dart';
+import 'package:workout_log/data/repository/routine_repository_impl.dart';
+import 'package:workout_log/data/repository/workout_repository_impl.dart';
+import 'package:workout_log/domain/entity/enums.dart';
+import 'package:workout_log/domain/entity/set_log.dart';
+import 'package:workout_log/domain/usecase/history_usecases.dart';
+import 'package:workout_log/domain/usecase/routine_usecases.dart';
+import 'package:workout_log/domain/usecase/workout_usecases.dart';
+import 'package:workout_log/presentation/home/bloc/home_bloc.dart';
+import 'package:workout_log/presentation/home/bloc/home_effect.dart';
+import 'package:workout_log/presentation/home/bloc/home_intent.dart';
+import 'package:workout_log/presentation/home/bloc/home_state.dart';
 
 /// Exercises the whole stack — bloc → use case → repository → Drift — against
 /// an in-memory database, so the wiring is verified without a device.

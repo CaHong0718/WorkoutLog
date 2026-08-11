@@ -1,20 +1,20 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:health_app/core/notification/rest_notifier.dart';
-import 'package:health_app/data/database/app_database.dart';
-import 'package:health_app/data/repository/exercise_repository_impl.dart';
-import 'package:health_app/data/repository/routine_repository_impl.dart';
-import 'package:health_app/data/repository/workout_repository_impl.dart';
-import 'package:health_app/domain/entity/enums.dart';
-import 'package:health_app/domain/entity/routine.dart';
-import 'package:health_app/domain/entity/routine_day.dart';
-import 'package:health_app/domain/entity/session_plan.dart';
-import 'package:health_app/domain/usecase/exercise_usecases.dart';
-import 'package:health_app/domain/usecase/routine_usecases.dart';
-import 'package:health_app/domain/usecase/workout_usecases.dart';
-import 'package:health_app/presentation/session/bloc/session_bloc.dart';
-import 'package:health_app/presentation/session/bloc/session_intent.dart';
-import 'package:health_app/presentation/session/bloc/session_state.dart';
+import 'package:workout_log/core/notification/rest_notifier.dart';
+import 'package:workout_log/data/database/app_database.dart';
+import 'package:workout_log/data/repository/exercise_repository_impl.dart';
+import 'package:workout_log/data/repository/routine_repository_impl.dart';
+import 'package:workout_log/data/repository/workout_repository_impl.dart';
+import 'package:workout_log/domain/entity/enums.dart';
+import 'package:workout_log/domain/entity/routine.dart';
+import 'package:workout_log/domain/entity/routine_day.dart';
+import 'package:workout_log/domain/entity/session_plan.dart';
+import 'package:workout_log/domain/usecase/exercise_usecases.dart';
+import 'package:workout_log/domain/usecase/routine_usecases.dart';
+import 'package:workout_log/domain/usecase/workout_usecases.dart';
+import 'package:workout_log/presentation/session/bloc/session_bloc.dart';
+import 'package:workout_log/presentation/session/bloc/session_intent.dart';
+import 'package:workout_log/presentation/session/bloc/session_state.dart';
 
 void main() {
   late AppDatabase db;

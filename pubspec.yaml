@@ -1,4 +1,4 @@
-name: health_app
+name: workout_log
 description: "Workout Log — 무분할 40분 루틴 기반 운동 기록 앱"
 publish_to: 'none'
 version: 0.1.0+1

@@ -1,11 +1,11 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:health_app/data/database/app_database.dart';
-import 'package:health_app/data/repository/routine_repository_impl.dart';
-import 'package:health_app/domain/entity/enums.dart';
-import 'package:health_app/domain/entity/routine.dart';
-import 'package:health_app/domain/entity/routine_day.dart';
+import 'package:workout_log/data/database/app_database.dart';
+import 'package:workout_log/data/repository/routine_repository_impl.dart';
+import 'package:workout_log/domain/entity/enums.dart';
+import 'package:workout_log/domain/entity/routine.dart';
+import 'package:workout_log/domain/entity/routine_day.dart';
 
 /// Verifies that the seeded program reproduces the numbers stated in
 /// `docs/02-ROUTINE-SEED.md` §6. If a seed edit breaks the weekly balance,

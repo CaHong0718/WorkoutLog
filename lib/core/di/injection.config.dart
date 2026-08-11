@@ -63,10 +63,53 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i615.HistoryDao>(
       () => databaseModule.historyDao(gh<_i160.AppDatabase>()),
     );
+    gh.lazySingleton<_i148.HistoryRepository>(
+      () => _i916.HistoryRepositoryImpl(gh<_i615.HistoryDao>()),
+    );
+    gh.lazySingleton<_i930.ExerciseRepository>(
+      () => _i928.ExerciseRepositoryImpl(gh<_i248.ExerciseDao>()),
+    );
+    gh.lazySingleton<_i611.WorkoutRepository>(
+      () => _i1004.WorkoutRepositoryImpl(
+        gh<_i535.WorkoutDao>(),
+        gh<_i229.RoutineDao>(),
+        gh<_i160.AppDatabase>(),
+      ),
+    );
     gh.lazySingleton<_i667.RoutineRepository>(
       () => _i64.RoutineRepositoryImpl(
         gh<_i229.RoutineDao>(),
         gh<_i160.AppDatabase>(),
+      ),
+    );
+    gh.factory<_i839.GetSessions>(
+      () => _i839.GetSessions(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetSessionDetail>(
+      () => _i839.GetSessionDetail(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetSessionsOn>(
+      () => _i839.GetSessionsOn(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetWeeklyVolume>(
+      () => _i839.GetWeeklyVolume(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetExerciseProgress>(
+      () => _i839.GetExerciseProgress(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetWorkoutDates>(
+      () => _i839.GetWorkoutDates(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetTotalSessionCount>(
+      () => _i839.GetTotalSessionCount(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i1045.HistoryBloc>(
+      () => _i1045.HistoryBloc(
+        gh<_i839.GetWorkoutDates>(),
+        gh<_i839.GetSessions>(),
+        gh<_i839.GetSessionsOn>(),
+        gh<_i839.GetWeeklyVolume>(),
+        gh<_i839.GetTotalSessionCount>(),
       ),
     );
     gh.factory<_i15.GetActiveRoutine>(
@@ -111,39 +154,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i15.ReorderItems>(
       () => _i15.ReorderItems(gh<_i667.RoutineRepository>()),
     );
-    gh.lazySingleton<_i148.HistoryRepository>(
-      () => _i916.HistoryRepositoryImpl(gh<_i615.HistoryDao>()),
-    );
-    gh.lazySingleton<_i611.WorkoutRepository>(
-      () => _i1004.WorkoutRepositoryImpl(
-        gh<_i535.WorkoutDao>(),
-        gh<_i229.RoutineDao>(),
-        gh<_i160.AppDatabase>(),
+    gh.factory<_i122.StatsBloc>(
+      () => _i122.StatsBloc(
+        gh<_i15.GetActiveRoutine>(),
+        gh<_i839.GetWeeklyVolume>(),
+        gh<_i839.GetSessions>(),
+        gh<_i839.GetExerciseProgress>(),
       ),
-    );
-    gh.lazySingleton<_i930.ExerciseRepository>(
-      () => _i928.ExerciseRepositoryImpl(gh<_i248.ExerciseDao>()),
-    );
-    gh.factory<_i839.GetSessions>(
-      () => _i839.GetSessions(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetSessionDetail>(
-      () => _i839.GetSessionDetail(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetSessionsOn>(
-      () => _i839.GetSessionsOn(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetWeeklyVolume>(
-      () => _i839.GetWeeklyVolume(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetExerciseProgress>(
-      () => _i839.GetExerciseProgress(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetWorkoutDates>(
-      () => _i839.GetWorkoutDates(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetTotalSessionCount>(
-      () => _i839.GetTotalSessionCount(gh<_i148.HistoryRepository>()),
     );
     gh.factory<_i628.GetAllExercises>(
       () => _i628.GetAllExercises(gh<_i930.ExerciseRepository>()),
@@ -165,14 +182,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i628.DeleteExercise>(
       () => _i628.DeleteExercise(gh<_i930.ExerciseRepository>()),
-    );
-    gh.factory<_i937.RoutineBloc>(
-      () => _i937.RoutineBloc(
-        gh<_i15.WatchActiveRoutine>(),
-        gh<_i15.UpsertDay>(),
-        gh<_i15.DeleteDay>(),
-        gh<_i15.ReorderDays>(),
-      ),
     );
     gh.factory<_i250.GetInProgressSession>(
       () => _i250.GetInProgressSession(gh<_i611.WorkoutRepository>()),
@@ -222,12 +231,26 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i15.ReorderItems>(),
       ),
     );
-    gh.factory<_i122.StatsBloc>(
-      () => _i122.StatsBloc(
-        gh<_i15.GetActiveRoutine>(),
-        gh<_i839.GetWeeklyVolume>(),
-        gh<_i839.GetSessions>(),
-        gh<_i839.GetExerciseProgress>(),
+    gh.factory<_i937.RoutineBloc>(
+      () => _i937.RoutineBloc(
+        gh<_i15.WatchActiveRoutine>(),
+        gh<_i15.UpsertDay>(),
+        gh<_i15.DeleteDay>(),
+        gh<_i15.ReorderDays>(),
+      ),
+    );
+    gh.factory<_i1038.ExerciseLibraryBloc>(
+      () => _i1038.ExerciseLibraryBloc(
+        gh<_i628.WatchExercises>(),
+        gh<_i628.UpsertExercise>(),
+        gh<_i628.DeleteExercise>(),
+      ),
+    );
+    gh.factoryParam<_i918.SessionDetailBloc, int, dynamic>(
+      (sessionId, _) => _i918.SessionDetailBloc(
+        sessionId,
+        gh<_i839.GetSessionDetail>(),
+        gh<_i250.DeleteSession>(),
       ),
     );
     gh.factory<_i315.HomeBloc>(
@@ -238,13 +261,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i839.GetWeeklyVolume>(),
         gh<_i250.StartSession>(),
         gh<_i250.AbortSession>(),
-      ),
-    );
-    gh.factory<_i1038.ExerciseLibraryBloc>(
-      () => _i1038.ExerciseLibraryBloc(
-        gh<_i628.WatchExercises>(),
-        gh<_i628.UpsertExercise>(),
-        gh<_i628.DeleteExercise>(),
       ),
     );
     gh.factoryParam<_i373.SessionBloc, int, dynamic>(
@@ -261,22 +277,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i628.GetExercisesByIds>(),
         gh<_i250.SuggestProgression>(),
         gh<_i204.RestNotifier>(),
-      ),
-    );
-    gh.factoryParam<_i918.SessionDetailBloc, int, dynamic>(
-      (sessionId, _) => _i918.SessionDetailBloc(
-        sessionId,
-        gh<_i839.GetSessionDetail>(),
-        gh<_i250.DeleteSession>(),
-      ),
-    );
-    gh.factory<_i1045.HistoryBloc>(
-      () => _i1045.HistoryBloc(
-        gh<_i839.GetWorkoutDates>(),
-        gh<_i839.GetSessions>(),
-        gh<_i839.GetSessionsOn>(),
-        gh<_i839.GetWeeklyVolume>(),
-        gh<_i839.GetTotalSessionCount>(),
       ),
     );
     return this;

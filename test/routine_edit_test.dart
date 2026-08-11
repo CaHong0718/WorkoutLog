@@ -1,26 +1,26 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:health_app/core/error/failure.dart';
-import 'package:health_app/data/database/app_database.dart';
-import 'package:health_app/data/repository/exercise_repository_impl.dart';
-import 'package:health_app/data/repository/routine_repository_impl.dart';
-import 'package:health_app/data/repository/workout_repository_impl.dart';
-import 'package:health_app/domain/entity/enums.dart';
-import 'package:health_app/domain/entity/exercise.dart';
-import 'package:health_app/domain/entity/routine_day.dart';
-import 'package:health_app/domain/entity/session_plan.dart';
-import 'package:health_app/domain/entity/set_log.dart';
-import 'package:health_app/domain/usecase/exercise_usecases.dart';
-import 'package:health_app/domain/usecase/routine_usecases.dart';
-import 'package:health_app/presentation/routine_edit/bloc/day_edit_bloc.dart';
-import 'package:health_app/presentation/routine_edit/bloc/day_edit_intent.dart';
-import 'package:health_app/presentation/routine_edit/bloc/day_edit_state.dart';
-import 'package:health_app/presentation/routine_edit/bloc/exercise_library_bloc.dart';
-import 'package:health_app/presentation/routine_edit/bloc/exercise_library_effect.dart';
-import 'package:health_app/presentation/routine_edit/bloc/exercise_library_intent.dart';
-import 'package:health_app/presentation/routine_edit/bloc/routine_bloc.dart';
-import 'package:health_app/presentation/routine_edit/bloc/routine_effect.dart';
-import 'package:health_app/presentation/routine_edit/bloc/routine_intent.dart';
+import 'package:workout_log/core/error/failure.dart';
+import 'package:workout_log/data/database/app_database.dart';
+import 'package:workout_log/data/repository/exercise_repository_impl.dart';
+import 'package:workout_log/data/repository/routine_repository_impl.dart';
+import 'package:workout_log/data/repository/workout_repository_impl.dart';
+import 'package:workout_log/domain/entity/enums.dart';
+import 'package:workout_log/domain/entity/exercise.dart';
+import 'package:workout_log/domain/entity/routine_day.dart';
+import 'package:workout_log/domain/entity/session_plan.dart';
+import 'package:workout_log/domain/entity/set_log.dart';
+import 'package:workout_log/domain/usecase/exercise_usecases.dart';
+import 'package:workout_log/domain/usecase/routine_usecases.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/day_edit_bloc.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/day_edit_intent.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/day_edit_state.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/exercise_library_bloc.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/exercise_library_effect.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/exercise_library_intent.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/routine_bloc.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/routine_effect.dart';
+import 'package:workout_log/presentation/routine_edit/bloc/routine_intent.dart';
 
 /// Routine editing over the whole stack — bloc → use case → repository →
 /// Drift — against an in-memory database seeded with the reference program.
