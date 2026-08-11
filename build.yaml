@@ -1,9 +1,7 @@
 targets:
   $default:
     builders:
-      drift_dev:analyzer:
-        options: &drift_options
+      drift_dev:
+        options:
           store_date_time_values_as_text: true
           named_parameters: true
-      drift_dev:modular:
-        options: *drift_options

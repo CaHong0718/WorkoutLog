@@ -10,7 +10,7 @@
 | STEP | 내용 | 상태 |
 |---|---|---|
 | 0 | 프로젝트 골격 · 설계 문서 | ✅ |
-| 1 | Core 레이어 | ⬜ |
+| 1 | Core 레이어 | ✅ |
 | 2 | Domain 레이어 | ⬜ |
 | 3 | Data 레이어 (Drift + 시드) | ⬜ |
 | 4 | 홈 / 오늘의 루틴 화면 | ⬜ |
@@ -56,17 +56,18 @@ dev_dependencies:
 
 ## STEP 1 — Core 레이어
 
-- [ ] `core/result/result.dart` — `Result<T>` sealed (`Ok` / `Err`)
-- [ ] `core/error/failure.dart` — `Failure` sealed (`DatabaseFailure`, `NotFoundFailure`, `ValidationFailure`, `UnknownFailure`)
-- [ ] `core/mvi/` — `MviIntent`, `MviState`, `MviEffect`, `MviBloc<I,S,E>` (Effect 브로드캐스트 스트림 포함)
-- [ ] `core/mvi/bloc_effect_listener.dart` — Effect 구독 위젯
-- [ ] `core/theme/app_colors.dart` — `02-ROUTINE-SEED.md` §10 토큰 전체 이식, Light/Dark 세트 + `BodyPart` → Color 확장
-- [ ] `core/theme/app_typography.dart` — tabular figures 적용 텍스트 스타일
-- [ ] `core/theme/app_theme.dart` — `ThemeData` light/dark
-- [ ] `core/router/app_router.dart` — go_router 라우트 뼈대 (home / session / routineEdit / history)
-- [ ] `core/di/injection.dart` — `configureDependencies()`
-- [ ] `core/constants/app_strings.dart` — 한국어 문자열
-- [ ] `core/extensions/` — `DateTime` (주 시작일, 날짜 절삭), `Duration` (mm:ss 포맷)
+- [x] `core/result/result.dart` — `Result<T>` sealed (`Ok` / `Err`)
+- [x] `core/error/failure.dart` — `Failure` sealed (`DatabaseFailure`, `NotFoundFailure`, `ValidationFailure`, `UnknownFailure`)
+- [x] `core/mvi/` — `MviIntent`, `MviState`, `MviEffect`, `MviBloc<I,S,E>` (Effect 브로드캐스트 스트림 포함)
+- [x] `core/mvi/effect_listener.dart` — Effect 구독 위젯
+- [x] `core/theme/app_palette.dart` — `02-ROUTINE-SEED.md` §10 토큰 전체를 `ThemeExtension`으로 이식 (light/dark)
+- [x] `core/theme/app_typography.dart` — tabular figures 적용 텍스트 스타일
+- [x] `core/theme/app_theme.dart` — `ThemeData` light/dark
+- [x] `core/router/app_router.dart` — go_router 라우트 뼈대 (home / session / routine / history)
+- [x] `core/di/injection.dart` — `configureDependencies()`
+- [x] `core/constants/app_strings.dart` — 한국어 문자열
+- [x] `core/extensions/` — `DateTime` (주 시작일, 날짜 절삭), `Duration` (mm:ss 포맷)
+- [ ] `presentation/common/body_part_ui.dart` — `BodyPart` → 색상/라벨 (STEP 2에서 BodyPart 정의 후)
 
 **완료 조건**: 빈 홈 화면이 테마 적용된 상태로 뜬다.
 
@@ -76,9 +77,9 @@ dev_dependencies:
 
 `01-DOMAIN-MODEL.md`의 §2·§3·§5를 그대로 코드로 옮긴다.
 
-- [ ] `features/routine/domain/entity/` — `body_part.dart`, `exercise.dart`, `routine.dart`, `routine_day.dart`, `routine_block.dart`, `routine_item.dart`
-- [ ] `features/workout/domain/entity/` — `workout_session.dart`, `set_log.dart`, `session_status.dart`
-- [ ] `features/history/domain/entity/` — `exercise_progress_point.dart`, `weekly_volume.dart`
+- [ ] `domain/entity/` — `body_part.dart`, `exercise.dart`, `routine.dart`, `routine_day.dart`,
+      `routine_block.dart`, `routine_item.dart`, `workout_session.dart`, `set_log.dart`,
+      `session_status.dart`, `exercise_progress_point.dart`
 - [ ] Repository 인터페이스 4종 (`RoutineRepository`, `ExerciseRepository`, `WorkoutRepository`, `HistoryRepository`)
 - [ ] UseCase — 아래 목록
 
@@ -100,14 +101,14 @@ history:  GetSessions, GetSessionDetail, GetWeeklyVolume,
 
 ## STEP 3 — Data 레이어 (Drift + 시드)
 
-- [ ] `core/database/tables/` — 7개 테이블 (`01-DOMAIN-MODEL.md` §6)
-- [ ] `core/database/app_database.dart` — schemaVersion 1, FK cascade 활성화(`PRAGMA foreign_keys = ON`)
-- [ ] `core/database/daos/` — `RoutineDao`, `ExerciseDao`, `WorkoutDao`, `HistoryDao`
-- [ ] `core/database/seed/routine_seed.dart` — `02-ROUTINE-SEED.md` §2~§5, §7, §8 전체 삽입
+- [ ] `data/database/tables/` — 7개 테이블 (`01-DOMAIN-MODEL.md` §6)
+- [ ] `data/database/app_database.dart` — schemaVersion 1, FK cascade 활성화(`PRAGMA foreign_keys = ON`)
+- [ ] `data/database/daos/` — `RoutineDao`, `ExerciseDao`, `WorkoutDao`, `HistoryDao`
+- [ ] `data/database/seed/routine_seed.dart` — `02-ROUTINE-SEED.md` §2~§5, §7, §8 전체 삽입
 - [ ] 시드는 최초 실행 시 1회만 (`routines` 테이블이 비어 있을 때)
-- [ ] `features/*/data/mapper/` — Row ↔ Entity
-- [ ] `features/*/data/repository/` — RepositoryImpl 4종, 예외 → `Failure` 변환
-- [ ] `dart run build_runner build --delete-conflicting-outputs`
+- [ ] `data/mapper/` — Row ↔ Entity
+- [ ] `data/repository/` — RepositoryImpl 4종, 예외 → `Failure` 변환
+- [ ] `dart run build_runner build`
 
 **완료 조건**: 시드 삽입 후 주간 볼륨 집계가 `02-ROUTINE-SEED.md` §6 표(어깨19·가슴17·등16·하체12·팔6 = 70)와 일치. 이 검증은 테스트로 남긴다.
 

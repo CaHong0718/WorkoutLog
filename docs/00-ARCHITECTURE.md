@@ -26,57 +26,58 @@ Clean Architecture 3계층 + MVI 프레젠테이션 패턴.
 
 ## 2. 폴더 구조
 
+**layer-first**를 택했다. Routine / Workout / History는 `RoutineDay`·`SetLog`·`BodyPart` 같은
+엔티티를 강하게 공유하기 때문에, feature-first로 나누면 feature 간 교차 import가 상시로 발생한다.
+계층으로 먼저 나누고 계층 안에서 도메인별로 묶는다.
+
 ```
 lib/
 ├── main.dart                     앱 진입점 (DI 초기화 → runApp)
 ├── app.dart                      MaterialApp.router 설정
 │
-├── core/                         전 기능 공용
-│   ├── di/                       get_it + injectable 설정
-│   │   └── injection.dart
-│   ├── error/
-│   │   └── failure.dart          Failure sealed class
-│   ├── result/
-│   │   └── result.dart           Result<T> sealed class (Success/FailureResult)
+├── core/                         프레임워크·인프라 공용 (도메인 지식 없음)
+│   ├── di/injection.dart         get_it + injectable
+│   ├── error/failure.dart        Failure sealed class
+│   ├── result/result.dart        Result<T> sealed class (Ok / Err)
 │   ├── mvi/                      MVI 베이스 계약
-│   │   ├── mvi_intent.dart
-│   │   ├── mvi_state.dart
-│   │   ├── mvi_effect.dart
-│   │   └── mvi_bloc.dart
-│   ├── database/                 Drift (공용 인프라)
+│   │   ├── mvi_intent.dart  mvi_state.dart  mvi_effect.dart
+│   │   ├── mvi_bloc.dart
+│   │   └── effect_listener.dart
+│   ├── theme/                    루틴 HTML 디자인 토큰 이식
+│   │   ├── app_palette.dart      ThemeExtension (light/dark 토큰)
+│   │   ├── app_typography.dart
+│   │   └── app_theme.dart
+│   ├── router/app_router.dart    go_router
+│   ├── constants/app_strings.dart
+│   └── extensions/               DateTime, Duration 확장
+│
+├── domain/                       순수 Dart. flutter/drift import 금지
+│   ├── entity/                   BodyPart, Exercise, Routine, RoutineDay,
+│   │                             RoutineBlock, RoutineItem, WorkoutSession, SetLog …
+│   ├── repository/               RoutineRepository, ExerciseRepository,
+│   │                             WorkoutRepository, HistoryRepository
+│   └── usecase/
+│       ├── routine/  exercise/  workout/  history/
+│
+├── data/
+│   ├── database/                 Drift
 │   │   ├── app_database.dart
 │   │   ├── tables/
 │   │   ├── daos/
-│   │   └── seed/                 무분할 40분 루틴 시드 데이터
-│   ├── theme/
-│   │   ├── app_colors.dart       루틴 HTML 디자인 토큰 이식
-│   │   ├── app_typography.dart
-│   │   └── app_theme.dart
-│   ├── router/
-│   │   └── app_router.dart       go_router
-│   ├── constants/
-│   ├── extensions/
-│   └── widgets/                  공용 위젯 (BodyPartChip, SectionCard 등)
+│   │   └── seed/                 무분할 40분 루틴 시드
+│   ├── mapper/                   Row ↔ Entity
+│   └── repository/               *RepositoryImpl
 │
-└── features/
-    ├── routine/                  루틴 조회 · 편집
-    │   ├── domain/
-    │   │   ├── entity/
-    │   │   ├── repository/
-    │   │   └── usecase/
-    │   ├── data/
-    │   │   ├── datasource/
-    │   │   ├── mapper/
-    │   │   └── repository/
-    │   └── presentation/
-    │       ├── bloc/
-    │       ├── page/
-    │       └── widget/
-    ├── workout/                  운동 세션 기록 + 휴식 타이머
-    │   └── (동일 구조)
-    └── history/                  기록 히스토리 + 통계
-        └── (동일 구조)
+└── presentation/
+    ├── common/                   공용 위젯 · BodyPart→색상/라벨 매핑
+    ├── home/                     bloc/ page/ widget/
+    ├── session/                  운동 세션 + 휴식 타이머
+    ├── routine_edit/             루틴 편집
+    └── history/                  기록 · 통계
 ```
+
+**BodyPart → 색상 매핑 위치**: `core/theme`가 아니라 `presentation/common/body_part_ui.dart`.
+`core`는 도메인을 몰라야 하고, 의존 방향은 presentation → domain이 정상이기 때문.
 
 ## 3. MVI 계약
 
@@ -159,8 +160,10 @@ class GetTodayRoutineDay {
 ## 7. 코드 생성
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
+
+> 이 build_runner 버전에서는 `--delete-conflicting-outputs` 플래그가 제거됐다. 붙이지 않는다.
 
 생성 대상: `injectable`(DI), `drift`(DB), `freezed`(선택).
 생성 파일(`*.g.dart`, `*.freezed.dart`, `*.config.dart`)은 커밋한다.
