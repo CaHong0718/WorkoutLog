@@ -12,7 +12,7 @@
 | 0 | 프로젝트 골격 · 설계 문서 | ✅ |
 | 1 | Core 레이어 | ✅ |
 | 2 | Domain 레이어 | ✅ |
-| 3 | Data 레이어 (Drift + 시드) | ⬜ |
+| 3 | Data 레이어 (Drift + 시드) | ✅ |
 | 4 | 홈 / 오늘의 루틴 화면 | ⬜ |
 | 5 | 운동 세션 화면 (기록 + 휴식 타이머) | ⬜ |
 | 6 | 루틴 편집 화면 | ⬜ |
@@ -113,14 +113,14 @@ history_usecases.dart
 
 ## STEP 3 — Data 레이어 (Drift + 시드)
 
-- [ ] `data/database/tables/` — 7개 테이블 (`01-DOMAIN-MODEL.md` §6)
-- [ ] `data/database/app_database.dart` — schemaVersion 1, FK cascade 활성화(`PRAGMA foreign_keys = ON`)
-- [ ] `data/database/daos/` — `RoutineDao`, `ExerciseDao`, `WorkoutDao`, `HistoryDao`
-- [ ] `data/database/seed/routine_seed.dart` — `02-ROUTINE-SEED.md` §2~§5, §7, §8 전체 삽입
-- [ ] 시드는 최초 실행 시 1회만 (`routines` 테이블이 비어 있을 때)
-- [ ] `data/mapper/` — Row ↔ Entity
-- [ ] `data/repository/` — RepositoryImpl 4종, 예외 → `Failure` 변환
-- [ ] `dart run build_runner build`
+- [x] `data/database/tables/` — 7개 테이블 (`01-DOMAIN-MODEL.md` §6)
+- [x] `data/database/app_database.dart` — schemaVersion 1, FK cascade 활성화(`PRAGMA foreign_keys = ON`)
+- [x] `data/database/daos/` — `RoutineDao`, `ExerciseDao`, `WorkoutDao`, `HistoryDao`
+- [x] `data/database/seed/routine_seed.dart` — `02-ROUTINE-SEED.md` §2~§5, §7, §8 전체 삽입
+- [x] 시드는 최초 실행 시 1회만 (`routines` 테이블이 비어 있을 때)
+- [x] `data/mapper/` — Row ↔ Entity
+- [x] `data/repository/` — RepositoryImpl 4종, 예외 → `Failure` 변환
+- [x] `dart run build_runner build`
 
 **완료 조건**: 시드 삽입 후 주간 볼륨 집계가 `02-ROUTINE-SEED.md` §6 표(어깨19·가슴17·등16·하체12·팔6 = 70)와 일치. 이 검증은 테스트로 남긴다.
 

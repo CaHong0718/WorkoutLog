@@ -12,6 +12,16 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
+import '../../data/database/app_database.dart' as _i160;
+import '../../data/database/daos/exercise_dao.dart' as _i248;
+import '../../data/database/daos/history_dao.dart' as _i615;
+import '../../data/database/daos/routine_dao.dart' as _i229;
+import '../../data/database/daos/workout_dao.dart' as _i535;
+import '../../data/di/database_module.dart' as _i883;
+import '../../data/repository/exercise_repository_impl.dart' as _i928;
+import '../../data/repository/history_repository_impl.dart' as _i916;
+import '../../data/repository/routine_repository_impl.dart' as _i64;
+import '../../data/repository/workout_repository_impl.dart' as _i1004;
 import '../../domain/repository/exercise_repository.dart' as _i930;
 import '../../domain/repository/history_repository.dart' as _i148;
 import '../../domain/repository/routine_repository.dart' as _i667;
@@ -28,6 +38,102 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
+    final databaseModule = _$DatabaseModule();
+    gh.lazySingleton<_i160.AppDatabase>(() => databaseModule.database);
+    gh.lazySingleton<_i229.RoutineDao>(
+      () => databaseModule.routineDao(gh<_i160.AppDatabase>()),
+    );
+    gh.lazySingleton<_i248.ExerciseDao>(
+      () => databaseModule.exerciseDao(gh<_i160.AppDatabase>()),
+    );
+    gh.lazySingleton<_i535.WorkoutDao>(
+      () => databaseModule.workoutDao(gh<_i160.AppDatabase>()),
+    );
+    gh.lazySingleton<_i615.HistoryDao>(
+      () => databaseModule.historyDao(gh<_i160.AppDatabase>()),
+    );
+    gh.lazySingleton<_i667.RoutineRepository>(
+      () => _i64.RoutineRepositoryImpl(
+        gh<_i229.RoutineDao>(),
+        gh<_i160.AppDatabase>(),
+      ),
+    );
+    gh.factory<_i15.GetActiveRoutine>(
+      () => _i15.GetActiveRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.WatchActiveRoutine>(
+      () => _i15.WatchActiveRoutine(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.GetRoutineDays>(
+      () => _i15.GetRoutineDays(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.GetDayDetail>(
+      () => _i15.GetDayDetail(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.GetNextDay>(
+      () => _i15.GetNextDay(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.UpsertDay>(
+      () => _i15.UpsertDay(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.DeleteDay>(
+      () => _i15.DeleteDay(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.ReorderDays>(
+      () => _i15.ReorderDays(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.UpsertBlock>(
+      () => _i15.UpsertBlock(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.DeleteBlock>(
+      () => _i15.DeleteBlock(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.ReorderBlocks>(
+      () => _i15.ReorderBlocks(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.UpsertItem>(
+      () => _i15.UpsertItem(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.DeleteItem>(
+      () => _i15.DeleteItem(gh<_i667.RoutineRepository>()),
+    );
+    gh.factory<_i15.ReorderItems>(
+      () => _i15.ReorderItems(gh<_i667.RoutineRepository>()),
+    );
+    gh.lazySingleton<_i148.HistoryRepository>(
+      () => _i916.HistoryRepositoryImpl(gh<_i615.HistoryDao>()),
+    );
+    gh.lazySingleton<_i611.WorkoutRepository>(
+      () => _i1004.WorkoutRepositoryImpl(
+        gh<_i535.WorkoutDao>(),
+        gh<_i229.RoutineDao>(),
+        gh<_i160.AppDatabase>(),
+      ),
+    );
+    gh.lazySingleton<_i930.ExerciseRepository>(
+      () => _i928.ExerciseRepositoryImpl(gh<_i248.ExerciseDao>()),
+    );
+    gh.factory<_i839.GetSessions>(
+      () => _i839.GetSessions(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetSessionDetail>(
+      () => _i839.GetSessionDetail(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetSessionsOn>(
+      () => _i839.GetSessionsOn(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetWeeklyVolume>(
+      () => _i839.GetWeeklyVolume(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetExerciseProgress>(
+      () => _i839.GetExerciseProgress(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetWorkoutDates>(
+      () => _i839.GetWorkoutDates(gh<_i148.HistoryRepository>()),
+    );
+    gh.factory<_i839.GetTotalSessionCount>(
+      () => _i839.GetTotalSessionCount(gh<_i148.HistoryRepository>()),
+    );
     gh.factory<_i628.GetAllExercises>(
       () => _i628.GetAllExercises(gh<_i930.ExerciseRepository>()),
     );
@@ -80,69 +186,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i250.SuggestProgression>(
       () => _i250.SuggestProgression(gh<_i611.WorkoutRepository>()),
     );
-    gh.factory<_i15.GetActiveRoutine>(
-      () => _i15.GetActiveRoutine(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.WatchActiveRoutine>(
-      () => _i15.WatchActiveRoutine(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.GetRoutineDays>(
-      () => _i15.GetRoutineDays(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.GetDayDetail>(
-      () => _i15.GetDayDetail(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.GetNextDay>(
-      () => _i15.GetNextDay(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.UpsertDay>(
-      () => _i15.UpsertDay(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.DeleteDay>(
-      () => _i15.DeleteDay(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.ReorderDays>(
-      () => _i15.ReorderDays(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.UpsertBlock>(
-      () => _i15.UpsertBlock(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.DeleteBlock>(
-      () => _i15.DeleteBlock(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.ReorderBlocks>(
-      () => _i15.ReorderBlocks(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.UpsertItem>(
-      () => _i15.UpsertItem(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.DeleteItem>(
-      () => _i15.DeleteItem(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i15.ReorderItems>(
-      () => _i15.ReorderItems(gh<_i667.RoutineRepository>()),
-    );
-    gh.factory<_i839.GetSessions>(
-      () => _i839.GetSessions(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetSessionDetail>(
-      () => _i839.GetSessionDetail(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetSessionsOn>(
-      () => _i839.GetSessionsOn(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetWeeklyVolume>(
-      () => _i839.GetWeeklyVolume(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetExerciseProgress>(
-      () => _i839.GetExerciseProgress(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetWorkoutDates>(
-      () => _i839.GetWorkoutDates(gh<_i148.HistoryRepository>()),
-    );
-    gh.factory<_i839.GetTotalSessionCount>(
-      () => _i839.GetTotalSessionCount(gh<_i148.HistoryRepository>()),
-    );
     return this;
   }
 }
+
+class _$DatabaseModule extends _i883.DatabaseModule {}
