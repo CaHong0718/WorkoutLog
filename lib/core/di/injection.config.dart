@@ -31,6 +31,7 @@ import '../../domain/usecase/history_usecases.dart' as _i839;
 import '../../domain/usecase/routine_usecases.dart' as _i15;
 import '../../domain/usecase/workout_usecases.dart' as _i250;
 import '../../presentation/home/bloc/home_bloc.dart' as _i315;
+import '../../presentation/session/bloc/session_bloc.dart' as _i373;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -195,6 +196,21 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i839.GetWeeklyVolume>(),
         gh<_i250.StartSession>(),
         gh<_i250.AbortSession>(),
+      ),
+    );
+    gh.factoryParam<_i373.SessionBloc, int, dynamic>(
+      (sessionId, _) => _i373.SessionBloc(
+        sessionId,
+        gh<_i250.GetSession>(),
+        gh<_i15.GetDayDetail>(),
+        gh<_i250.LogSet>(),
+        gh<_i250.UpdateSet>(),
+        gh<_i250.DeleteSet>(),
+        gh<_i250.CompleteSession>(),
+        gh<_i250.AbortSession>(),
+        gh<_i250.GetLastLogsForExercise>(),
+        gh<_i628.GetExercisesByIds>(),
+        gh<_i250.SuggestProgression>(),
       ),
     );
     return this;

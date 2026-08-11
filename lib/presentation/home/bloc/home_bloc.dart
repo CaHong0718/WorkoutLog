@@ -23,9 +23,9 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
   ) : super(const HomeState()) {
     on<LoadHome>(_onLoad);
     on<SelectDay>(_onSelectDay);
-    on<StartWorkout>(_onStartWorkout);
+    on<StartWorkout>(_onStartWorkout, transformer: sequential());
     on<ResumeWorkout>(_onResumeWorkout);
-    on<DiscardInProgress>(_onDiscardInProgress);
+    on<DiscardInProgress>(_onDiscardInProgress, transformer: sequential());
   }
 
   final GetActiveRoutine _getActiveRoutine;

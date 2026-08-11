@@ -32,3 +32,11 @@ abstract class MviBloc<I extends MviIntent, S extends MviState, E extends MviEff
     return super.close();
   }
 }
+
+/// Processes events one at a time, in arrival order.
+///
+/// Bloc's default transformer is concurrent: two taps on the same button start
+/// two handlers that both read the pre-tap state. Any handler that writes to
+/// the database must use this instead.
+EventTransformer<E> sequential<E>() =>
+    (events, mapper) => events.asyncExpand(mapper);

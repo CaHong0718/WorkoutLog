@@ -14,7 +14,7 @@
 | 2 | Domain 레이어 | ✅ |
 | 3 | Data 레이어 (Drift + 시드) | ✅ |
 | 4 | 홈 / 오늘의 루틴 화면 | ✅ |
-| 5 | 운동 세션 화면 (기록 + 휴식 타이머) | ⬜ |
+| 5 | 운동 세션 화면 (기록 + 휴식 타이머) | ✅ |
 | 6 | 루틴 편집 화면 | ⬜ |
 | 7 | 히스토리 / 통계 화면 | ⬜ |
 | 8 | Android 빌드 검증 · 마무리 | ⬜ |
@@ -142,17 +142,17 @@ history_usecases.dart
 
 ## STEP 5 — 운동 세션 화면 (핵심)
 
-- [ ] `SessionBloc` — Intent: `Load`, `CompleteSet`, `EditSet`, `SkipSet`, `SkipBlock`, `SwitchExercise`, `StartRest`, `SkipRest`, `AddRestTime`, `Tick`, `FinishSession`, `AbortSession`
-- [ ] 블록 단위 진행 UI (현재 블록 강조, 완료 블록 접기)
-- [ ] 슈퍼세트 라운드 진행 (A→B→휴식 사이클)
-- [ ] 세트 입력: 무게(0.5kg 스텝) · 반복 · RIR
-- [ ] 지난 기록 프리필 (`GetLastLogsForExercise`)
-- [ ] 세트 완료 → 휴식 타이머 자동 시작 (블록 `restSeconds` 기준)
-- [ ] 타이머: 원형 진행 표시, +15s / 건너뛰기, 종료 시 햅틱
-- [ ] 총 세션 경과 시간 (상단 고정), 40분 기준 진행 바
-- [ ] 대체 종목 스위치 (롱프레스)
-- [ ] 세션 완료 시 요약 + 증량 제안 (이중 프로그레션 규칙)
-- [ ] 앱 종료 후 재진입 시 진행 중 세션 복원
+- [x] `SessionBloc` — Intent: `Load`, `CompleteSet`, `EditSet`, `SkipSet`, `SkipBlock`, `SwitchExercise`, `StartRest`, `SkipRest`, `AddRestTime`, `Tick`, `FinishSession`, `AbortSession`
+- [x] 블록 단위 진행 UI (현재 블록 강조, 완료 블록 접기)
+- [x] 슈퍼세트 라운드 진행 (A→B→휴식 사이클)
+- [x] 세트 입력: 무게(± 2.5kg 스텝, 직접 입력 가능) · 반복 · RIR
+- [x] 지난 기록 프리필 (`GetLastLogsForExercise`)
+- [x] 세트 완료 → 휴식 타이머 자동 시작 (블록 `restSeconds` 기준)
+- [x] 타이머: 원형 진행 표시, +15s / 건너뛰기, 종료 시 햅틱
+- [x] 총 세션 경과 시간 (상단 고정), 40분 기준 진행 바
+- [x] 대체 종목 스위치 (롱프레스)
+- [x] 세션 완료 시 요약 + 증량 제안 (이중 프로그레션 규칙)
+- [x] 앱 종료 후 재진입 시 진행 중 세션 복원
 
 **완료 조건**: 세션 하나를 처음부터 끝까지 기록하고 DB에 저장된다.
 
