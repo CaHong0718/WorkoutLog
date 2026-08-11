@@ -13,6 +13,16 @@ final class OpenSessionDetail extends HistoryEffect {
   List<Object?> get props => [sessionId];
 }
 
+/// Continues an unfinished session picked from the calendar.
+final class ResumeSessionFromHistory extends HistoryEffect {
+  const ResumeSessionFromHistory(this.sessionId);
+
+  final int sessionId;
+
+  @override
+  List<Object?> get props => [sessionId];
+}
+
 final class ShowHistoryMessage extends HistoryEffect {
   const ShowHistoryMessage(this.message);
 

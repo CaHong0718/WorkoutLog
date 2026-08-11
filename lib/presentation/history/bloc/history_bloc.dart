@@ -140,7 +140,11 @@ class HistoryBloc extends MviBloc<HistoryIntent, HistoryState, HistoryEffect> {
   }
 
   void _onOpenSession(OpenSessionRecord intent, Emitter<HistoryState> emit) =>
-      emitEffect(OpenSessionDetail(intent.sessionId));
+      emitEffect(
+        intent.isInProgress
+            ? ResumeSessionFromHistory(intent.sessionId)
+            : OpenSessionDetail(intent.sessionId),
+      );
 
   // ── internals ───────────────────────────────────────────────────────────
 

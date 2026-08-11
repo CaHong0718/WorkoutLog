@@ -114,7 +114,10 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
 
     switch (result) {
       case Ok(:final value):
-        emit(state.copyWith(isStarting: false, clearInProgress: true));
+        // The new session *is* the in-progress one: starting aborts whatever
+        // was open. Clearing the field here would hide the resume banner if the
+        // user walked away from this session too.
+        emit(state.copyWith(isStarting: false, inProgressSession: value));
         emitEffect(OpenSession(value.id));
       case Err(:final failure):
         emit(state.copyWith(isStarting: false));

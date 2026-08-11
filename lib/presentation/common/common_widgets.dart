@@ -49,6 +49,78 @@ class SectionCard extends StatelessWidget {
   }
 }
 
+/// One branch of a decision, stated as a sentence rather than a bare verb.
+///
+/// Stacked full-width tiles beat a row of same-weight dialog buttons whenever
+/// the options differ in consequence: the title says what happens, the line
+/// under it says what it costs, and [emphasized] marks the safe default.
+class ChoiceTile extends StatelessWidget {
+  const ChoiceTile({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+    this.emphasized = false,
+    super.key,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  /// Draws the tile in accent colors — use for the recommended option.
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final tint = emphasized ? p.accent : p.ink2;
+
+    return Material(
+      color: emphasized ? p.accentWash : p.surface2,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: emphasized ? p.accentFill.withValues(alpha: 0.55) : p.line,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 20, color: tint),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: context.type.cardTitle.copyWith(
+                        fontSize: 15,
+                        color: emphasized ? p.accent : p.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(description, style: context.type.caption),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Uppercase label with a trailing hairline, mirroring the document's eyebrow.
 class Eyebrow extends StatelessWidget {
   const Eyebrow(this.text, {this.color, super.key});

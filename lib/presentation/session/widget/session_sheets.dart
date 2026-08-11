@@ -8,7 +8,89 @@ import '../../../domain/entity/exercise.dart';
 import '../../../domain/entity/progression_suggestion.dart';
 import '../../../domain/entity/workout_session.dart';
 import '../../common/body_part_ui.dart';
+import '../../common/common_widgets.dart';
 import '../bloc/session_state.dart';
+
+/// What the athlete chose to do with a session they are walking away from.
+enum LeaveChoice {
+  /// Leave the screen, session stays `inProgress` — the home banner picks it up.
+  keepForLater,
+
+  /// Close the session as aborted. Logged sets stay in history.
+  abort,
+}
+
+/// Back / close on the session screen.
+///
+/// Three outcomes, but only two of them leave the screen, so they are not three
+/// equal buttons: the two exits are described tiles and staying is the plain
+/// button at the bottom. Dismissing the sheet also means "stay".
+class LeaveSheet extends StatelessWidget {
+  const LeaveSheet({required this.state, super.key});
+
+  final SessionState state;
+
+  static Future<LeaveChoice?> show(BuildContext context, SessionState state) =>
+      showModalBottomSheet<LeaveChoice>(
+        context: context,
+        builder: (_) => LeaveSheet(state: state),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final session = state.session;
+    final done = state.completedSets;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(AppStrings.leaveSessionTitle, style: context.type.sectionTitle),
+            const SizedBox(height: 4),
+            Text(
+              [
+                if (session != null) 'DAY ${session.dayCode} · ${session.dayTitle}',
+                '$done${AppStrings.setUnit} 완료',
+                '${state.elapsed.koreanShort} 경과',
+              ].join(' · '),
+              style: context.type.caption,
+            ),
+            const SizedBox(height: 16),
+            ChoiceTile(
+              icon: Icons.play_circle_outline,
+              title: AppStrings.keepSession,
+              description: AppStrings.keepSessionHint,
+              emphasized: true,
+              onTap: () =>
+                  Navigator.of(context).pop(LeaveChoice.keepForLater),
+            ),
+            const SizedBox(height: 10),
+            ChoiceTile(
+              icon: Icons.stop_circle_outlined,
+              title: AppStrings.abortSession,
+              description: done == 0
+                  ? '기록된 세트가 없는 채로 세션을 닫습니다.'
+                  : '한 $done${AppStrings.setUnit}는 기록에 남고 세션은 중단으로 닫힙니다. '
+                        '다 마쳤다면 오른쪽 위 ${AppStrings.finishSession}을 쓰세요.',
+              onTap: () => Navigator.of(context).pop(LeaveChoice.abort),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(AppStrings.continueSession),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// Confirms finishing and collects an optional memo.
 class FinishSheet extends StatefulWidget {

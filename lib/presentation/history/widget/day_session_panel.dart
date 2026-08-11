@@ -23,7 +23,7 @@ class DaySessionPanel extends StatelessWidget {
   final DateTime? date;
   final List<WorkoutSession> sessions;
   final bool isLoading;
-  final void Function(int sessionId) onOpen;
+  final void Function(WorkoutSession session) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +80,7 @@ class DaySessionPanel extends StatelessWidget {
             for (final session in sessions)
               _SessionRow(
                 session: session,
-                onTap: () => onOpen(session.id),
+                onTap: () => onOpen(session),
               ),
         ],
       ),
@@ -142,10 +142,20 @@ class _SessionRow extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 6),
                 child: Text(
                   session.status.label,
-                  style: context.type.label.copyWith(color: p.warn),
+                  style: context.type.label.copyWith(
+                    color: session.isInProgress ? p.accent : p.warn,
+                  ),
                 ),
               ),
-            Icon(Icons.chevron_right, size: 18, color: p.ink3),
+            // A running session continues here rather than opening the
+            // read-only record, so it gets the play affordance.
+            Icon(
+              session.isInProgress
+                  ? Icons.play_circle_outline
+                  : Icons.chevron_right,
+              size: session.isInProgress ? 20 : 18,
+              color: session.isInProgress ? p.accent : p.ink3,
+            ),
           ],
         ),
       ),

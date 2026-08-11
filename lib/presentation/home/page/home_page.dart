@@ -17,6 +17,7 @@ import '../bloc/home_state.dart';
 import '../widget/block_preview_list.dart';
 import '../widget/day_picker_sheet.dart';
 import '../widget/day_summary_card.dart';
+import '../widget/in_progress_sheet.dart';
 import '../widget/resume_banner.dart';
 import '../widget/weekly_volume_panel.dart';
 
@@ -86,15 +87,26 @@ class _HomeView extends StatelessWidget {
   void _handleEffect(BuildContext context, HomeEffect effect) {
     switch (effect) {
       case OpenSession(:final sessionId):
-        context.pushNamed(
-          Routes.session,
-          pathParameters: {'sessionId': '$sessionId'},
-        );
+        _openSession(context, sessionId);
       case ShowHomeMessage(:final message):
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(message)));
     }
+  }
+
+  /// Reloads on return. Home lives in the shell's IndexedStack, so without this
+  /// it keeps the state it had *before* the workout: a session left running
+  /// would have no resume banner, and a finished one would still show it.
+  Future<void> _openSession(BuildContext context, int sessionId) async {
+    final bloc = context.read<HomeBloc>();
+
+    await context.pushNamed(
+      Routes.session,
+      pathParameters: {'sessionId': '$sessionId'},
+    );
+
+    bloc.add(const LoadHome());
   }
 }
 
@@ -150,7 +162,7 @@ class _HomeContent extends StatelessWidget {
             ResumeBanner(
               session: state.inProgressSession!,
               onResume: () => bloc.add(const ResumeWorkout()),
-              onDiscard: () => bloc.add(const DiscardInProgress()),
+              onDiscard: () => _confirmDiscard(context),
             ),
             const SizedBox(height: 16),
           ],
@@ -163,9 +175,7 @@ class _HomeContent extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: FilledButton.icon(
-                  onPressed: state.isStarting
-                      ? null
-                      : () => bloc.add(const StartWorkout()),
+                  onPressed: state.isStarting ? null : () => _start(context),
                   icon: state.isStarting
                       ? const SizedBox(
                           width: 16,
@@ -207,6 +217,61 @@ class _HomeContent extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Starting a session aborts whatever is still open, so an unfinished workout
+  /// is never replaced without saying so.
+  Future<void> _start(BuildContext context) async {
+    final bloc = context.read<HomeBloc>();
+    final running = state.inProgressSession;
+    if (running == null) {
+      bloc.add(const StartWorkout());
+      return;
+    }
+
+    final choice = await InProgressSheet.show(
+      context,
+      session: running,
+      day: state.selectedDay!,
+    );
+    switch (choice) {
+      case StartChoice.resume:
+        bloc.add(const ResumeWorkout());
+      case StartChoice.startNew:
+        bloc.add(const StartWorkout());
+      case null:
+        break;
+    }
+  }
+
+  Future<void> _confirmDiscard(BuildContext context) async {
+    final bloc = context.read<HomeBloc>();
+    final session = state.inProgressSession!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('진행 중인 운동을 중단할까요?'),
+        content: Text(
+          session.completedSets == 0
+              ? 'DAY ${session.dayCode} 세션을 닫습니다. 기록된 세트는 없습니다.'
+              : 'DAY ${session.dayCode} 세션을 닫습니다. '
+                    '이미 한 ${session.completedSets}${AppStrings.setUnit}는 기록에 남습니다.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text(AppStrings.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text(AppStrings.abortSession),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed ?? false) bloc.add(const DiscardInProgress());
   }
 
   Future<void> _pickDay(BuildContext context) async {

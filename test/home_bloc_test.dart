@@ -88,6 +88,37 @@ void main() {
     expect(session.status, SessionStatus.inProgress);
   });
 
+  test('StartWorkout 직후에도 이어서 하기 상태가 남는다', () async {
+    await load();
+
+    bloc.add(const StartWorkout());
+    final state = await bloc.stream.firstWhere((s) => !s.isStarting);
+
+    // Home is not rebuilt when the session screen pops, so the state must
+    // already know a session is running — otherwise the banner disappears and
+    // the workout has no entry point left.
+    expect(state.hasInProgress, isTrue);
+    expect(state.inProgressSession!.dayCode, 'A');
+  });
+
+  test('ResumeWorkout은 진행 중 세션을 그대로 다시 연다', () async {
+    final loaded = await load();
+    final started = (await workoutRepo.startSession(
+      loaded.routine!.days.first.id,
+    )).valueOrNull!;
+    await load();
+
+    final effect = bloc.effects.first;
+    bloc.add(const ResumeWorkout());
+
+    expect(await effect, OpenSession(started.id));
+    expect(
+      (await workoutRepo.getInProgressSession()).valueOrNull?.id,
+      started.id,
+      reason: '이어서 하기는 세션을 새로 만들지 않는다',
+    );
+  });
+
   test('진행 중 세션이 있으면 LoadHome이 이어서 하기 상태를 싣는다', () async {
     final loaded = await load();
     final dayA = loaded.routine!.days.first;

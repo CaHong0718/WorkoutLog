@@ -180,36 +180,12 @@ class _SessionView extends StatelessWidget {
     final bloc = context.read<SessionBloc>();
     final navigator = Navigator.of(context);
 
-    final action = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('운동을 어떻게 할까요?'),
-        content: const Text(
-          '나중에 이어서 하려면 그대로 두고 나가세요. 중단하면 기록은 남고 세션은 닫힙니다.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop('cancel'),
-            child: const Text(AppStrings.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop('abort'),
-            child: const Text(AppStrings.abortSession),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop('keep'),
-            child: const Text('이어서 하기'),
-          ),
-        ],
-      ),
-    );
-
-    switch (action) {
-      case 'keep':
+    switch (await LeaveSheet.show(context, state)) {
+      case LeaveChoice.keepForLater:
         navigator.pop();
-      case 'abort':
+      case LeaveChoice.abort:
         bloc.add(const AbortCurrentSession());
-      default:
+      case null:
         break;
     }
   }

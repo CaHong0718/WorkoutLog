@@ -100,20 +100,23 @@ class _HistoryViewState extends State<_HistoryView> {
   void _handleHistoryEffect(BuildContext context, HistoryEffect effect) {
     switch (effect) {
       case OpenSessionDetail(:final sessionId):
-        _openDetail(context, sessionId);
+        _push(context, Routes.sessionDetail, sessionId);
+      case ResumeSessionFromHistory(:final sessionId):
+        _push(context, Routes.session, sessionId);
       case ShowHistoryMessage(:final message):
         _snack(context, message);
     }
   }
 
-  /// Reloads on return so a deleted record disappears from the calendar,
-  /// the day panel and the weekly volume.
-  Future<void> _openDetail(BuildContext context, int sessionId) async {
+  /// Reloads on return so a deleted record disappears from the calendar, the
+  /// day panel and the weekly volume — and so sets logged in a resumed session
+  /// show up right away.
+  Future<void> _push(BuildContext context, String route, int sessionId) async {
     final historyBloc = context.read<HistoryBloc>();
     final statsBloc = context.read<StatsBloc>();
 
     await context.pushNamed(
-      Routes.sessionDetail,
+      route,
       pathParameters: {'sessionId': '$sessionId'},
     );
 
@@ -182,7 +185,12 @@ class _CalendarTab extends StatelessWidget {
                 date: state.selectedDate,
                 sessions: state.selectedSessions,
                 isLoading: state.isDayLoading,
-                onOpen: (sessionId) => bloc.add(OpenSessionRecord(sessionId)),
+                onOpen: (session) => bloc.add(
+                  OpenSessionRecord(
+                    session.id,
+                    isInProgress: session.isInProgress,
+                  ),
+                ),
               ),
             ],
           ),

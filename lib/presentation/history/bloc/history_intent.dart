@@ -29,12 +29,16 @@ final class SelectDate extends HistoryIntent {
   List<Object?> get props => [date];
 }
 
-/// Opens the detail screen of one recorded session.
+/// Opens one session from the day panel.
+///
+/// [isInProgress] routes to the live session screen instead of the read-only
+/// record — an unfinished workout tapped here should continue, not be reviewed.
 final class OpenSessionRecord extends HistoryIntent {
-  const OpenSessionRecord(this.sessionId);
+  const OpenSessionRecord(this.sessionId, {this.isInProgress = false});
 
   final int sessionId;
+  final bool isInProgress;
 
   @override
-  List<Object?> get props => [sessionId];
+  List<Object?> get props => [sessionId, isInProgress];
 }

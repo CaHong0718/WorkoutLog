@@ -23,48 +23,58 @@ class ResumeBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
-      decoration: BoxDecoration(
-        color: p.accentWash,
+    // The whole banner resumes: the button is the label for the tap target,
+    // not the only way to hit it.
+    return Material(
+      color: p.accentWash,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onResume,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: p.accentFill.withValues(alpha: 0.45)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.play_circle_outline, color: p.accent, size: 22),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.sessionInProgress,
-                  style: context.type.cardTitle.copyWith(fontSize: 14),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: p.accentFill.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.play_circle_outline, color: p.accent, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.sessionInProgress,
+                      style: context.type.cardTitle.copyWith(fontSize: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'DAY ${session.dayCode} · ${session.dayTitle} · '
+                      '${session.completedSets}${AppStrings.setUnit} · '
+                      '${session.duration.koreanShort} 경과',
+                      style: context.type.caption,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'DAY ${session.dayCode} · ${session.dayTitle} · '
-                  '${session.completedSets}세트 · ${session.duration.koreanShort} 경과',
-                  style: context.type.caption,
+              ),
+              TextButton(
+                onPressed: onDiscard,
+                style: TextButton.styleFrom(foregroundColor: p.ink3),
+                child: const Text('중단'),
+              ),
+              FilledButton(
+                onPressed: onResume,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 36),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                 ),
-              ],
-            ),
+                child: const Text(AppStrings.resumeSession),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: onDiscard,
-            style: TextButton.styleFrom(foregroundColor: p.ink3),
-            child: const Text('중단'),
-          ),
-          FilledButton(
-            onPressed: onResume,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(0, 36),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-            ),
-            child: const Text(AppStrings.resumeSession),
-          ),
-        ],
+        ),
       ),
     );
   }
