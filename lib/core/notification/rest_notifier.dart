@@ -36,6 +36,14 @@ class RestNotifier {
       await _plugin.initialize(
         settings: const InitializationSettings(
           android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          // iOS would otherwise put the permission prompt on the very first
+          // frame. Asking is [ensurePermissions]' job, at the moment the user
+          // starts a workout and the request explains itself.
+          iOS: DarwinInitializationSettings(
+            requestAlertPermission: false,
+            requestBadgePermission: false,
+            requestSoundPermission: false,
+          ),
         ),
       );
 
@@ -57,15 +65,21 @@ class RestNotifier {
   }
 
   /// Asks for the POST_NOTIFICATIONS permission (Android 13+) and, separately,
-  /// for exact alarms. Call it when the user starts a workout — that is when
-  /// the request makes sense to them.
+  /// for exact alarms — on iOS, for alert and sound. Call it when the user
+  /// starts a workout — that is when the request makes sense to them.
   Future<void> ensurePermissions() async {
     await init();
     try {
-      _permissionGranted =
-          await _android?.requestNotificationsPermission() ?? false;
-      // Exact alarms may be denied; scheduling falls back to inexact below.
-      await _android?.requestExactAlarmsPermission();
+      if (_android case final android?) {
+        _permissionGranted =
+            await android.requestNotificationsPermission() ?? false;
+        // Exact alarms may be denied; scheduling falls back to inexact below.
+        await android.requestExactAlarmsPermission();
+      } else if (_ios case final ios?) {
+        // No badge: the app counts sets, not unread items.
+        _permissionGranted =
+            await ios.requestPermissions(alert: true, sound: true) ?? false;
+      }
     } catch (error) {
       debugPrint('RestNotifier.ensurePermissions failed: $error');
     }
@@ -99,6 +113,15 @@ class RestNotifier {
         fullScreenIntent: false,
         ongoing: false,
         autoCancel: true,
+      ),
+      // `timeSensitive` would cut through Focus, but it needs the matching
+      // entitlement on the provisioning profile; `active` works on a plain
+      // build. See docs/05-IOS.md.
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: true,
+        presentBanner: true,
+        interruptionLevel: InterruptionLevel.active,
       ),
     );
 
@@ -141,5 +164,11 @@ class RestNotifier {
       _plugin
           .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin
+          >();
+
+  IOSFlutterLocalNotificationsPlugin? get _ios =>
+      _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
           >();
 }

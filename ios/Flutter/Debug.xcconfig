@@ -1,0 +1,5 @@
+#include "Generated.xcconfig"
+
+// App Group shared by Runner and the Share Extension. Both targets read it
+// through Info.plist's AppGroupId key. See docs/05-IOS.md.
+CUSTOM_GROUP_ID=group.com.shyang.workoutLog

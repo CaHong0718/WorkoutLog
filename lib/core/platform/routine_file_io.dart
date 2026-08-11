@@ -65,10 +65,12 @@ class RoutineFileIo {
     }
   }
 
-  /// Hands [contents] to the Android share sheet as [fileName].
+  /// Hands [contents] to the system share sheet as [fileName].
   ///
   /// share_plus writes the bytes to its own cache directory, so no temporary
-  /// file has to be managed here.
+  /// file has to be managed here. No `sharePositionOrigin` is passed: the
+  /// plugin anchors the iPad popover to the centre of the view when the rect
+  /// is empty, and this app is laid out for a phone.
   Future<bool> shareRoutineFile({
     required String fileName,
     required String contents,

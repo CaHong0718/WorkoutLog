@@ -22,6 +22,7 @@
 | 10 | 복수 루틴 · 루틴 가져오기/내보내기 | ✅ |
 | 11 | 하단 탭 좌우 스와이프 · 탭 전환 시 화면 갱신 | ✅ |
 | 12 | `design/DESIGN.md` 디자인 시스템 적용 | ✅ |
+| 13 | 드래그 프록시 모양 정리 · iOS 빌드 준비 | ✅ |
 
 ---
 
@@ -436,6 +437,25 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 **아직 적용하지 않은 것**: 가이드 8장의 "그룹 리스트" 패턴(행을 카드 하나로 묶고 내부 구분선을
 없애며 32×32 아이콘 박스를 두는 것). 루틴 DAY 목록·기록 세션 목록을 다시 짜야 해서
 기능 회귀 위험이 크다. 별도 STEP으로 다룬다.
+
+---
+
+## STEP 13 — 드래그 프록시 모양 정리 · iOS 빌드 준비
+
+**드래그 중인 항목이 직사각형으로 보였다.** `ReorderableListView`의 기본 `proxyDecorator`가
+`Material(elevation: 6)`으로 감싸는데, 이게 canvas 색 + 각진 모서리다. radius 18짜리 DAY 카드를
+집어 올리면 모서리가 잘리고 그림자가 카드 아래 여백까지 덮었다.
+
+- [x] `lib/presentation/common/drag_proxy.dart` — `roundedDragProxy()`.
+      항목이 제 표면·테두리를 계속 그리게 두고 **둥근 그림자만** 뒤에 깐다.
+      `bottomGap`으로 항목 간 여백만큼 아래를 잘라내 카드 끝에서 그림자가 멈춘다
+- [x] 적용 3곳 — 루틴 DAY 목록(카드, radius 18) · 블록 안 종목 행(채움, radius 12) ·
+      블록 순서 시트(채움, radius 12)
+- [x] iOS 플랫폼 추가 — `docs/05-IOS.md`
+
+그림자는 `design/DESIGN.md`가 "실제로 떠 있는 것"에 허용한 값(opacity .08 / blur 12 / offsetY 4)
+그대로다. 드래그하는 동안만 fade in 하므로 정지 상태의 카드에는 그림자가 없다 —
+"카드에 border와 shadow 동시 금지" 규칙은 그대로 지켜진다.
 
 ---
 

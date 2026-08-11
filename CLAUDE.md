@@ -61,6 +61,7 @@ push가 실패하면 커밋만 남기고 알려준다 — 자격증명 프롬프
 | [`docs/01-DOMAIN-MODEL.md`](docs/01-DOMAIN-MODEL.md) | 엔티티·Repository·Drift 매핑을 다룰 때 |
 | [`docs/02-ROUTINE-SEED.md`](docs/02-ROUTINE-SEED.md) | 시드 루틴·주간 볼륨 목표·디자인 토큰을 다룰 때 |
 | [`docs/04-ROUTINE-EXCHANGE.md`](docs/04-ROUTINE-EXCHANGE.md) | 루틴 `.json` 가져오기/내보내기 포맷을 다룰 때. **HTML→JSON 변환 시 이 스키마가 유일한 기준** |
+| [`docs/05-IOS.md`](docs/05-IOS.md) | iOS 빌드를 다룰 때. 미리 해둔 설정과 맥에서만 할 수 있는 일 |
 
 ## 루틴을 파일로 뽑아 달라고 하면
 
@@ -118,7 +119,11 @@ flutter test                  # 기존 테스트를 깨뜨리지 않는다
 
 ## 플랫폼
 
-Android만 대상으로 한다. 앱 이름 `Workout Log`, applicationId `com.shyang.workout_log`.
+Android가 주 대상이고, iOS도 빌드된다. 앱 이름 `Workout Log`,
+applicationId `com.shyang.workout_log` / iOS bundle ID `com.shyang.workoutLog`.
+
+**iOS는 이 저장소(Windows)에서 빌드할 수 없다.** 맥에서 할 일과 미리 해둔 설정은
+[`docs/05-IOS.md`](docs/05-IOS.md)에 있다. iOS 쪽을 건드리기 전에 반드시 읽는다.
 
 applicationId를 바꾸면 안드로이드가 별개 앱으로 취급해 **기존 설치본의 운동 기록이 전부 끊긴다.**
 앞으로는 바꾸지 않는다.

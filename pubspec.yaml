@@ -39,9 +39,12 @@ flutter:
 # Source art is drawn by tools/generate_icon.py — edit that, not the outputs.
 flutter_launcher_icons:
   android: "ic_launcher"
-  ios: false
+  ios: true
   image_path: "assets/icon/icon.png"
   adaptive_icon_background: "#12151A"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
   min_sdk_android: 24
+  # iOS forbids transparency in app icons; the flattened pixels get the same
+  # background the Android adaptive icon uses.
   remove_alpha_ios: true
+  background_color_ios: "#12151A"
