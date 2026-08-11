@@ -1,4 +1,4 @@
-package com.yeoboya.health_app
+package com.shyang.workout_log
 
 import io.flutter.embedding.android.FlutterActivity
 

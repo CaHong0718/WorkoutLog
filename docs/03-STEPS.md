@@ -203,7 +203,7 @@ DB에 쓰는 Intent 핸들러는 전부 `transformer: sequential()`. 블록 순�
 - [x] `flutter test` 통과 — 63개 (시드 볼륨 검증 포함)
 - [x] `flutter build apk --debug` 성공
 - [x] 실기기 실행 확인 (Galaxy S21 · Android 15 / API 35)
-- [x] 앱 이름 `Workout Log` · 패키지명 `com.yeoboya.health_app`
+- [x] 앱 이름 `Workout Log` · applicationId `com.shyang.workout_log`
 - [x] `README.md` 작성
 - [x] 앱 아이콘 — `tools/generate_icon.py`로 생성, flutter_launcher_icons로 배포
 
