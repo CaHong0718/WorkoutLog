@@ -203,9 +203,9 @@ DB에 쓰는 Intent 핸들러는 전부 `transformer: sequential()`. 블록 순�
 - [x] `flutter test` 통과 — 63개 (시드 볼륨 검증 포함)
 - [x] `flutter build apk --debug` 성공
 - [x] 실기기 실행 확인 (Galaxy S21 · Android 15 / API 35)
-- [x] 앱 이름 `무분할 40분` · 패키지명 `com.yeoboya.health_app`
+- [x] 앱 이름 `Workout Log` · 패키지명 `com.yeoboya.health_app`
 - [x] `README.md` 작성
-- [ ] 앱 아이콘 (기본 Flutter 아이콘 상태 — 디자인 필요)
+- [x] 앱 아이콘 — `tools/generate_icon.py`로 생성, flutter_launcher_icons로 배포
 
 ---
 
@@ -248,7 +248,7 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 
 우선순위 순.
 
-- [ ] **앱 아이콘 · 스플래시** — `flutter_launcher_icons` 사용
+- [ ] **스플래시 화면** — `flutter_native_splash` 사용
 - [ ] **과거 기록 수정** — 삭제는 STEP 9에서 됐고, 세트별 무게·반복 수정은 아직.
       `UpdateSet`/`DeleteSet` UseCase는 이미 있다.
 - [ ] **데이터 백업/복원** — SQLite 파일 내보내기 또는 JSON export

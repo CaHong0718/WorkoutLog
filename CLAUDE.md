@@ -70,4 +70,19 @@ flutter test                  # 기존 테스트를 깨뜨리지 않는다
 
 ## 플랫폼
 
-Android만 대상으로 한다. 패키지명 `com.yeoboya.health_app`, 앱 이름 `무분할 40분`.
+Android만 대상으로 한다. 앱 이름 `Workout Log`, 패키지명 `com.yeoboya.health_app`
+(패키지명을 바꾸면 기존 설치본과 별개 앱이 되므로 그대로 둔다).
+
+`무분할 40분`은 앱 이름이 아니라 **시드 루틴의 이름**이다. DB에 들어 있고 사용자가 바꿀 수 있다.
+
+## 아이콘
+
+`tools/generate_icon.py`가 `assets/icon/`의 원본 PNG를 그린다. 소스는 이 스크립트뿐이니
+아이콘을 바꾸려면 스크립트를 고치고 아래를 순서대로 돌린다.
+
+```bash
+python tools/generate_icon.py     # Pillow 필요
+dart run flutter_launcher_icons   # android/app/src/main/res/ 아래를 재생성
+```
+
+`android/.../res/mipmap-*`·`drawable-*`의 파일은 생성물이다. 직접 편집하지 않는다.

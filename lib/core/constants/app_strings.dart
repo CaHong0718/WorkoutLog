@@ -1,6 +1,8 @@
 /// All user-facing Korean text lives here.
 abstract final class AppStrings {
-  static const appName = '무분할 40분';
+  /// App name. The routine inside it is still called `무분할 40분` — that is a
+  /// routine, stored in the database, not the product.
+  static const appName = 'Workout Log';
 
   // Navigation
   static const navHome = '오늘';
