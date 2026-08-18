@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../domain/entity/set_log.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/common_widgets.dart';
 import '../bloc/session_state.dart';
@@ -13,12 +14,17 @@ class PlanTimeline extends StatelessWidget {
     required this.state,
     required this.onSkipBlock,
     required this.onJump,
+    required this.onEditLog,
     super.key,
   });
 
   final SessionState state;
   final void Function(int blockIndex) onSkipBlock;
   final void Function(int planIndex) onJump;
+
+  /// A row that already has a record opens the editor instead of jumping —
+  /// the numbers get fixed in place rather than logged a second time.
+  final void Function(SetLog log) onEditLog;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +42,7 @@ class PlanTimeline extends StatelessWidget {
             planIndexes: entry.value,
             onSkipBlock: onSkipBlock,
             onJump: onJump,
+            onEditLog: onEditLog,
           ),
           const SizedBox(height: 10),
         ],
@@ -51,6 +58,7 @@ class _BlockGroup extends StatelessWidget {
     required this.planIndexes,
     required this.onSkipBlock,
     required this.onJump,
+    required this.onEditLog,
   });
 
   final SessionState state;
@@ -58,6 +66,7 @@ class _BlockGroup extends StatelessWidget {
   final List<int> planIndexes;
   final void Function(int blockIndex) onSkipBlock;
   final void Function(int planIndex) onJump;
+  final void Function(SetLog log) onEditLog;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +140,8 @@ class _BlockGroup extends StatelessWidget {
               _PlanRow(
                 state: state,
                 planIndex: index,
-                onTap: () => onJump(index),
+                onJump: () => onJump(index),
+                onEditLog: onEditLog,
               ),
           ],
         ),
@@ -144,12 +154,14 @@ class _PlanRow extends StatelessWidget {
   const _PlanRow({
     required this.state,
     required this.planIndex,
-    required this.onTap,
+    required this.onJump,
+    required this.onEditLog,
   });
 
   final SessionState state;
   final int planIndex;
-  final VoidCallback onTap;
+  final VoidCallback onJump;
+  final void Function(SetLog log) onEditLog;
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +174,7 @@ class _PlanRow extends StatelessWidget {
     final isSkipped = log != null && !log.isCompleted;
 
     return InkWell(
-      onTap: onTap,
+      onTap: () => log == null ? onJump() : onEditLog(log),
       borderRadius: BorderRadius.circular(7),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 2),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../core/constants/app_strings.dart';
 import '../../../core/mvi/mvi_bloc.dart';
 import '../../../core/notification/rest_notifier.dart';
 import '../../../core/result/result.dart';
@@ -86,10 +87,7 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     final sessionResult = await _getSession(sessionId);
     if (sessionResult.isErr) {
       emit(
-        state.copyWith(
-          isLoading: false,
-          failure: sessionResult.failureOrNull,
-        ),
+        state.copyWith(isLoading: false, failure: sessionResult.failureOrNull),
       );
       return;
     }
@@ -181,8 +179,13 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     await _writeElapsedRest();
 
     final exercise = state.exerciseFor(planned);
+
+    // A set the athlete already performed owns a row. Jumping back to fix it
+    // must overwrite that row: inserting a second one for the same slot is
+    // what made the set count climb every time a number was corrected.
+    final existing = state.logFor(planned);
     final log = SetLog(
-      id: SetLog.unsavedId,
+      id: existing?.id ?? SetLog.unsavedId,
       sessionId: session.id,
       routineItemId: planned.item.id,
       exerciseId: exercise.id,
@@ -195,8 +198,23 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
       reps: intent.reps,
       durationSeconds: intent.durationSeconds,
       rir: intent.rir,
-      completedAt: DateTime.now(),
+      restSeconds: existing?.restSeconds,
+      // Keep the original timestamp so a correction does not reshuffle the
+      // order the sets were performed in.
+      completedAt: existing?.completedAt ?? DateTime.now(),
     );
+
+    if (existing != null) {
+      final result = await _updateSet(log);
+      if (result.isErr) {
+        emitEffect(ShowSessionMessage(result.failureOrNull!.message));
+        return;
+      }
+      _lastLogId = existing.id;
+      await _returnToOpenSet(emit);
+      emitEffect(const ShowSessionMessage(AppStrings.setUpdated));
+      return;
+    }
 
     final result = await _logSet(log);
     switch (result) {
@@ -219,22 +237,31 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     if (planned == null || session == null) return;
 
     final exercise = state.exerciseFor(planned);
-    await _logSet(
-      SetLog(
-        id: SetLog.unsavedId,
-        sessionId: session.id,
-        routineItemId: planned.item.id,
-        exerciseId: exercise.id,
-        exerciseName: exercise.name,
-        bodyPart: exercise.bodyPart,
-        blockLabel: planned.blockLabel,
-        itemOrder: planned.itemOrder,
-        setIndex: planned.setIndex,
-        isCompleted: false,
-        completedAt: DateTime.now(),
-      ),
+    final existing = state.logFor(planned);
+    final log = SetLog(
+      id: existing?.id ?? SetLog.unsavedId,
+      sessionId: session.id,
+      routineItemId: planned.item.id,
+      exerciseId: exercise.id,
+      exerciseName: exercise.name,
+      bodyPart: exercise.bodyPart,
+      blockLabel: planned.blockLabel,
+      itemOrder: planned.itemOrder,
+      setIndex: planned.setIndex,
+      isCompleted: false,
+      completedAt: existing?.completedAt ?? DateTime.now(),
     );
 
+    // Same rule as completing: an already-logged set is rewritten, never
+    // duplicated.
+    if (existing != null) {
+      await _updateSet(log);
+      _lastLogId = null;
+      await _returnToOpenSet(emit);
+      return;
+    }
+
+    await _logSet(log);
     _lastLogId = null;
     await _advance(emit, restSeconds: 0);
   }
@@ -297,25 +324,20 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     );
   }
 
-  Future<void> _onSkipRest(
-    SkipRest intent,
-    Emitter<SessionState> emit,
-  ) async {
+  Future<void> _onSkipRest(SkipRest intent, Emitter<SessionState> emit) async {
     await _writeElapsedRest();
     await _restNotifier.cancel();
     emit(state.copyWith(clearRest: true));
   }
 
-  Future<void> _onEditLog(
-    EditSetLog intent,
-    Emitter<SessionState> emit,
-  ) async {
+  Future<void> _onEditLog(EditSetLog intent, Emitter<SessionState> emit) async {
     final result = await _updateSet(intent.log);
     if (result.isErr) {
       emitEffect(ShowSessionMessage(result.failureOrNull!.message));
       return;
     }
     await _refreshSession(emit);
+    emitEffect(const ShowSessionMessage(AppStrings.setUpdated));
   }
 
   Future<void> _onDeleteLog(
@@ -328,6 +350,7 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
       return;
     }
     await _refreshSession(emit, recomputeIndex: true);
+    emitEffect(const ShowSessionMessage(AppStrings.setLogDeleted));
   }
 
   Future<void> _onFinish(
@@ -348,7 +371,8 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     }
 
     final suggestions = await _buildSuggestions();
-    final finished = (await _getSession(sessionId)).valueOrNull ?? state.session!;
+    final finished =
+        (await _getSession(sessionId)).valueOrNull ?? state.session!;
     emit(state.copyWith(isFinishing: false, session: finished));
     emitEffect(SessionCompleted(finished, suggestions));
   }
@@ -421,6 +445,27 @@ class SessionBloc extends MviBloc<SessionIntent, SessionState, SessionEffect> {
     if (log == null) return;
 
     await _updateSet(log.copyWith(restSeconds: elapsed));
+  }
+
+  /// After rewriting a set that was already logged, put the athlete back on
+  /// the first set that still has no record instead of pushing the cursor one
+  /// step forward from the corrected one. No rest either — nothing was just
+  /// performed.
+  Future<void> _returnToOpenSet(Emitter<SessionState> emit) async {
+    await _restNotifier.cancel();
+    _restStartedAt = null;
+
+    final session = (await _getSession(sessionId)).valueOrNull;
+    emit(
+      state.copyWith(
+        session: session,
+        currentIndex: SessionPlan.resumeIndex(
+          state.plan,
+          session?.setLogs ?? const [],
+        ),
+        clearRest: true,
+      ),
+    );
   }
 
   Future<void> _refreshSession(

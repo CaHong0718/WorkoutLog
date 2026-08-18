@@ -4,7 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/mvi/effect_listener.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../domain/entity/set_log.dart';
 import '../../common/common_widgets.dart';
+import '../../common/set_log_edit_sheet.dart';
 import '../bloc/session_detail_bloc.dart';
 import '../bloc/session_detail_effect.dart';
 import '../bloc/session_detail_intent.dart';
@@ -76,8 +79,13 @@ class _SessionDetailView extends StatelessWidget {
                   SessionSummaryHeader(session: state.session!),
                   const SizedBox(height: 20),
                   const Eyebrow('Sets'),
-                  const SizedBox(height: 12),
-                  SessionLogList(blocks: state.blocks),
+                  const SizedBox(height: 6),
+                  Text(AppStrings.setEditHint, style: context.type.caption),
+                  const SizedBox(height: 10),
+                  SessionLogList(
+                    blocks: state.blocks,
+                    onEditLog: (log) => _editLog(context, log),
+                  ),
                 ],
               ),
             );
@@ -85,6 +93,21 @@ class _SessionDetailView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// A finished record is still editable set by set — deleting the whole
+  /// session to fix one number loses everything else that was true.
+  Future<void> _editLog(BuildContext context, SetLog entry) async {
+    final bloc = context.read<SessionDetailBloc>();
+
+    switch (await SetLogEditSheet.show(context, entry)) {
+      case SetLogSaved(:final log):
+        bloc.add(UpdateLoggedSet(log));
+      case SetLogRemoved(:final setLogId):
+        bloc.add(DeleteLoggedSet(setLogId));
+      case null:
+        break;
+    }
   }
 
   Future<void> _confirmDelete(BuildContext context) async {

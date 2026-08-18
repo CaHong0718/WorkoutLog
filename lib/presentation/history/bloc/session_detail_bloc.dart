@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../core/constants/app_strings.dart';
 import '../../../core/mvi/mvi_bloc.dart';
 import '../../../core/result/result.dart';
 import '../../../domain/usecase/history_usecases.dart';
@@ -11,19 +12,26 @@ import 'session_detail_state.dart';
 
 @injectable
 class SessionDetailBloc
-    extends MviBloc<SessionDetailIntent, SessionDetailState, SessionDetailEffect> {
+    extends
+        MviBloc<SessionDetailIntent, SessionDetailState, SessionDetailEffect> {
   SessionDetailBloc(
     @factoryParam this.sessionId,
     this._getSessionDetail,
     this._deleteSession,
+    this._updateSet,
+    this._deleteSet,
   ) : super(const SessionDetailState()) {
     on<LoadSessionDetail>(_onLoad, transformer: sequential());
     on<DeleteSessionRecord>(_onDelete, transformer: sequential());
+    on<UpdateLoggedSet>(_onUpdateSet, transformer: sequential());
+    on<DeleteLoggedSet>(_onDeleteSet, transformer: sequential());
   }
 
   final int sessionId;
   final GetSessionDetail _getSessionDetail;
   final DeleteSession _deleteSession;
+  final UpdateSet _updateSet;
+  final DeleteSet _deleteSet;
 
   Future<void> _onLoad(
     LoadSessionDetail intent,
@@ -55,6 +63,32 @@ class SessionDetailBloc
         emitEffect(const SessionRecordDeleted());
       case Err(:final failure):
         emit(state.copyWith(isDeleting: false));
+        emitEffect(ShowSessionDetailMessage(failure.message));
+    }
+  }
+
+  Future<void> _onUpdateSet(
+    UpdateLoggedSet intent,
+    Emitter<SessionDetailState> emit,
+  ) async {
+    switch (await _updateSet(intent.log)) {
+      case Ok():
+        add(const LoadSessionDetail());
+        emitEffect(const ShowSessionDetailMessage(AppStrings.setUpdated));
+      case Err(:final failure):
+        emitEffect(ShowSessionDetailMessage(failure.message));
+    }
+  }
+
+  Future<void> _onDeleteSet(
+    DeleteLoggedSet intent,
+    Emitter<SessionDetailState> emit,
+  ) async {
+    switch (await _deleteSet(intent.setLogId)) {
+      case Ok():
+        add(const LoadSessionDetail());
+        emitEffect(const ShowSessionDetailMessage(AppStrings.setLogDeleted));
+      case Err(:final failure):
         emitEffect(ShowSessionDetailMessage(failure.message));
     }
   }

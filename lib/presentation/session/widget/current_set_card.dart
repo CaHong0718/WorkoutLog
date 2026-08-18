@@ -9,16 +9,7 @@ import '../../../domain/entity/session_plan.dart';
 import '../../../domain/entity/set_log.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/common_widgets.dart';
-
-/// Weight increment of the stepper buttons — one 1.25 kg plate per side.
-const double _weightStep = 2.5;
-
-/// A blank field and a typed `0` both mean the set carried no external load,
-/// so both are logged as 맨몸 rather than as `0kg`.
-bool _isBodyweightInput(String text) {
-  final value = double.tryParse(text);
-  return value == null || value == 0;
-}
+import '../../common/set_inputs.dart';
 
 class CompletedSetValues {
   const CompletedSetValues({
@@ -44,6 +35,7 @@ class CurrentSetCard extends StatefulWidget {
     required this.onComplete,
     required this.onSkip,
     required this.onSubstitute,
+    this.existingLog,
     super.key,
   });
 
@@ -52,6 +44,10 @@ class CurrentSetCard extends StatefulWidget {
 
   /// Logs of the same exercise from previous sessions, newest first.
   final List<SetLog> previousLogs;
+
+  /// This set's own log when it was already performed — the athlete jumped
+  /// back to fix it. Saving overwrites that row instead of adding a new one.
+  final SetLog? existingLog;
 
   final void Function(CompletedSetValues values) onComplete;
   final VoidCallback onSkip;
@@ -66,6 +62,8 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
   late final TextEditingController _reps = TextEditingController();
   int? _rir;
 
+  bool get _isRelog => widget.existingLog != null;
+
   @override
   void initState() {
     super.initState();
@@ -78,23 +76,27 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
     final changed =
         oldWidget.planned.item.id != widget.planned.item.id ||
         oldWidget.planned.setIndex != widget.planned.setIndex ||
-        oldWidget.exercise.id != widget.exercise.id;
+        oldWidget.exercise.id != widget.exercise.id ||
+        oldWidget.existingLog?.id != widget.existingLog?.id;
     if (changed) _prefill();
   }
 
-  /// Seeds the inputs from the matching set of the previous session so the
-  /// common case is a single tap.
+  /// Seeds the inputs from this set's own log when there is one, otherwise
+  /// from the matching set of the previous session so the common case is a
+  /// single tap.
   void _prefill() {
-    final logs = widget.previousLogs;
     final match =
-        logs.where((l) => l.setIndex == widget.planned.setIndex).firstOrNull ??
-        logs.firstOrNull;
+        widget.existingLog ??
+        widget.previousLogs
+            .where((l) => l.setIndex == widget.planned.setIndex)
+            .firstOrNull ??
+        widget.previousLogs.firstOrNull;
 
     _weight.text = (match == null || match.isBodyweight)
         ? ''
-        : _trim(match.weight!);
+        : trimWeight(match.weight!);
     _reps.text = match?.reps?.toString() ?? _defaultReps();
-    _rir = widget.planned.item.targetRir;
+    _rir = widget.existingLog?.rir ?? widget.planned.item.targetRir;
     setState(() {});
   }
 
@@ -103,13 +105,10 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
     return item.repMin?.toString() ?? '';
   }
 
-  static String _trim(double v) =>
-      v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
-
   void _bumpWeight(double delta) {
     final current = double.tryParse(_weight.text) ?? 0;
     final next = (current + delta).clamp(0.0, 999.0);
-    _weight.text = _trim(next);
+    _weight.text = trimWeight(next);
   }
 
   void _bumpReps(int delta) {
@@ -130,7 +129,7 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
     }
     widget.onComplete(
       CompletedSetValues(
-        weight: _isBodyweightInput(_weight.text)
+        weight: isBodyweightInput(_weight.text)
             ? null
             : double.tryParse(_weight.text),
         reps: int.tryParse(_reps.text),
@@ -165,6 +164,23 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
                 planned.positionLabel,
                 style: context.type.label.copyWith(color: color),
               ),
+              if (_isRelog) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: p.surface3,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    AppStrings.relogBadge,
+                    style: context.type.label.copyWith(color: p.ink2),
+                  ),
+                ),
+              ],
               const Spacer(),
               if (item.alternativeExerciseIds.isNotEmpty)
                 TextButton.icon(
@@ -216,17 +232,17 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
           if (planned.isTimed)
             _TimedPrompt(seconds: item.durationSeconds ?? 300)
           else ...[
-            _NumberRow(
+            SetNumberRow(
               label: AppStrings.weight,
               suffix: 'kg',
               controller: _weight,
-              onDecrement: () => _bumpWeight(-_weightStep),
-              onIncrement: () => _bumpWeight(_weightStep),
+              onDecrement: () => _bumpWeight(-kWeightStep),
+              onIncrement: () => _bumpWeight(kWeightStep),
               decimal: true,
               zeroSuffix: AppStrings.bodyweight,
             ),
             const SizedBox(height: 10),
-            _NumberRow(
+            SetNumberRow(
               label: AppStrings.reps,
               suffix: '회',
               controller: _reps,
@@ -234,7 +250,7 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
               onIncrement: () => _bumpReps(1),
             ),
             const SizedBox(height: 12),
-            _RirSelector(
+            RirSelector(
               value: _rir,
               onChanged: (value) => setState(() => _rir = value),
             ),
@@ -247,7 +263,7 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
                 child: FilledButton(
                   onPressed: _submit,
                   child: Text(
-                    planned.isTimed ? '완료' : '세트 완료',
+                    _isRelog ? AppStrings.saveSetEdit : _completeLabel(planned),
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),
@@ -268,6 +284,8 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
       ),
     );
   }
+
+  String _completeLabel(PlannedSet planned) => planned.isTimed ? '완료' : '세트 완료';
 }
 
 class _PreviousLogs extends StatelessWidget {
@@ -341,168 +359,6 @@ class _TimedPrompt extends StatelessWidget {
           const SizedBox(height: 4),
           Text('시간 슬롯 · 동작은 자율', style: context.type.caption),
         ],
-      ),
-    );
-  }
-}
-
-class _NumberRow extends StatelessWidget {
-  const _NumberRow({
-    required this.label,
-    required this.suffix,
-    required this.controller,
-    required this.onDecrement,
-    required this.onIncrement,
-    this.decimal = false,
-    this.zeroSuffix,
-  });
-
-  final String label;
-  final String suffix;
-  final TextEditingController controller;
-  final VoidCallback onDecrement;
-  final VoidCallback onIncrement;
-  final bool decimal;
-
-  /// Replaces [suffix] while the field is blank or zero, so the weight row can
-  /// say 맨몸 instead of kg for a set that carries no load.
-  final String? zeroSuffix;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(width: 40, child: Text(label, style: context.type.label)),
-        _StepButton(icon: Icons.remove, onTap: onDecrement),
-        const SizedBox(width: 8),
-        Expanded(
-          child: ValueListenableBuilder(
-            valueListenable: controller,
-            builder: (context, value, _) => TextField(
-              controller: controller,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(
-                  decimal ? RegExp(r'[0-9.]') : RegExp(r'[0-9]'),
-                ),
-              ],
-              style: context.type.numeric.copyWith(fontSize: 19),
-              decoration: InputDecoration(
-                suffixText: zeroSuffix != null && _isBodyweightInput(value.text)
-                    ? zeroSuffix
-                    : suffix,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        _StepButton(icon: Icons.add, onTap: onIncrement),
-      ],
-    );
-  }
-}
-
-class _StepButton extends StatelessWidget {
-  const _StepButton({required this.icon, required this.onTap});
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Material(
-      color: p.surface2,
-      borderRadius: BorderRadius.circular(9),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onTap();
-        },
-        borderRadius: BorderRadius.circular(9),
-        child: Container(
-          width: 44,
-          height: 44,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(9),
-            border: Border.all(color: p.line),
-          ),
-          child: Icon(icon, size: 20, color: p.ink2),
-        ),
-      ),
-    );
-  }
-}
-
-class _RirSelector extends StatelessWidget {
-  const _RirSelector({required this.value, required this.onChanged});
-
-  final int? value;
-  final ValueChanged<int?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 40,
-          child: Text(AppStrings.rir, style: context.type.label),
-        ),
-        for (final option in const [0, 1, 2, 3])
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: _RirChip(
-                label: '$option',
-                selected: value == option,
-                onTap: () => onChanged(value == option ? null : option),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _RirChip extends StatelessWidget {
-  const _RirChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Material(
-      color: selected ? p.accentWash : p.surface2,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 38,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: selected ? p.accentFill : p.line),
-          ),
-          child: Text(
-            label,
-            style: context.type.numeric.copyWith(
-              fontSize: 14,
-              color: selected ? p.accent : p.ink2,
-            ),
-          ),
-        ),
       ),
     );
   }

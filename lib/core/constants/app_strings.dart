@@ -57,6 +57,10 @@ abstract final class AppStrings {
   static const abortSession = '운동 중단';
   static const switchExercise = '대체 종목으로 변경';
   static const lastRecord = '지난 기록';
+  static const relogBadge = '수정 중';
+  static const saveSetEdit = '수정 저장';
+  static const setUpdated = '세트를 수정했습니다.';
+  static const setLogDeleted = '세트를 지웠습니다.';
 
   // Routine library
   static const routineList = '내 루틴';
@@ -116,7 +120,8 @@ abstract final class AppStrings {
   static const dayCount = 'DAY 수';
   static const noDays = 'DAY가 없습니다. DAY를 추가하세요.';
   static const reorderHint = '손잡이를 끌어 순서를 바꿉니다';
-  static const deleteDayConfirm = 'DAY를 삭제하면 블록과 종목도 함께 사라집니다. 이미 기록한 운동은 그대로 남습니다.';
+  static const deleteDayConfirm =
+      'DAY를 삭제하면 블록과 종목도 함께 사라집니다. 이미 기록한 운동은 그대로 남습니다.';
 
   // Routine editing — blocks
   static const blockLabel = '블록 라벨';
@@ -164,7 +169,8 @@ abstract final class AppStrings {
   static const history = '운동 기록';
   static const sessionDetail = '세션 상세';
   static const deleteRecord = '기록 삭제';
-  static const deleteRecordConfirm = '이 운동 기록을 삭제합니다. 기록된 세트가 모두 지워지고 되돌릴 수 없습니다.';
+  static const deleteRecordConfirm =
+      '이 운동 기록을 삭제합니다. 기록된 세트가 모두 지워지고 되돌릴 수 없습니다.';
   static const recordDeleted = '운동 기록을 삭제했습니다.';
   static const progressChart = '무게 추이';
   static const noRecordThisDay = '이 날은 운동 기록이 없습니다';
@@ -190,6 +196,13 @@ abstract final class AppStrings {
   static const totalVolume = '총 볼륨';
   static const sessionMemo = '메모';
   static const skippedSet = '건너뜀';
+  static const editSet = '세트 수정';
+  static const deleteSet = '세트 삭제';
+  static const deleteSetConfirm = '이 세트 기록을 지웁니다. 되돌릴 수 없습니다.';
+  static const countThisSet = '완료한 세트로 기록';
+  static const countThisSetHint = '끄면 건너뛴 세트로 남아 볼륨에 잡히지 않습니다.';
+  static const durationField = '시간';
+  static const setEditHint = '세트를 누르면 무게와 반복을 고칠 수 있습니다.';
   static const actualRest = '휴식';
   static const noSetLogs = '기록된 세트가 없습니다';
 
@@ -210,6 +223,7 @@ abstract final class AppStrings {
 
   // Rules surfaced in the UI (from the reference document)
   static const cutRuleHint = '시간이 부족하면 뒤 블록부터 자릅니다. B1은 자르지 않습니다.';
-  static const progressionHint = '목표 반복 상단을 모든 세트에서 채우면 다음 세션에 무게를 2.5~5% 올리세요.';
+  static const progressionHint =
+      '목표 반복 상단을 모든 세트에서 채우면 다음 세션에 무게를 2.5~5% 올리세요.';
   static const rirHint = 'RIR은 세트를 멈춘 뒤 더 할 수 있었던 반복 수입니다. 2면 2회 여유, 0은 실패 직전.';
 }

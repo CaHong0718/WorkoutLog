@@ -324,6 +324,8 @@ extension GetItInjectableX on _i174.GetIt {
         sessionId,
         gh<_i839.GetSessionDetail>(),
         gh<_i250.DeleteSession>(),
+        gh<_i250.UpdateSet>(),
+        gh<_i250.DeleteSet>(),
       ),
     );
     gh.factoryParam<_i373.SessionBloc, int, dynamic>(

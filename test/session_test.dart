@@ -65,17 +65,14 @@ void main() {
       final b3 = plan.where((p) => p.blockLabel == 'B3').toList();
 
       expect(b3.length, 6);
-      expect(
-        b3.map((p) => '${p.item.exercise.name}/${p.setIndex}').toList(),
-        [
-          '레그컬/1',
-          '벤트오버 레터럴 레이즈/1',
-          '레그컬/2',
-          '벤트오버 레터럴 레이즈/2',
-          '레그컬/3',
-          '벤트오버 레터럴 레이즈/3',
-        ],
-      );
+      expect(b3.map((p) => '${p.item.exercise.name}/${p.setIndex}').toList(), [
+        '레그컬/1',
+        '벤트오버 레터럴 레이즈/1',
+        '레그컬/2',
+        '벤트오버 레터럴 레이즈/2',
+        '레그컬/3',
+        '벤트오버 레터럴 레이즈/3',
+      ]);
     });
 
     test('슈퍼세트 휴식은 라운드 끝에서만 발생한다', () {
@@ -153,8 +150,9 @@ void main() {
 
   group('SessionBloc', () {
     test('세트를 완료하면 다음으로 넘어가고 휴식이 시작된다', () async {
-      final session = (await workoutRepo.startSession(dayOf('A').id))
-          .valueOrNull!;
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
       final bloc = makeBloc(session.id);
       addTearDown(bloc.close);
 
@@ -173,8 +171,9 @@ void main() {
     });
 
     test('슈퍼세트 라운드 안에서는 휴식 없이 다음 종목으로 넘어간다', () async {
-      final session = (await workoutRepo.startSession(dayOf('A').id))
-          .valueOrNull!;
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
       final bloc = makeBloc(session.id);
       addTearDown(bloc.close);
 
@@ -194,15 +193,18 @@ void main() {
       expect(mid.currentSet?.item.exercise.name, '벤트오버 레터럴 레이즈');
 
       bloc.add(const CompleteCurrentSet(weight: 6, reps: 18));
-      final endOfRound = await bloc.stream.firstWhere((s) => s.currentIndex == 9);
+      final endOfRound = await bloc.stream.firstWhere(
+        (s) => s.currentIndex == 9,
+      );
 
       expect(endOfRound.isResting, isTrue);
       expect(endOfRound.rest!.totalSeconds, 75);
     });
 
     test('블록 컷은 남은 세트를 건너뛴다', () async {
-      final session = (await workoutRepo.startSession(dayOf('A').id))
-          .valueOrNull!;
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
       final bloc = makeBloc(session.id);
       addTearDown(bloc.close);
 
@@ -224,8 +226,9 @@ void main() {
     });
 
     test('건너뛴 세트는 미완료로 기록되어 볼륨에 잡히지 않는다', () async {
-      final session = (await workoutRepo.startSession(dayOf('A').id))
-          .valueOrNull!;
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
       final bloc = makeBloc(session.id);
       addTearDown(bloc.close);
 
@@ -241,8 +244,9 @@ void main() {
     });
 
     test('앱을 껐다 켜도 진행 위치가 복원된다', () async {
-      final session = (await workoutRepo.startSession(dayOf('A').id))
-          .valueOrNull!;
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
       final first = makeBloc(session.id);
 
       first.add(const LoadSession());
@@ -298,8 +302,9 @@ void main() {
     });
 
     test('복근 슬롯은 시간 기반으로 기록된다', () async {
-      final session = (await workoutRepo.startSession(dayOf('A').id))
-          .valueOrNull!;
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
       final bloc = makeBloc(session.id);
       addTearDown(bloc.close);
 
@@ -308,7 +313,9 @@ void main() {
       final absIndex = loaded.plan.indexWhere((p) => p.blockLabel == '복근');
 
       bloc.add(JumpToSet(absIndex));
-      final atAbs = await bloc.stream.firstWhere((s) => s.currentIndex == absIndex);
+      final atAbs = await bloc.stream.firstWhere(
+        (s) => s.currentIndex == absIndex,
+      );
       expect(atAbs.currentSet!.isTimed, isTrue);
 
       bloc.add(const CompleteCurrentSet(durationSeconds: 300));
@@ -321,8 +328,9 @@ void main() {
     });
 
     test('무게 0으로 기록한 세트는 맨몸으로 읽힌다', () async {
-      final session = (await workoutRepo.startSession(dayOf('A').id))
-          .valueOrNull!;
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
       final bloc = makeBloc(session.id);
       addTearDown(bloc.close);
 
@@ -336,6 +344,115 @@ void main() {
       expect(log.isBodyweight, isTrue);
       expect(log.summary, '맨몸 × 12');
       expect(log.estimated1RM, isNull, reason: '실린 무게가 없으면 1RM 추정이 없다');
+    });
+  });
+
+  group('SessionBloc — 기록한 세트 고치기', () {
+    test('되돌아가 다시 완료해도 세트가 늘지 않고 값만 덮인다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      bloc.add(const CompleteCurrentSet(weight: 50, reps: 10));
+      bloc.add(const CompleteCurrentSet(weight: 50, reps: 9));
+      final twoDone = await bloc.stream.firstWhere((s) => s.currentIndex == 2);
+      expect(twoDone.completedSets, 2);
+
+      // 1세트 무게를 잘못 넣었다 — 그 자리로 돌아가 다시 기록한다.
+      bloc.add(const JumpToSet(0));
+      final back = await bloc.stream.firstWhere((s) => s.currentIndex == 0);
+      expect(back.logFor(back.plan.first)?.weight, 50);
+
+      bloc.add(const CompleteCurrentSet(weight: 55, reps: 10));
+      final fixed = await bloc.stream.firstWhere(
+        (s) => s.session!.setLogs.first.weight == 55,
+      );
+
+      expect(fixed.session!.setLogs.length, 2, reason: '행이 늘어나면 안 된다');
+      expect(fixed.completedSets, 2);
+      expect(fixed.session!.setLogs.first.reps, 10);
+      expect(fixed.currentIndex, 2, reason: '고친 뒤에는 아직 기록이 없는 세트로 돌아온다');
+      expect(fixed.isResting, isFalse, reason: '방금 한 세트가 아니니 휴식도 없다');
+    });
+
+    test('되돌아가 건너뛰기를 눌러도 같은 행이 미완료로 바뀐다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      bloc.add(const CompleteCurrentSet(weight: 50, reps: 10));
+      await bloc.stream.firstWhere((s) => s.currentIndex == 1);
+
+      bloc.add(const JumpToSet(0));
+      await bloc.stream.firstWhere((s) => s.currentIndex == 0);
+
+      bloc.add(const SkipCurrentSet());
+      final after = await bloc.stream.firstWhere((s) => s.completedSets == 0);
+
+      expect(after.session!.setLogs.length, 1);
+      expect(after.session!.setLogs.single.isCompleted, isFalse);
+    });
+
+    test('EditSetLog는 기록된 세트의 무게와 반복을 고친다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      bloc.add(const CompleteCurrentSet(weight: 40, reps: 8, rir: 2));
+      final logged = await bloc.stream.firstWhere((s) => s.currentIndex == 1);
+      final original = logged.session!.setLogs.single;
+
+      bloc.add(EditSetLog(original.copyWith(weight: 42.5, reps: 11, rir: 0)));
+      final edited = await bloc.stream.firstWhere(
+        (s) => s.session!.setLogs.single.reps == 11,
+      );
+
+      final log = edited.session!.setLogs.single;
+      expect(log.id, original.id, reason: '같은 행을 고친다');
+      expect(log.weight, 42.5);
+      expect(log.rir, 0);
+      expect(edited.completedSets, 1);
+      expect(edited.currentIndex, 1, reason: '값만 고쳤을 뿐이니 진행 위치는 그대로다');
+    });
+
+    test('DeleteSetLog는 세트를 지우고 그 자리로 되돌린다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      bloc.add(const CompleteCurrentSet(weight: 50, reps: 10));
+      bloc.add(const CompleteCurrentSet(weight: 50, reps: 10));
+      final twoDone = await bloc.stream.firstWhere((s) => s.currentIndex == 2);
+      final first = twoDone.session!.setLogs.first;
+
+      bloc.add(DeleteSetLog(first.id));
+      final after = await bloc.stream.firstWhere(
+        (s) => s.session!.setLogs.length == 1,
+      );
+
+      expect(after.completedSets, 1);
+      expect(after.currentIndex, 0, reason: '빈 자리가 다시 현재 세트가 된다');
+      expect(after.session!.setLogs.single.setIndex, 2);
     });
   });
 }

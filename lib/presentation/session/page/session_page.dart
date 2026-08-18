@@ -7,7 +7,9 @@ import '../../../core/di/injection.dart';
 import '../../../core/mvi/effect_listener.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../domain/entity/set_log.dart';
 import '../../common/common_widgets.dart';
+import '../../common/set_log_edit_sheet.dart';
 import '../bloc/session_bloc.dart';
 import '../bloc/session_effect.dart';
 import '../bloc/session_intent.dart';
@@ -116,6 +118,7 @@ class _SessionView extends StatelessWidget {
                   previousLogs:
                       state.lastLogs[state.exerciseFor(state.currentSet!).id] ??
                       const [],
+                  existingLog: state.logFor(state.currentSet!),
                   onComplete: (values) => bloc.add(
                     CompleteCurrentSet(
                       weight: values.weight,
@@ -136,8 +139,11 @@ class _SessionView extends StatelessWidget {
                 state: state,
                 onSkipBlock: (index) => bloc.add(SkipBlock(index)),
                 onJump: (index) => bloc.add(JumpToSet(index)),
+                onEditLog: (log) => _editLog(context, log),
               ),
               const SizedBox(height: 8),
+              Text(AppStrings.setEditHint, style: context.type.caption),
+              const SizedBox(height: 4),
               Text(AppStrings.cutRuleHint, style: context.type.caption),
             ],
           ),
@@ -163,6 +169,20 @@ class _SessionView extends StatelessWidget {
     );
     if (picked != null) {
       bloc.add(SubstituteExercise(planned.item.id, picked));
+    }
+  }
+
+  /// Fixes a set that is already recorded, from the plan timeline.
+  Future<void> _editLog(BuildContext context, SetLog entry) async {
+    final bloc = context.read<SessionBloc>();
+
+    switch (await SetLogEditSheet.show(context, entry)) {
+      case SetLogSaved(:final log):
+        bloc.add(EditSetLog(log));
+      case SetLogRemoved(:final setLogId):
+        bloc.add(DeleteSetLog(setLogId));
+      case null:
+        break;
     }
   }
 

@@ -13,9 +13,17 @@ import 'history_metrics.dart';
 /// The session's sets, grouped exactly as they were performed:
 /// `block → exercise → set`. Skipped sets stay visible but struck through.
 class SessionLogList extends StatelessWidget {
-  const SessionLogList({required this.blocks, super.key});
+  const SessionLogList({
+    required this.blocks,
+    required this.onEditLog,
+    super.key,
+  });
 
   final List<LoggedBlock> blocks;
+
+  /// Opens the editor for one recorded set — a finished record is still a
+  /// record of what happened, and typos happen.
+  final void Function(SetLog log) onEditLog;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +36,7 @@ class SessionLogList extends StatelessWidget {
     return Column(
       children: [
         for (final block in blocks) ...[
-          _BlockCard(block: block),
+          _BlockCard(block: block, onEditLog: onEditLog),
           const SizedBox(height: 10),
         ],
       ],
@@ -37,9 +45,10 @@ class SessionLogList extends StatelessWidget {
 }
 
 class _BlockCard extends StatelessWidget {
-  const _BlockCard({required this.block});
+  const _BlockCard({required this.block, required this.onEditLog});
 
   final LoggedBlock block;
+  final void Function(SetLog log) onEditLog;
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +100,8 @@ class _BlockCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            for (final log in exercise.logs) _SetRow(log: log),
+            for (final log in exercise.logs)
+              _SetRow(log: log, onTap: () => onEditLog(log)),
           ],
         ],
       ),
@@ -100,59 +110,64 @@ class _BlockCard extends StatelessWidget {
 }
 
 class _SetRow extends StatelessWidget {
-  const _SetRow({required this.log});
+  const _SetRow({required this.log, required this.onTap});
 
   final SetLog log;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final rest = log.restSeconds;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 22,
-            child: Text(
-              '${log.setIndex}',
-              style: context.type.label.copyWith(color: p.ink3),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              log.isCompleted ? log.summary : AppStrings.skippedSet,
-              style: log.isCompleted
-                  ? context.type.numeric.copyWith(fontSize: 13.5)
-                  : context.type.caption.copyWith(
-                      decoration: TextDecoration.lineThrough,
-                    ),
-            ),
-          ),
-          if (log.isCompleted && log.rir != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 10),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(7),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 22,
               child: Text(
-                '${AppStrings.rir} ${log.rir}',
+                '${log.setIndex}',
                 style: context.type.label.copyWith(color: p.ink3),
               ),
             ),
-          if (rest != null && rest > 0)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.timer_outlined, size: 13, color: p.ink3),
-                const SizedBox(width: 3),
-                Text(
-                  rest.seconds.mmss,
-                  style: context.type.caption.copyWith(
-                    fontFeatures: AppTypography.tabular,
-                  ),
-                ),
-              ],
+            Expanded(
+              child: Text(
+                log.isCompleted ? log.summary : AppStrings.skippedSet,
+                style: log.isCompleted
+                    ? context.type.numeric.copyWith(fontSize: 13.5)
+                    : context.type.caption.copyWith(
+                        decoration: TextDecoration.lineThrough,
+                      ),
+              ),
             ),
-        ],
+            if (log.isCompleted && log.rir != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Text(
+                  '${AppStrings.rir} ${log.rir}',
+                  style: context.type.label.copyWith(color: p.ink3),
+                ),
+              ),
+            if (rest != null && rest > 0)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.timer_outlined, size: 13, color: p.ink3),
+                  const SizedBox(width: 3),
+                  Text(
+                    rest.seconds.mmss,
+                    style: context.type.caption.copyWith(
+                      fontFeatures: AppTypography.tabular,
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }

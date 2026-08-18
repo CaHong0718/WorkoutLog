@@ -74,26 +74,28 @@ void main() {
     GetExerciseProgress(historyRepo),
   );
 
-  SessionDetailBloc makeDetailBloc(int sessionId) =>
-      SessionDetailBloc(
-        sessionId,
-        GetSessionDetail(historyRepo),
-        DeleteSession(workoutRepo),
-      );
+  SessionDetailBloc makeDetailBloc(int sessionId) => SessionDetailBloc(
+    sessionId,
+    GetSessionDetail(historyRepo),
+    DeleteSession(workoutRepo),
+    UpdateSet(workoutRepo),
+    DeleteSet(workoutRepo),
+  );
 
   /// Starts a session and backdates it, so a whole history can be built
   /// without touching the clock.
   Future<WorkoutSession> startOn(String dayCode, DateTime date) async {
-    final session = (await workoutRepo.startSession(dayOf(dayCode).id))
-        .valueOrNull!;
-    await (db.update(db.workoutSessions)
-          ..where((t) => t.id.equals(session.id)))
-        .write(
-          WorkoutSessionsCompanion(
-            date: Value(date.dateOnly),
-            startedAt: Value(date),
-          ),
-        );
+    final session = (await workoutRepo.startSession(
+      dayOf(dayCode).id,
+    )).valueOrNull!;
+    await (db.update(
+      db.workoutSessions,
+    )..where((t) => t.id.equals(session.id))).write(
+      WorkoutSessionsCompanion(
+        date: Value(date.dateOnly),
+        startedAt: Value(date),
+      ),
+    );
     return session;
   }
 
@@ -347,6 +349,139 @@ void main() {
       expect(volume[BodyPart.chest] ?? 0, 0);
       expect((await workoutRepo.getSession(session.id)).isErr, isTrue);
     });
+
+    test('완료된 기록에서도 세트 하나의 무게와 반복을 고칠 수 있다', () async {
+      final dayB = dayOf('B');
+      final incline = dayB.blocks[0].items.single;
+      final session = await startOn('B', today);
+
+      await logSet(
+        session.id,
+        incline,
+        blockLabel: 'B1',
+        itemOrder: 0,
+        setIndex: 1,
+        weight: 60,
+        reps: 10,
+      );
+      await logSet(
+        session.id,
+        incline,
+        blockLabel: 'B1',
+        itemOrder: 0,
+        setIndex: 2,
+        weight: 60,
+        reps: 8,
+      );
+      await workoutRepo.completeSession(session.id);
+
+      final bloc = makeDetailBloc(session.id);
+      addTearDown(bloc.close);
+      bloc.add(const LoadSessionDetail());
+      final loaded = await bloc.stream.firstWhere((s) => s.hasSession);
+      final second = loaded.session!.setLogs.last;
+
+      bloc.add(UpdateLoggedSet(second.copyWith(weight: 65, reps: 9, rir: 1)));
+      final edited = await bloc.stream.firstWhere(
+        (s) => s.hasSession && s.session!.setLogs.last.weight == 65,
+      );
+
+      final log = edited.session!.setLogs.last;
+      expect(log.id, second.id, reason: '삭제 후 재기록이 아니라 같은 행을 고친다');
+      expect(log.reps, 9);
+      expect(log.rir, 1);
+      expect(edited.session!.setLogs.length, 2);
+      expect(edited.session!.totalVolume, 60 * 10 + 65 * 9);
+
+      // 주간 볼륨은 완료 세트 수로 세므로 수정에도 그대로다.
+      final volume = (await historyRepo.getWeeklyVolume(today)).valueOrNull!;
+      expect(volume[BodyPart.chest], 2);
+    });
+
+    test('완료로 기록한 세트를 건너뜀으로 되돌리면 볼륨에서 빠진다', () async {
+      final dayB = dayOf('B');
+      final incline = dayB.blocks[0].items.single;
+      final session = await startOn('B', today);
+
+      await logSet(
+        session.id,
+        incline,
+        blockLabel: 'B1',
+        itemOrder: 0,
+        setIndex: 1,
+        weight: 60,
+        reps: 10,
+      );
+      await workoutRepo.completeSession(session.id);
+
+      final bloc = makeDetailBloc(session.id);
+      addTearDown(bloc.close);
+      bloc.add(const LoadSessionDetail());
+      final loaded = await bloc.stream.firstWhere((s) => s.hasSession);
+
+      bloc.add(
+        UpdateLoggedSet(
+          loaded.session!.setLogs.single.copyWith(isCompleted: false),
+        ),
+      );
+      final edited = await bloc.stream.firstWhere(
+        (s) => s.hasSession && !s.session!.setLogs.single.isCompleted,
+      );
+
+      expect(edited.session!.completedSets, 0);
+      expect(edited.session!.totalVolume, 0);
+      final volume = (await historyRepo.getWeeklyVolume(today)).valueOrNull!;
+      expect(volume[BodyPart.chest] ?? 0, 0);
+    });
+
+    test('세트 하나만 지워도 나머지 기록은 남는다', () async {
+      final dayB = dayOf('B');
+      final incline = dayB.blocks[0].items.single;
+      final session = await startOn('B', today);
+
+      await logSet(
+        session.id,
+        incline,
+        blockLabel: 'B1',
+        itemOrder: 0,
+        setIndex: 1,
+        weight: 60,
+        reps: 10,
+      );
+      await logSet(
+        session.id,
+        incline,
+        blockLabel: 'B1',
+        itemOrder: 0,
+        setIndex: 2,
+        weight: 60,
+        reps: 8,
+      );
+      await workoutRepo.completeSession(session.id);
+
+      final bloc = makeDetailBloc(session.id);
+      addTearDown(bloc.close);
+      bloc.add(const LoadSessionDetail());
+      final loaded = await bloc.stream.firstWhere((s) => s.hasSession);
+
+      bloc.add(DeleteLoggedSet(loaded.session!.setLogs.first.id));
+      final after = await bloc.stream.firstWhere(
+        (s) => s.hasSession && s.session!.setLogs.length == 1,
+      );
+
+      expect(after.session!.setLogs.single.setIndex, 2);
+      expect(after.session!.totalVolume, 60 * 8);
+      expect(
+        (await workoutRepo.getSession(session.id)).isOk,
+        isTrue,
+        reason: '세트를 지워도 세션 자체는 남는다',
+      );
+
+      final marked = (await historyRepo.getWorkoutDates(
+        DateRange.month(today),
+      )).valueOrNull!;
+      expect(marked, contains(today));
+    });
   });
 
   group('StatsBloc — 주간 볼륨', () {
@@ -524,7 +659,9 @@ void main() {
 
   group('위젯', () {
     Future<void> pump(WidgetTester tester, Widget child) => tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child))),
+      MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: child)),
+      ),
     );
 
     testWidgets('달력이 운동한 날을 표시하고 탭한 날짜를 돌려준다', (tester) async {
@@ -648,6 +785,7 @@ void main() {
               ],
             ),
           ],
+          onEditLog: (_) {},
         ),
       );
 
