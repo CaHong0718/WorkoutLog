@@ -1,3 +1,24 @@
+import java.util.Properties
+
+// Signing identity, read from android/key.properties.
+//
+// Android treats a signature change as a different app: it uninstalls the old
+// one before installing, and app-private data — the whole workout history —
+// goes with it. The per-machine debug key makes that happen every time the APK
+// comes from a different computer, so the key lives in a file instead.
+val signingProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val hasStableKey = signingProperties.getProperty("storeFile") != null
+
+if (!hasStableKey) {
+    logger.warn(
+        "android/key.properties가 없어 debug 키로 서명합니다. " +
+            "다른 컴퓨터에서 만든 설치본 위에 깔면 앱이 지워지고 운동 기록도 함께 사라집니다.",
+    )
+}
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -27,11 +48,30 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasStableKey) {
+            create("workoutLog") {
+                storeFile = file(signingProperties.getProperty("storeFile"))
+                storePassword = signingProperties.getProperty("storePassword")
+                keyAlias = signingProperties.getProperty("keyAlias")
+                keyPassword = signingProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
+        // debug too, not just release: `flutter run` installs the debug build,
+        // so that is the one that has been wiping the database.
+        val stable = if (hasStableKey) {
+            signingConfigs.getByName("workoutLog")
+        } else {
+            signingConfigs.getByName("debug")
+        }
+        debug {
+            signingConfig = stable
+        }
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = stable
         }
     }
 }

@@ -62,6 +62,7 @@ push가 실패하면 커밋만 남기고 알려준다 — 자격증명 프롬프
 | [`docs/02-ROUTINE-SEED.md`](docs/02-ROUTINE-SEED.md) | 시드 루틴·주간 볼륨 목표·디자인 토큰을 다룰 때 |
 | [`docs/04-ROUTINE-EXCHANGE.md`](docs/04-ROUTINE-EXCHANGE.md) | 루틴 `.json` 가져오기/내보내기 포맷을 다룰 때. **HTML→JSON 변환 시 이 스키마가 유일한 기준** |
 | [`docs/05-IOS.md`](docs/05-IOS.md) | iOS 빌드를 다룰 때. 미리 해둔 설정과 맥에서만 할 수 있는 일 |
+| [`docs/06-ANDROID-SIGNING.md`](docs/06-ANDROID-SIGNING.md) | **다른 컴퓨터에서 안드로이드를 빌드하기 전에.** 서명 키를 안 옮기면 운동 기록이 지워진다 |
 
 ## 루틴을 파일로 뽑아 달라고 하면
 
@@ -127,6 +128,14 @@ applicationId `com.shyang.workout_log` / iOS bundle ID `com.shyang.workoutLog`.
 
 applicationId를 바꾸면 안드로이드가 별개 앱으로 취급해 **기존 설치본의 운동 기록이 전부 끊긴다.**
 앞으로는 바꾸지 않는다.
+
+**서명 키가 바뀌어도 똑같이 날아간다.** 안드로이드는 서명이 다르면 다른 앱으로 보고
+기존 앱을 지운 뒤 설치한다. 그래서 debug·release 모두 `android/app/workout-log.jks`
+하나로 서명한다. 이 키와 `android/key.properties`는 git에 없으니 **다른 컴퓨터에서
+빌드하려면 두 파일을 손으로 옮긴다.** 안 옮기면 debug 키로 서명되고, 그 순간 기록이 사라진다.
+자세한 건 [`docs/06-ANDROID-SIGNING.md`](docs/06-ANDROID-SIGNING.md).
+
+실제로 2026-08-18에 이 일로 하루치 기록이 사라졌다. 기기 자동 백업도 꺼져 있어 복구하지 못했다.
 
 Dart 패키지명은 `workout_log`(`package:workout_log/...`), Drift DB 파일명도 `workout_log.sqlite`다.
 
