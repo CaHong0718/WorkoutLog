@@ -93,9 +93,7 @@ class HistoryState extends MviState {
       month: month ?? this.month,
       workoutDates: workoutDates ?? this.workoutDates,
       dayBodyParts: dayBodyParts ?? this.dayBodyParts,
-      selectedDate: clearSelection
-          ? null
-          : (selectedDate ?? this.selectedDate),
+      selectedDate: clearSelection ? null : (selectedDate ?? this.selectedDate),
       selectedSessions: clearSelection
           ? const []
           : (selectedSessions ?? this.selectedSessions),

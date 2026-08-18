@@ -39,10 +39,7 @@ class RoutineCodec implements RoutineExchange {
     final package = decoder.read(root);
     if (package == null || decoder.errors.isNotEmpty) {
       return Err(
-        RoutineFormatFailure(
-          '루틴 파일 형식이 올바르지 않습니다.',
-          errors: decoder.errors,
-        ),
+        RoutineFormatFailure('루틴 파일 형식이 올바르지 않습니다.', errors: decoder.errors),
       );
     }
     return Ok(
@@ -294,13 +291,7 @@ class _Decoder {
       type: type,
       rounds: isSuperset ? rounds : 1,
       restSeconds: restSeconds,
-      targetMinutes: _optionalInt(
-        map,
-        'targetMinutes',
-        path,
-        min: 1,
-        max: 600,
-      ),
+      targetMinutes: _optionalInt(map, 'targetMinutes', path, min: 1, max: 600),
       isCuttable: _optionalBool(map, 'isCuttable', path) ?? true,
       items: isSuperset ? _alignRounds(items, rounds, label, path) : items,
     );
@@ -452,7 +443,9 @@ class _Decoder {
       if (entry is String && entry.trim().isNotEmpty) {
         names.add(entry.trim());
       } else {
-        errors.add('$path.alternatives[$i]: 종목 이름 문자열이어야 합니다 (${_display(entry)})');
+        errors.add(
+          '$path.alternatives[$i]: 종목 이름 문자열이어야 합니다 (${_display(entry)})',
+        );
       }
     }
     return names;

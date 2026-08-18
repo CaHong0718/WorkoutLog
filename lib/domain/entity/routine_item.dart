@@ -98,8 +98,9 @@ class RoutineItem extends Equatable {
       repMode: repMode ?? this.repMode,
       repMin: clearRepRange ? null : (repMin ?? this.repMin),
       repMax: clearRepRange ? null : (repMax ?? this.repMax),
-      durationSeconds:
-          clearDuration ? null : (durationSeconds ?? this.durationSeconds),
+      durationSeconds: clearDuration
+          ? null
+          : (durationSeconds ?? this.durationSeconds),
       restSecondsOverride: clearRestOverride
           ? null
           : (restSecondsOverride ?? this.restSecondsOverride),

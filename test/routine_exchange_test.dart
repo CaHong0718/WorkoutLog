@@ -27,13 +27,21 @@ void main() {
 
   Future<Routine> activeRoutine() async {
     final result = await repository.getActiveRoutine();
-    expect(result.valueOrNull, isNotNull, reason: result.failureOrNull?.message);
+    expect(
+      result.valueOrNull,
+      isNotNull,
+      reason: result.failureOrNull?.message,
+    );
     return result.valueOrNull!;
   }
 
   Future<RoutinePackage> exportOf(int routineId) async {
     final result = await repository.exportRoutine(routineId);
-    expect(result.valueOrNull, isNotNull, reason: result.failureOrNull?.message);
+    expect(
+      result.valueOrNull,
+      isNotNull,
+      reason: result.failureOrNull?.message,
+    );
     return result.valueOrNull!;
   }
 
@@ -42,7 +50,9 @@ void main() {
     expect(
       result.valueOrNull,
       isNotNull,
-      reason: (result.failureOrNull as RoutineFormatFailure?)?.errors.join('\n'),
+      reason: (result.failureOrNull as RoutineFormatFailure?)?.errors.join(
+        '\n',
+      ),
     );
     return result.valueOrNull!;
   }
@@ -63,7 +73,11 @@ void main() {
       expect(parsed.warnings, isEmpty);
 
       final report = await repository.importRoutine(parsed.package);
-      expect(report.valueOrNull, isNotNull, reason: report.failureOrNull?.message);
+      expect(
+        report.valueOrNull,
+        isNotNull,
+        reason: report.failureOrNull?.message,
+      );
 
       final reimported = await exportOf(report.valueOrNull!.routineId);
       expect(reimported, original);
@@ -92,7 +106,9 @@ void main() {
       final before = (await db.exerciseDao.getAll()).length;
 
       final parsed = parse(codec.encode(await exportOf(seeded.id)));
-      final report = (await repository.importRoutine(parsed.package)).valueOrNull!;
+      final report = (await repository.importRoutine(
+        parsed.package,
+      )).valueOrNull!;
 
       expect(report.createdExercises, 0);
       expect(report.reusedExercises, greaterThan(0));
@@ -119,7 +135,9 @@ void main() {
         }'''),
       );
 
-      final report = (await repository.importRoutine(parsed.package)).valueOrNull!;
+      final report = (await repository.importRoutine(
+        parsed.package,
+      )).valueOrNull!;
 
       // 티바로우 is seeded; 케이블 크로스오버 is not.
       expect(report.reusedExercises, 1);
@@ -253,7 +271,9 @@ void main() {
       );
       expect(parsed.warnings, isEmpty, reason: '파싱 단계에서는 라이브러리를 모른다');
 
-      final report = (await repository.importRoutine(parsed.package)).valueOrNull!;
+      final report = (await repository.importRoutine(
+        parsed.package,
+      )).valueOrNull!;
       expect(report.warnings.single, contains('존재하지 않는 종목'));
 
       final routines = (await repository.getRoutines()).valueOrNull!;
@@ -309,7 +329,10 @@ void main() {
   // ── routine library ─────────────────────────────────────────────────────
 
   group('루틴 관리', () {
-    Future<int> importSimple({String name = '두 번째 루틴', bool activate = false}) async {
+    Future<int> importSimple({
+      String name = '두 번째 루틴',
+      bool activate = false,
+    }) async {
       final parsed = parse(
         document('''
         {"name": "$name", "days": [
@@ -325,7 +348,11 @@ void main() {
         parsed.package,
         activate: activate,
       );
-      expect(report.valueOrNull, isNotNull, reason: report.failureOrNull?.message);
+      expect(
+        report.valueOrNull,
+        isNotNull,
+        reason: report.failureOrNull?.message,
+      );
       return report.valueOrNull!.routineId;
     }
 
@@ -390,7 +417,11 @@ void main() {
     test('복제하면 이름에 복사본이 붙고 그래프는 같다', () async {
       final seeded = await activeRoutine();
       final result = await repository.duplicateRoutine(seeded.id);
-      expect(result.valueOrNull, isNotNull, reason: result.failureOrNull?.message);
+      expect(
+        result.valueOrNull,
+        isNotNull,
+        reason: result.failureOrNull?.message,
+      );
 
       final original = await exportOf(seeded.id);
       final copy = await exportOf(result.valueOrNull!);

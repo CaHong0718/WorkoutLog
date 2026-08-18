@@ -28,8 +28,10 @@ enum BlockType {
 
   final String label;
 
-  static BlockType fromName(String name) =>
-      values.firstWhere((e) => e.name == name, orElse: () => BlockType.straight);
+  static BlockType fromName(String name) => values.firstWhere(
+    (e) => e.name == name,
+    orElse: () => BlockType.straight,
+  );
 }
 
 /// How a set's target is expressed.

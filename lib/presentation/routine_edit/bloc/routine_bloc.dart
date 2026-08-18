@@ -48,8 +48,11 @@ class RoutineBloc extends MviBloc<RoutineIntent, RoutineState, RoutineEffect> {
       intent.routineId == null
           ? _watchActiveRoutine()
           : _watchRoutine(intent.routineId!),
-      onData: (routine) =>
-          state.copyWith(isLoading: false, routine: routine, clearFailure: true),
+      onData: (routine) => state.copyWith(
+        isLoading: false,
+        routine: routine,
+        clearFailure: true,
+      ),
       onError: (error, _) => state.copyWith(
         isLoading: false,
         failure: DatabaseFailure('루틴을 불러오지 못했습니다.', cause: error),

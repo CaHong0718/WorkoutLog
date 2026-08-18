@@ -23,10 +23,9 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
             ]))
           .get();
 
-  Future<WorkoutSessionRow?> findSession(int sessionId) =>
-      (select(workoutSessions)
-            ..where((t) => t.id.equals(sessionId)))
-          .getSingleOrNull();
+  Future<WorkoutSessionRow?> findSession(int sessionId) => (select(
+    workoutSessions,
+  )..where((t) => t.id.equals(sessionId))).getSingleOrNull();
 
   Future<List<WorkoutSessionRow>> sessionsOn(DateTime date) =>
       (select(workoutSessions)
@@ -78,22 +77,23 @@ class HistoryDao extends DatabaseAccessor<AppDatabase> with _$HistoryDaoMixin {
     int exerciseId,
     int sessionLimit,
   ) async {
-    final query = select(setLogs).join([
-      innerJoin(
-        workoutSessions,
-        workoutSessions.id.equalsExp(setLogs.sessionId),
-      ),
-    ])
-      ..where(
-        setLogs.exerciseId.equals(exerciseId) &
-            setLogs.isCompleted.equals(true),
-      )
-      ..orderBy([
-        OrderingTerm(
-          expression: workoutSessions.date,
-          mode: OrderingMode.desc,
-        ),
-      ]);
+    final query =
+        select(setLogs).join([
+            innerJoin(
+              workoutSessions,
+              workoutSessions.id.equalsExp(setLogs.sessionId),
+            ),
+          ])
+          ..where(
+            setLogs.exerciseId.equals(exerciseId) &
+                setLogs.isCompleted.equals(true),
+          )
+          ..orderBy([
+            OrderingTerm(
+              expression: workoutSessions.date,
+              mode: OrderingMode.desc,
+            ),
+          ]);
 
     final rows = await query.get();
     final result = <({DateTime date, SetLogRow log})>[];

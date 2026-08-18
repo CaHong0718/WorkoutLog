@@ -155,7 +155,9 @@ class SuggestProgression {
         return ProgressionSuggestion.hold(
           item.exerciseId,
           name,
-          currentWeight: (first == null || first.isBodyweight) ? null : first.weight,
+          currentWeight: (first == null || first.isBodyweight)
+              ? null
+              : first.weight,
           reason: '지난 세션에서 목표 세트를 다 채우지 않았습니다.',
         );
       }
@@ -173,8 +175,9 @@ class SuggestProgression {
       }
 
       final currentWeight = weights.reduce((a, b) => a < b ? a : b);
-      final clearedEverySet =
-          lastSetLogs.every((log) => (log.reps ?? 0) >= repTarget);
+      final clearedEverySet = lastSetLogs.every(
+        (log) => (log.reps ?? 0) >= repTarget,
+      );
 
       if (!clearedEverySet) {
         return ProgressionSuggestion.hold(
@@ -186,8 +189,7 @@ class SuggestProgression {
       }
 
       final raw = currentWeight * (1 + stepRatio);
-      final rounded =
-          (raw / increment).ceilToDouble() * increment;
+      final rounded = (raw / increment).ceilToDouble() * increment;
       final suggested = rounded <= currentWeight
           ? currentWeight + increment
           : rounded;

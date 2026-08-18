@@ -10,7 +10,11 @@ import 'mvi_state.dart';
 ///
 /// [State] is emitted through the normal bloc stream; [Effect] travels on a
 /// separate broadcast stream so it fires exactly once per emission.
-abstract class MviBloc<I extends MviIntent, S extends MviState, E extends MviEffect>
+abstract class MviBloc<
+  I extends MviIntent,
+  S extends MviState,
+  E extends MviEffect
+>
     extends Bloc<I, S> {
   MviBloc(super.initialState);
 

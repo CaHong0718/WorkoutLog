@@ -90,7 +90,11 @@ class DayEditBloc extends MviBloc<DayEditIntent, DayEditState, DayEditEffect> {
     await _write(
       emit,
       () => _upsertDay(
-        intent.day.copyWith(id: day.id, routineId: day.routineId, order: day.order),
+        intent.day.copyWith(
+          id: day.id,
+          routineId: day.routineId,
+          order: day.order,
+        ),
       ),
     );
   }
@@ -131,9 +135,7 @@ class DayEditBloc extends MviBloc<DayEditIntent, DayEditState, DayEditEffect> {
       // A superset prescribes rounds, not per-exercise sets: keep the slots in
       // step so the session plan can cycle them.
       if (block.isSuperset) {
-        final current = state.blocks
-            .where((b) => b.id == block.id)
-            .firstOrNull;
+        final current = state.blocks.where((b) => b.id == block.id).firstOrNull;
         for (final item in current?.items ?? const <RoutineItem>[]) {
           if (item.sets == rounds) continue;
           await _upsertItem(item.copyWith(sets: rounds));
@@ -184,9 +186,7 @@ class DayEditBloc extends MviBloc<DayEditIntent, DayEditState, DayEditEffect> {
     CreateItem intent,
     Emitter<DayEditState> emit,
   ) async {
-    final block = state.blocks
-        .where((b) => b.id == intent.blockId)
-        .firstOrNull;
+    final block = state.blocks.where((b) => b.id == intent.blockId).firstOrNull;
     if (block == null) return;
 
     await _write(
@@ -232,9 +232,7 @@ class DayEditBloc extends MviBloc<DayEditIntent, DayEditState, DayEditEffect> {
 
   Future<void> _onMoveItem(MoveItem intent, Emitter<DayEditState> emit) async {
     final day = state.day;
-    final block = state.blocks
-        .where((b) => b.id == intent.blockId)
-        .firstOrNull;
+    final block = state.blocks.where((b) => b.id == intent.blockId).firstOrNull;
     if (day == null || block == null) return;
 
     final items = _moved(block.items, intent.oldIndex, intent.newIndex);

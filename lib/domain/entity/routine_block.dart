@@ -52,8 +52,7 @@ class RoutineBlock extends Equatable {
   bool get isSuperset => type == BlockType.superset;
 
   /// Total working sets contributed by this block.
-  int get totalSets =>
-      items.fold(0, (sum, item) => sum + item.volumeSets);
+  int get totalSets => items.fold(0, (sum, item) => sum + item.volumeSets);
 
   Map<BodyPart, int> get volumeByBodyPart {
     final result = <BodyPart, int>{};
@@ -92,8 +91,9 @@ class RoutineBlock extends Equatable {
       type: type ?? this.type,
       rounds: rounds ?? this.rounds,
       restSeconds: restSeconds ?? this.restSeconds,
-      targetMinutes:
-          clearTargetMinutes ? null : (targetMinutes ?? this.targetMinutes),
+      targetMinutes: clearTargetMinutes
+          ? null
+          : (targetMinutes ?? this.targetMinutes),
       isCuttable: isCuttable ?? this.isCuttable,
       items: items ?? this.items,
     );

@@ -35,8 +35,7 @@ class LoggedBlock extends Equatable {
   final String label;
   final List<LoggedExercise> exercises;
 
-  int get completedSets =>
-      exercises.fold(0, (sum, e) => sum + e.completedSets);
+  int get completedSets => exercises.fold(0, (sum, e) => sum + e.completedSets);
 
   double get volume => exercises.fold(0, (sum, e) => sum + e.volume);
 
@@ -92,7 +91,8 @@ class SessionDetailState extends MviState {
               LoggedExercise(
                 name: slot.value.first.exerciseName,
                 bodyPart: slot.value.first.bodyPart,
-                logs: slot.value..sort((a, b) => a.setIndex.compareTo(b.setIndex)),
+                logs: slot.value
+                  ..sort((a, b) => a.setIndex.compareTo(b.setIndex)),
               ),
           ],
         ),

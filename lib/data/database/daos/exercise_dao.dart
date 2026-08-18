@@ -11,19 +11,17 @@ class ExerciseDao extends DatabaseAccessor<AppDatabase>
   ExerciseDao(super.db);
 
   Future<List<ExerciseRow>> getAll() =>
-      (select(exercises)
-            ..orderBy([
-              (t) => OrderingTerm(expression: t.bodyPart),
-              (t) => OrderingTerm(expression: t.id),
-            ]))
+      (select(exercises)..orderBy([
+            (t) => OrderingTerm(expression: t.bodyPart),
+            (t) => OrderingTerm(expression: t.id),
+          ]))
           .get();
 
   Stream<List<ExerciseRow>> watchAll() =>
-      (select(exercises)
-            ..orderBy([
-              (t) => OrderingTerm(expression: t.bodyPart),
-              (t) => OrderingTerm(expression: t.id),
-            ]))
+      (select(exercises)..orderBy([
+            (t) => OrderingTerm(expression: t.bodyPart),
+            (t) => OrderingTerm(expression: t.id),
+          ]))
           .watch();
 
   Future<List<ExerciseRow>> byBodyPart(String bodyPart) =>
@@ -60,10 +58,11 @@ class ExerciseDao extends DatabaseAccessor<AppDatabase>
   /// True when a routine still references this exercise — deletion must be
   /// refused so the routine does not lose a slot.
   Future<bool> isReferencedByRoutine(int exerciseId) async {
-    final row = await (select(routineItems)
-          ..where((t) => t.exerciseId.equals(exerciseId))
-          ..limit(1))
-        .getSingleOrNull();
+    final row =
+        await (select(routineItems)
+              ..where((t) => t.exerciseId.equals(exerciseId))
+              ..limit(1))
+            .getSingleOrNull();
     return row != null;
   }
 }

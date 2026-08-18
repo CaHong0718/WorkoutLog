@@ -34,8 +34,7 @@ class Exercise extends Equatable {
   final DateTime? createdAt;
 
   /// `사이드 레터럴 라이즈 · 측면` for list rows.
-  String get displayName =>
-      subTarget == null ? name : '$name · $subTarget';
+  String get displayName => subTarget == null ? name : '$name · $subTarget';
 
   Exercise copyWith({
     int? id,

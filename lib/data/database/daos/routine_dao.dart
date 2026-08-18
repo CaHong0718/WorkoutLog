@@ -26,15 +26,13 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
             ..limit(1))
           .getSingleOrNull();
 
-  Future<List<RoutineRow>> allRoutines() =>
-      (select(routines)
-            ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]))
-          .get();
+  Future<List<RoutineRow>> allRoutines() => (select(
+    routines,
+  )..orderBy([(t) => OrderingTerm(expression: t.createdAt)])).get();
 
-  Future<RoutineRow?> findRoutine(int routineId) =>
-      (select(routines)
-            ..where((t) => t.id.equals(routineId)))
-          .getSingleOrNull();
+  Future<RoutineRow?> findRoutine(int routineId) => (select(
+    routines,
+  )..where((t) => t.id.equals(routineId))).getSingleOrNull();
 
   Future<List<RoutineDayRow>> daysOf(int routineId) =>
       (select(routineDays)
@@ -118,7 +116,9 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
   /// Clears every flag before setting one, in a single transaction — two
   /// active routines would make `findActiveRoutine` pick arbitrarily.
   Future<void> setActiveRoutine(int id) => transaction(() async {
-    await update(routines).write(const RoutinesCompanion(isActive: Value(false)));
+    await update(
+      routines,
+    ).write(const RoutinesCompanion(isActive: Value(false)));
     await (update(routines)..where((t) => t.id.equals(id))).write(
       RoutinesCompanion(
         isActive: const Value(true),
@@ -141,9 +141,9 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
 
   Future<int> upsertBlock(int id, RoutineBlocksCompanion companion) async {
     if (id == 0) return into(routineBlocks).insert(companion);
-    await (update(routineBlocks)
-          ..where((t) => t.id.equals(id)))
-        .write(companion);
+    await (update(
+      routineBlocks,
+    )..where((t) => t.id.equals(id))).write(companion);
     return id;
   }
 
@@ -152,7 +152,9 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
 
   Future<int> upsertItem(int id, RoutineItemsCompanion companion) async {
     if (id == 0) return into(routineItems).insert(companion);
-    await (update(routineItems)..where((t) => t.id.equals(id))).write(companion);
+    await (update(
+      routineItems,
+    )..where((t) => t.id.equals(id))).write(companion);
     return id;
   }
 
@@ -162,20 +164,23 @@ class RoutineDao extends DatabaseAccessor<AppDatabase> with _$RoutineDaoMixin {
   /// Rewrites `sortOrder` to match the position of each id in [orderedIds].
   Future<void> reorderDays(List<int> orderedIds) => _reorder(
     orderedIds,
-    (id, index) => (update(routineDays)..where((t) => t.id.equals(id)))
-        .write(RoutineDaysCompanion(sortOrder: Value(index))),
+    (id, index) => (update(routineDays)..where((t) => t.id.equals(id))).write(
+      RoutineDaysCompanion(sortOrder: Value(index)),
+    ),
   );
 
   Future<void> reorderBlocks(List<int> orderedIds) => _reorder(
     orderedIds,
-    (id, index) => (update(routineBlocks)..where((t) => t.id.equals(id)))
-        .write(RoutineBlocksCompanion(sortOrder: Value(index))),
+    (id, index) => (update(routineBlocks)..where((t) => t.id.equals(id))).write(
+      RoutineBlocksCompanion(sortOrder: Value(index)),
+    ),
   );
 
   Future<void> reorderItems(List<int> orderedIds) => _reorder(
     orderedIds,
-    (id, index) => (update(routineItems)..where((t) => t.id.equals(id)))
-        .write(RoutineItemsCompanion(sortOrder: Value(index))),
+    (id, index) => (update(routineItems)..where((t) => t.id.equals(id))).write(
+      RoutineItemsCompanion(sortOrder: Value(index)),
+    ),
   );
 
   Future<void> _reorder(

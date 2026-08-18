@@ -199,7 +199,11 @@ class HistoryBloc extends MviBloc<HistoryIntent, HistoryState, HistoryEffect> {
     final today = DateTime.now().dateOnly;
     final result = await _getWorkoutDates(
       DateRange(
-        start: DateTime(today.year, today.month, today.day - _streakLookbackDays),
+        start: DateTime(
+          today.year,
+          today.month,
+          today.day - _streakLookbackDays,
+        ),
         end: today,
       ),
     );

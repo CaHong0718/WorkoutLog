@@ -261,8 +261,7 @@ class _ItemEditSheetState extends State<ItemEditSheet> {
                     label: Text(alternative.name),
                     avatar: BodyPartBar(alternative.bodyPart, height: 14),
                     labelStyle: context.type.caption.copyWith(color: p.ink2),
-                    onDeleted: () =>
-                        setState(() => _alternativeIds.remove(id)),
+                    onDeleted: () => setState(() => _alternativeIds.remove(id)),
                     visualDensity: VisualDensity.compact,
                   ),
             ],

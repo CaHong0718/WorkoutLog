@@ -33,8 +33,10 @@ void main() {
     repMax: 10,
   );
 
-  Widget host(Widget child) =>
-      MaterialApp(theme: AppTheme.light(), home: Scaffold(body: child));
+  Widget host(Widget child) => MaterialApp(
+    theme: AppTheme.light(),
+    home: Scaffold(body: child),
+  );
 
   /// Renders a button that opens [open] so sheets run inside a real route.
   Widget opener(Future<void> Function(BuildContext context) open) => host(
@@ -60,13 +62,7 @@ void main() {
       isCuttable: false,
       items: [
         item,
-        RoutineItem(
-          id: 11,
-          blockId: 1,
-          order: 1,
-          exercise: legCurl,
-          sets: 3,
-        ),
+        RoutineItem(id: 11, blockId: 1, order: 1, exercise: legCurl, sets: 3),
       ],
     );
     var reordered = '';
