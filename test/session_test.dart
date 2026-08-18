@@ -254,7 +254,7 @@ void main() {
       // 슈퍼세트 시절에는 여기서 쉬지 않고 다른 기구로 넘어갔다. 이제는 같은
       // 기구에서 이어 하므로 매 세트마다 휴식이 붙는다.
       expect(mid.isResting, isTrue);
-      expect(mid.rest!.totalSeconds, 75);
+      expect(mid.rest!.totalSeconds, 60, reason: 'B3 보조 블록의 휴식 규격');
       expect(mid.currentSet?.item.exercise.name, '레그컬');
       expect(mid.currentSet?.setIndex, 2);
 

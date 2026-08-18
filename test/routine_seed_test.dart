@@ -32,8 +32,8 @@ void main() {
     final routine = await loadRoutine();
 
     expect(routine.name, '무분할 40분');
-    // 이름은 그대로 '무분할 40분'이지만 슈퍼세트를 빼면서 실제 소요는 50분이 됐다.
-    expect(routine.sessionMinutes, 50);
+    // 이름은 그대로 '무분할 40분'이지만 슈퍼세트를 빼면서 실제 소요는 45분이 됐다.
+    expect(routine.sessionMinutes, 45);
     expect(routine.dayCount, 4);
     expect(routine.days.map((d) => d.code).toList(), ['A', 'B', 'C', 'D']);
   });
@@ -180,5 +180,40 @@ void main() {
 
     await completeSession(byCode['D']!);
     expect((await repository.getNextDay()).valueOrNull?.code, 'A');
+  });
+
+  test('고반복 고립 종목은 휴식 45초로 따로 지정된다', () async {
+    // 슈퍼세트를 풀면서 늘어난 시간을 되찾은 자리. 블록 기본값(60s)보다 짧다.
+    const shortRest = {
+      '벤트오버 레터럴 레이즈',
+      '케이블 크로스오버 (로우 → 하이)',
+      '리버스 펙덱',
+      '스트레이트암 풀다운',
+      '케이블 사이드 레터럴',
+    };
+    final routine = await loadRoutine();
+
+    final overridden = <String, int>{};
+    for (final day in routine.days) {
+      for (final block in day.blocks) {
+        for (final item in block.items) {
+          final override = item.restSecondsOverride;
+          if (override != null) overridden[item.exercise.name] = override;
+        }
+      }
+    }
+
+    expect(overridden.keys.toSet(), shortRest);
+    expect(overridden.values.every((v) => v == 45), isTrue);
+  });
+
+  test('B3 보조 블록의 휴식은 60초다', () async {
+    // 75초는 슈퍼세트 라운드 휴식이었지 일반 블록의 세트 휴식이 아니었다.
+    final routine = await loadRoutine();
+
+    for (final day in routine.days) {
+      final b3 = day.blocks.firstWhere((b) => b.label == 'B3');
+      expect(b3.restSeconds, 60, reason: 'DAY ${day.code}');
+    }
   });
 }

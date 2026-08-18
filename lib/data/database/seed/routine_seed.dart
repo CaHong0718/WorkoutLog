@@ -36,8 +36,9 @@ Future<void> seedIfEmpty(AppDatabase db) async {
               '나머지는 그날의 메인 부위 하나에 볼륨을 몰아준다. 순번 A→B→C→D로 순환하며 요일에 묶지 않는다.',
             ),
             // 슈퍼세트를 빼면서 늘어난 값이다. 40분은 하체 머신과 상체 고립을
-            // 겹쳐 돌려서 나온 숫자였고, 한 기구씩 순서대로 하면 50분이 맞다.
-            sessionMinutes: const Value(50),
+            // 겹쳐 돌려 휴식을 반으로 줄여서 나온 숫자였다. 한 기구씩 순서대로
+            // 하면서 보조 블록 휴식을 60s(고반복 고립은 45s)로 조인 결과가 45분.
+            sessionMinutes: const Value(45),
           ),
         );
 
@@ -100,6 +101,7 @@ Future<void> seedIfEmpty(AppDatabase db) async {
                   repMax: Value(item.repMax),
                   durationSeconds: Value(item.durationSeconds),
                   targetRir: Value(item.targetRir),
+                  restSecondsOverride: Value(item.restSecondsOverride),
                   note: Value(item.note),
                   alternativeExerciseIds: Value(alternatives),
                 ),
@@ -135,12 +137,17 @@ class _ItemSpec {
     this.repMax,
     this.durationSeconds,
     this.targetRir,
+    this.restSecondsOverride,
     this.note,
     this.alternatives = const [],
   });
 
   final String exerciseName;
   final int sets;
+
+  /// Overrides the block's rest for this slot alone. Used where a high-rep
+  /// isolation sits next to a machine movement that needs longer.
+  final int? restSecondsOverride;
   final RepMode repMode;
   final int? repMin;
   final int? repMax;
@@ -334,8 +341,8 @@ const List<_DaySpec> _days = [
       _BlockSpec(
         label: 'B3',
         name: '하체 + 후면삼각',
-        restSeconds: 75,
-        targetMinutes: 14,
+        restSeconds: 60,
+        targetMinutes: 12,
         items: [
           _ItemSpec(
             '레그컬',
@@ -351,6 +358,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 15,
             repMax: 20,
+            restSecondsOverride: 45,
             note: '인클라인 벤치에 가슴만 기대고. 등 7세트 직후라 후면이 이미 예열된 상태 — '
                 '가벼운 무게로 바로 유효 볼륨이 들어간다.',
             alternatives: ['리버스 펙덱'],
@@ -420,8 +428,8 @@ const List<_DaySpec> _days = [
       _BlockSpec(
         label: 'B3',
         name: '하체 + 가슴 상부',
-        restSeconds: 75,
-        targetMinutes: 14,
+        restSeconds: 60,
+        targetMinutes: 12,
         items: [
           _ItemSpec(
             '레그 익스텐션',
@@ -436,6 +444,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 12,
             repMax: 15,
+            restSecondsOverride: 45,
             note: '풀리를 아래에 두고 위로 모은다. 상부 조준의 핵심. '
                 '벡덱플라이로 대체할 땐 시트를 낮춰 손 위치를 어깨선 위로.',
             alternatives: ['벡덱플라이'],
@@ -509,8 +518,8 @@ const List<_DaySpec> _days = [
       _BlockSpec(
         label: 'B3',
         name: '하체 + 등',
-        restSeconds: 75,
-        targetMinutes: 14,
+        restSeconds: 60,
+        targetMinutes: 13,
         items: [
           _ItemSpec(
             '레그프레스',
@@ -534,7 +543,7 @@ const List<_DaySpec> _days = [
         label: 'B4',
         name: '어깨 마감',
         restSeconds: 60,
-        targetMinutes: 13,
+        targetMinutes: 12,
         items: [
           _ItemSpec(
             '스탠딩 업라이트 로우',
@@ -548,6 +557,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 15,
             repMax: 20,
+            restSecondsOverride: 45,
             note: '후면 주 2회 중 신선한 쪽. 벤트오버 레터럴과 4주마다 교대.',
             alternatives: ['벤트오버 레터럴 레이즈'],
           ),
@@ -598,8 +608,8 @@ const List<_DaySpec> _days = [
       _BlockSpec(
         label: 'B3',
         name: '하체 + 등',
-        restSeconds: 75,
-        targetMinutes: 14,
+        restSeconds: 60,
+        targetMinutes: 13,
         items: [
           _ItemSpec(
             '브이스쿼트 머신',
@@ -617,13 +627,14 @@ const List<_DaySpec> _days = [
         label: 'B4',
         name: '마감',
         restSeconds: 60,
-        targetMinutes: 13,
+        targetMinutes: 12,
         items: [
           _ItemSpec(
             '스트레이트암 풀다운',
             sets: 3,
             repMin: 12,
             repMax: 15,
+            restSecondsOverride: 45,
             note: '이두가 개입하지 않는 유일한 등 종목. DAY A에서 이두를 이미 털었으니, '
                 '주 마지막 등 볼륨은 팔꿈치를 고정한 채 광배만 쓰는 쪽으로 채운다.',
           ),
@@ -632,6 +643,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 12,
             repMax: 15,
+            restSecondsOverride: 45,
             note: '측면 주 10세트의 마지막 3세트. DAY C와 겹치지 않게 덤벨↔케이블로 바꿔 잡는다.',
             alternatives: ['사이드 레터럴 라이즈'],
           ),

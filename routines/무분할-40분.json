@@ -4,7 +4,7 @@
   "routine": {
     "name": "무분할 40분",
     "description": "우선순위 로테이션 무분할. 하체는 매 세션 고정 슬롯으로 들어가고, 나머지는 그날의 메인 부위 하나에 볼륨을 몰아준다. 순번 A→B→C→D로 순환하며 요일에 묶지 않는다.",
-    "sessionMinutes": 50,
+    "sessionMinutes": 45,
     "days": [
       {
         "code": "A",
@@ -61,8 +61,8 @@
           {
             "label": "B3",
             "name": "하체 + 후면삼각",
-            "restSeconds": 75,
-            "targetMinutes": 14,
+            "restSeconds": 60,
+            "targetMinutes": 12,
             "items": [
               {
                 "exercise": {
@@ -92,6 +92,7 @@
                 "repMode": "range",
                 "repMin": 15,
                 "repMax": 20,
+                "restSecondsOverride": 45,
                 "note": "인클라인 벤치에 가슴만 기대고. 등 7세트 직후라 후면이 이미 예열된 상태 — 가벼운 무게로 바로 유효 볼륨이 들어간다.",
                 "alternatives": [
                   "리버스 펙덱"
@@ -210,8 +211,8 @@
           {
             "label": "B3",
             "name": "하체 + 가슴 상부",
-            "restSeconds": 75,
-            "targetMinutes": 14,
+            "restSeconds": 60,
+            "targetMinutes": 12,
             "items": [
               {
                 "exercise": {
@@ -238,6 +239,7 @@
                 "repMode": "range",
                 "repMin": 12,
                 "repMax": 15,
+                "restSecondsOverride": 45,
                 "note": "풀리를 아래에 두고 위로 모은다. 상부 조준의 핵심. 벡덱플라이로 대체할 땐 시트를 낮춰 손 위치를 어깨선 위로.",
                 "alternatives": [
                   "벡덱플라이"
@@ -359,8 +361,8 @@
           {
             "label": "B3",
             "name": "하체 + 등",
-            "restSeconds": 75,
-            "targetMinutes": 14,
+            "restSeconds": 60,
+            "targetMinutes": 13,
             "items": [
               {
                 "exercise": {
@@ -395,7 +397,7 @@
             "label": "B4",
             "name": "어깨 마감",
             "restSeconds": 60,
-            "targetMinutes": 13,
+            "targetMinutes": 12,
             "items": [
               {
                 "exercise": {
@@ -421,6 +423,7 @@
                 "repMode": "range",
                 "repMin": 15,
                 "repMax": 20,
+                "restSecondsOverride": 45,
                 "note": "후면 주 2회 중 신선한 쪽. 벤트오버 레터럴과 4주마다 교대.",
                 "alternatives": [
                   "벤트오버 레터럴 레이즈"
@@ -499,8 +502,8 @@
           {
             "label": "B3",
             "name": "하체 + 등",
-            "restSeconds": 75,
-            "targetMinutes": 14,
+            "restSeconds": 60,
+            "targetMinutes": 13,
             "items": [
               {
                 "exercise": {
@@ -538,7 +541,7 @@
             "label": "B4",
             "name": "마감",
             "restSeconds": 60,
-            "targetMinutes": 13,
+            "targetMinutes": 12,
             "items": [
               {
                 "exercise": {
@@ -551,6 +554,7 @@
                 "repMode": "range",
                 "repMin": 12,
                 "repMax": 15,
+                "restSecondsOverride": 45,
                 "note": "이두가 개입하지 않는 유일한 등 종목. DAY A에서 이두를 이미 털었으니, 주 마지막 등 볼륨은 팔꿈치를 고정한 채 광배만 쓰는 쪽으로 채운다."
               },
               {
@@ -564,6 +568,7 @@
                 "repMode": "range",
                 "repMin": 12,
                 "repMax": 15,
+                "restSecondsOverride": 45,
                 "note": "측면 주 10세트의 마지막 3세트. DAY C와 겹치지 않게 덤벨↔케이블로 바꿔 잡는다.",
                 "alternatives": [
                   "사이드 레터럴 라이즈"
