@@ -32,7 +32,8 @@ void main() {
     final routine = await loadRoutine();
 
     expect(routine.name, '무분할 40분');
-    expect(routine.sessionMinutes, 40);
+    // 이름은 그대로 '무분할 40분'이지만 슈퍼세트를 빼면서 실제 소요는 50분이 됐다.
+    expect(routine.sessionMinutes, 50);
     expect(routine.dayCount, 4);
     expect(routine.days.map((d) => d.code).toList(), ['A', 'B', 'C', 'D']);
   });
@@ -89,17 +90,32 @@ void main() {
     expect(dayC.blocks[1].items.first.exercise.name, '스미스머신 시티드 숄더프레스');
   });
 
-  test('슈퍼세트 블록은 3라운드로 설정된다', () async {
+  test('시드에는 슈퍼세트 블록이 없다', () async {
+    // 헬스장에서 기구 두 대를 동시에 점유해야 해서 뺐다. 블록 타입 자체는
+    // 남아 있어 사용자가 만든 루틴에서는 계속 쓸 수 있다.
     final routine = await loadRoutine();
 
     final supersets = routine.days
         .expand((d) => d.blocks)
         .where((b) => b.type == BlockType.superset);
 
-    expect(supersets, isNotEmpty);
-    for (final block in supersets) {
-      expect(block.rounds, 3);
-      expect(block.items.length, 2);
+    expect(supersets, isEmpty);
+  });
+
+  test('슈퍼세트를 푼 B3는 6세트 그대로다', () async {
+    // 2종목 × 3라운드 = 6세트였고, 일반 블록이 된 뒤에도 3세트 + 3세트다.
+    // 주간 볼륨이 흔들리지 않는 근거.
+    final routine = await loadRoutine();
+
+    for (final code in ['A', 'B', 'C', 'D']) {
+      final b3 = routine.days
+          .firstWhere((d) => d.code == code)
+          .blocks
+          .firstWhere((b) => b.label == 'B3');
+
+      expect(b3.items.length, 2, reason: 'DAY $code');
+      expect(b3.totalSets, 6, reason: 'DAY $code');
+      expect(b3.items.every((i) => i.sets == 3), isTrue, reason: 'DAY $code');
     }
   });
 

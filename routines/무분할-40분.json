@@ -4,7 +4,7 @@
   "routine": {
     "name": "무분할 40분",
     "description": "우선순위 로테이션 무분할. 하체는 매 세션 고정 슬롯으로 들어가고, 나머지는 그날의 메인 부위 하나에 볼륨을 몰아준다. 순번 A→B→C→D로 순환하며 요일에 묶지 않는다.",
-    "sessionMinutes": 40,
+    "sessionMinutes": 50,
     "days": [
       {
         "code": "A",
@@ -60,11 +60,9 @@
           },
           {
             "label": "B3",
-            "name": "하체 + 상체 슈퍼세트",
-            "type": "superset",
-            "rounds": 3,
+            "name": "하체 + 후면삼각",
             "restSeconds": 75,
-            "targetMinutes": 11,
+            "targetMinutes": 14,
             "items": [
               {
                 "exercise": {
@@ -211,11 +209,9 @@
           },
           {
             "label": "B3",
-            "name": "하체 + 상체 슈퍼세트",
-            "type": "superset",
-            "rounds": 3,
+            "name": "하체 + 가슴 상부",
             "restSeconds": 75,
-            "targetMinutes": 10,
+            "targetMinutes": 14,
             "items": [
               {
                 "exercise": {
@@ -362,11 +358,9 @@
           },
           {
             "label": "B3",
-            "name": "하체 + 상체 슈퍼세트",
-            "type": "superset",
-            "rounds": 3,
+            "name": "하체 + 등",
             "restSeconds": 75,
-            "targetMinutes": 11,
+            "targetMinutes": 14,
             "items": [
               {
                 "exercise": {
@@ -399,11 +393,9 @@
           },
           {
             "label": "B4",
-            "name": "어깨 마감 슈퍼세트",
-            "type": "superset",
-            "rounds": 3,
+            "name": "어깨 마감",
             "restSeconds": 60,
-            "targetMinutes": 9,
+            "targetMinutes": 13,
             "items": [
               {
                 "exercise": {
@@ -506,11 +498,9 @@
           },
           {
             "label": "B3",
-            "name": "하체 + 상체 슈퍼세트",
-            "type": "superset",
-            "rounds": 3,
+            "name": "하체 + 등",
             "restSeconds": 75,
-            "targetMinutes": 10,
+            "targetMinutes": 14,
             "items": [
               {
                 "exercise": {
@@ -546,11 +536,9 @@
           },
           {
             "label": "B4",
-            "name": "마감 슈퍼세트",
-            "type": "superset",
-            "rounds": 3,
+            "name": "마감",
             "restSeconds": 60,
-            "targetMinutes": 9,
+            "targetMinutes": 13,
             "items": [
               {
                 "exercise": {

@@ -35,7 +35,9 @@ Future<void> seedIfEmpty(AppDatabase db) async {
               '우선순위 로테이션 무분할. 하체는 매 세션 고정 슬롯으로 들어가고, '
               '나머지는 그날의 메인 부위 하나에 볼륨을 몰아준다. 순번 A→B→C→D로 순환하며 요일에 묶지 않는다.',
             ),
-            sessionMinutes: const Value(40),
+            // 슈퍼세트를 빼면서 늘어난 값이다. 40분은 하체 머신과 상체 고립을
+            // 겹쳐 돌려서 나온 숫자였고, 한 기구씩 순서대로 하면 50분이 맞다.
+            sessionMinutes: const Value(50),
           ),
         );
 
@@ -65,8 +67,13 @@ Future<void> seedIfEmpty(AppDatabase db) async {
                 sortOrder: blockIndex,
                 label: block.label,
                 name: Value(block.name),
-                type: Value(block.type.name),
-                rounds: Value(block.rounds),
+                // Every seeded block is straight. Supersets were dropped
+                // because they need two machines at once — see
+                // docs/02-ROUTINE-SEED.md §0-1. The block type still exists
+                // for routines the user builds, so add the fields back here
+                // if the seed ever needs one again.
+                type: Value(BlockType.straight.name),
+                rounds: const Value(1),
                 restSeconds: block.restSeconds,
                 targetMinutes: Value(block.targetMinutes),
                 isCuttable: Value(block.isCuttable),
@@ -149,16 +156,12 @@ class _BlockSpec {
     required this.restSeconds,
     required this.items,
     this.name,
-    this.type = BlockType.straight,
-    this.rounds = 1,
     this.targetMinutes,
     this.isCuttable = true,
   });
 
   final String label;
   final String? name;
-  final BlockType type;
-  final int rounds;
   final int restSeconds;
   final int? targetMinutes;
   final bool isCuttable;
@@ -330,11 +333,9 @@ const List<_DaySpec> _days = [
       ),
       _BlockSpec(
         label: 'B3',
-        name: '하체 + 상체 슈퍼세트',
-        type: BlockType.superset,
-        rounds: 3,
+        name: '하체 + 후면삼각',
         restSeconds: 75,
-        targetMinutes: 11,
+        targetMinutes: 14,
         items: [
           _ItemSpec(
             '레그컬',
@@ -418,11 +419,9 @@ const List<_DaySpec> _days = [
       ),
       _BlockSpec(
         label: 'B3',
-        name: '하체 + 상체 슈퍼세트',
-        type: BlockType.superset,
-        rounds: 3,
+        name: '하체 + 가슴 상부',
         restSeconds: 75,
-        targetMinutes: 10,
+        targetMinutes: 14,
         items: [
           _ItemSpec(
             '레그 익스텐션',
@@ -509,11 +508,9 @@ const List<_DaySpec> _days = [
       ),
       _BlockSpec(
         label: 'B3',
-        name: '하체 + 상체 슈퍼세트',
-        type: BlockType.superset,
-        rounds: 3,
+        name: '하체 + 등',
         restSeconds: 75,
-        targetMinutes: 11,
+        targetMinutes: 14,
         items: [
           _ItemSpec(
             '레그프레스',
@@ -535,11 +532,9 @@ const List<_DaySpec> _days = [
       ),
       _BlockSpec(
         label: 'B4',
-        name: '어깨 마감 슈퍼세트',
-        type: BlockType.superset,
-        rounds: 3,
+        name: '어깨 마감',
         restSeconds: 60,
-        targetMinutes: 9,
+        targetMinutes: 13,
         items: [
           _ItemSpec(
             '스탠딩 업라이트 로우',
@@ -602,11 +597,9 @@ const List<_DaySpec> _days = [
       ),
       _BlockSpec(
         label: 'B3',
-        name: '하체 + 상체 슈퍼세트',
-        type: BlockType.superset,
-        rounds: 3,
+        name: '하체 + 등',
         restSeconds: 75,
-        targetMinutes: 10,
+        targetMinutes: 14,
         items: [
           _ItemSpec(
             '브이스쿼트 머신',
@@ -622,11 +615,9 @@ const List<_DaySpec> _days = [
       ),
       _BlockSpec(
         label: 'B4',
-        name: '마감 슈퍼세트',
-        type: BlockType.superset,
-        rounds: 3,
+        name: '마감',
         restSeconds: 60,
-        targetMinutes: 9,
+        targetMinutes: 13,
         items: [
           _ItemSpec(
             '스트레이트암 풀다운',

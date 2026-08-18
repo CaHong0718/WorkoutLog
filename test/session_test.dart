@@ -7,7 +7,10 @@ import 'package:workout_log/data/repository/routine_repository_impl.dart';
 import 'package:workout_log/data/repository/workout_repository_impl.dart';
 import 'package:workout_log/domain/entity/enums.dart';
 import 'package:workout_log/domain/entity/routine.dart';
+import 'package:workout_log/domain/entity/exercise.dart';
+import 'package:workout_log/domain/entity/routine_block.dart';
 import 'package:workout_log/domain/entity/routine_day.dart';
+import 'package:workout_log/domain/entity/routine_item.dart';
 import 'package:workout_log/domain/entity/session_plan.dart';
 import 'package:workout_log/domain/usecase/exercise_usecases.dart';
 import 'package:workout_log/domain/usecase/routine_usecases.dart';
@@ -36,6 +39,54 @@ void main() {
   RoutineDay dayOf(String code) =>
       routine.days.firstWhere((d) => d.code == code);
 
+  /// A superset block, built by hand. The seed dropped supersets, but the
+  /// block type still exists for routines the user writes, so the round
+  /// interleaving stays covered here.
+  RoutineDay supersetDay() {
+    const legCurl = Exercise(id: 1, name: '레그컬', bodyPart: BodyPart.legs);
+    const rearDelt = Exercise(
+      id: 2,
+      name: '벤트오버 레터럴 레이즈',
+      bodyPart: BodyPart.shoulder,
+    );
+
+    return const RoutineDay(
+      id: 1,
+      routineId: 1,
+      order: 0,
+      code: 'X',
+      title: '슈퍼세트 검증용',
+      primaryBodyPart: BodyPart.legs,
+      blocks: [
+        RoutineBlock(
+          id: 1,
+          dayId: 1,
+          order: 0,
+          label: 'B3',
+          restSeconds: 75,
+          type: BlockType.superset,
+          rounds: 3,
+          items: [
+            RoutineItem(
+              id: 1,
+              blockId: 1,
+              order: 0,
+              exercise: legCurl,
+              sets: 3,
+            ),
+            RoutineItem(
+              id: 2,
+              blockId: 1,
+              order: 1,
+              exercise: rearDelt,
+              sets: 3,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   SessionBloc makeBloc(int sessionId) => SessionBloc(
     sessionId,
     GetSession(workoutRepo),
@@ -61,11 +112,10 @@ void main() {
     });
 
     test('슈퍼세트는 라운드로 교대한다 (A1 B1 · A2 B2 · A3 B3)', () {
-      final plan = SessionPlan.fromDay(dayOf('A'));
-      final b3 = plan.where((p) => p.blockLabel == 'B3').toList();
+      final plan = SessionPlan.fromDay(supersetDay());
 
-      expect(b3.length, 6);
-      expect(b3.map((p) => '${p.item.exercise.name}/${p.setIndex}').toList(), [
+      expect(plan.length, 6);
+      expect(plan.map((p) => '${p.item.exercise.name}/${p.setIndex}').toList(), [
         '레그컬/1',
         '벤트오버 레터럴 레이즈/1',
         '레그컬/2',
@@ -76,13 +126,26 @@ void main() {
     });
 
     test('슈퍼세트 휴식은 라운드 끝에서만 발생한다', () {
-      final plan = SessionPlan.fromDay(dayOf('A'));
-      final b3 = plan.where((p) => p.blockLabel == 'B3').toList();
+      final plan = SessionPlan.fromDay(supersetDay());
 
-      expect(b3[0].restAfterSeconds, 0, reason: '라운드 내 첫 종목 뒤에는 쉬지 않는다');
-      expect(b3[1].restAfterSeconds, 75);
-      expect(b3[2].restAfterSeconds, 0);
-      expect(b3[3].restAfterSeconds, 75);
+      expect(plan[0].restAfterSeconds, 0, reason: '라운드 내 첫 종목 뒤에는 쉬지 않는다');
+      expect(plan[1].restAfterSeconds, 75);
+      expect(plan[2].restAfterSeconds, 0);
+      expect(plan[3].restAfterSeconds, 75);
+    });
+
+    test('시드 루틴에는 슈퍼세트가 없다', () {
+      // 헬스장에서 기구 두 대를 동시에 잡아야 해서 뺐다. 엔진은 그대로 살아
+      // 있으므로 사용자가 만든 루틴에서는 계속 쓸 수 있다.
+      for (final day in routine.days) {
+        for (final block in day.blocks) {
+          expect(
+            block.type,
+            BlockType.straight,
+            reason: 'DAY ${day.code} ${block.label}',
+          );
+        }
+      }
     });
 
     test('일반 블록은 매 세트마다 휴식이 붙는다', () {
@@ -101,7 +164,7 @@ void main() {
       }
     });
 
-    test('DAY C는 슈퍼세트 두 블록으로 20개 세트가 된다', () {
+    test('DAY C는 20개 세트로 펼쳐진다', () {
       final plan = SessionPlan.fromDay(dayOf('C'));
       // B1 4 + B2 3 + B3 6 + B4 6 + 복근 1
       expect(plan.length, 20);
@@ -170,10 +233,9 @@ void main() {
       expect(after.currentSet?.setIndex, 2);
     });
 
-    test('슈퍼세트 라운드 안에서는 휴식 없이 다음 종목으로 넘어간다', () async {
-      final session = (await workoutRepo.startSession(
-        dayOf('A').id,
-      )).valueOrNull!;
+    test('B3는 한 종목을 끝내고 다음 종목으로 넘어간다', () async {
+      final session = (await workoutRepo.startSession(dayOf('A').id))
+          .valueOrNull!;
       final bloc = makeBloc(session.id);
       addTearDown(bloc.close);
 
@@ -189,16 +251,22 @@ void main() {
       bloc.add(const CompleteCurrentSet(weight: 30, reps: 12));
       final mid = await bloc.stream.firstWhere((s) => s.currentIndex == 8);
 
-      expect(mid.isResting, isFalse, reason: '라운드 중간에는 쉬지 않는다');
-      expect(mid.currentSet?.item.exercise.name, '벤트오버 레터럴 레이즈');
+      // 슈퍼세트 시절에는 여기서 쉬지 않고 다른 기구로 넘어갔다. 이제는 같은
+      // 기구에서 이어 하므로 매 세트마다 휴식이 붙는다.
+      expect(mid.isResting, isTrue);
+      expect(mid.rest!.totalSeconds, 75);
+      expect(mid.currentSet?.item.exercise.name, '레그컬');
+      expect(mid.currentSet?.setIndex, 2);
 
-      bloc.add(const CompleteCurrentSet(weight: 6, reps: 18));
-      final endOfRound = await bloc.stream.firstWhere(
-        (s) => s.currentIndex == 9,
+      bloc.add(const CompleteCurrentSet(weight: 30, reps: 12));
+      bloc.add(const CompleteCurrentSet(weight: 30, reps: 12));
+      final next = await bloc.stream.firstWhere((s) => s.currentIndex == 10);
+
+      expect(
+        next.currentSet?.item.exercise.name,
+        '벤트오버 레터럴 레이즈',
+        reason: '레그컬 3세트를 다 끝낸 뒤에야 다음 종목이 나온다',
       );
-
-      expect(endOfRound.isResting, isTrue);
-      expect(endOfRound.rest!.totalSeconds, 75);
     });
 
     test('블록 컷은 남은 세트를 건너뛴다', () async {
