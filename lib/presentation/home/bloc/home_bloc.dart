@@ -68,12 +68,15 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
     }
     final routine = routineResult.valueOrNull!;
 
-    // Keep the user's manual pick across a refresh; otherwise follow rotation.
+    // Only a day the user picked by hand survives a refresh. Holding on to
+    // whatever was on screen would freeze the rotation: after finishing DAY A
+    // the card has to move to DAY B without restarting the app.
     RoutineDay? day;
-    final previousId = state.selectedDay?.id;
-    if (previousId != null) {
-      day = routine.days.where((d) => d.id == previousId).firstOrNull;
+    final pinnedId = state.pinnedDayId;
+    if (pinnedId != null) {
+      day = routine.days.where((d) => d.id == pinnedId).firstOrNull;
     }
+    // Rotation follows the last *completed* session, whatever date it was on.
     day ??= (await _getNextDay()).valueOrNull;
     day ??= routine.days.firstOrNull;
 
@@ -85,6 +88,7 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
         isLoading: false,
         routine: routine,
         selectedDay: day,
+        pinnedDayId: day?.id == pinnedId ? pinnedId : null,
         inProgressSession: inProgress,
         weeklyVolume: volume,
       ),
@@ -95,7 +99,9 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
     final day = state.routine?.days
         .where((d) => d.id == intent.dayId)
         .firstOrNull;
-    if (day != null) emit(state.copyWith(selectedDay: day));
+    if (day != null) {
+      emit(state.copyWith(selectedDay: day, pinnedDayId: day.id));
+    }
   }
 
   Future<void> _onStartWorkout(
@@ -113,7 +119,16 @@ class HomeBloc extends MviBloc<HomeIntent, HomeState, HomeEffect> {
         // The new session *is* the in-progress one: starting aborts whatever
         // was open. Clearing the field here would hide the resume banner if the
         // user walked away from this session too.
-        emit(state.copyWith(isStarting: false, inProgressSession: value));
+        //
+        // The manual pick is spent now — once this session is done the card
+        // must show the next day in the rotation, not this one again.
+        emit(
+          state.copyWith(
+            isStarting: false,
+            inProgressSession: value,
+            clearPinnedDay: true,
+          ),
+        );
         emitEffect(OpenSession(value.id));
       case Err(:final failure):
         emit(state.copyWith(isStarting: false));

@@ -12,6 +12,7 @@ class HomeState extends MviState {
     this.failure,
     this.routine,
     this.selectedDay,
+    this.pinnedDayId,
     this.inProgressSession,
     this.weeklyVolume = const {},
   });
@@ -27,6 +28,11 @@ class HomeState extends MviState {
 
   /// The day that will be trained: rotation default, or the user's override.
   final RoutineDay? selectedDay;
+
+  /// Set only when the user picked a day by hand. It survives refreshes but is
+  /// dropped once a workout starts, so rotation takes over again afterwards —
+  /// otherwise finishing DAY A would leave DAY A on the card forever.
+  final int? pinnedDayId;
 
   final WorkoutSession? inProgressSession;
 
@@ -52,10 +58,12 @@ class HomeState extends MviState {
     Failure? failure,
     Routine? routine,
     RoutineDay? selectedDay,
+    int? pinnedDayId,
     WorkoutSession? inProgressSession,
     Map<BodyPart, int>? weeklyVolume,
     bool clearFailure = false,
     bool clearInProgress = false,
+    bool clearPinnedDay = false,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -63,6 +71,7 @@ class HomeState extends MviState {
       failure: clearFailure ? null : (failure ?? this.failure),
       routine: routine ?? this.routine,
       selectedDay: selectedDay ?? this.selectedDay,
+      pinnedDayId: clearPinnedDay ? null : (pinnedDayId ?? this.pinnedDayId),
       inProgressSession: clearInProgress
           ? null
           : (inProgressSession ?? this.inProgressSession),
@@ -77,6 +86,7 @@ class HomeState extends MviState {
     failure,
     routine,
     selectedDay,
+    pinnedDayId,
     inProgressSession,
     weeklyVolume,
   ];
