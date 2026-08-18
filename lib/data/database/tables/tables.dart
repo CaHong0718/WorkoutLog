@@ -17,7 +17,8 @@ class Exercises extends Table {
 
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
 
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(currentDateAndTime)();
 }
 
 @DataClassName('RoutineRow')
@@ -32,9 +33,11 @@ class Routines extends Table {
 
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(currentDateAndTime)();
 
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt =>
+      dateTime().withDefault(currentDateAndTime)();
 }
 
 /// One position in the A → B → C → D rotation.
@@ -131,11 +134,8 @@ class WorkoutSessions extends Table {
 
   /// Set to null if the routine day is deleted; the snapshot columns keep the
   /// record readable.
-  IntColumn get dayId => integer().nullable().references(
-    RoutineDays,
-    #id,
-    onDelete: KeyAction.setNull,
-  )();
+  IntColumn get dayId =>
+      integer().nullable().references(RoutineDays, #id, onDelete: KeyAction.setNull)();
 
   TextColumn get dayCode => text().withLength(max: 8)();
 

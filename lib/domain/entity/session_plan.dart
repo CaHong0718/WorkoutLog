@@ -107,7 +107,8 @@ abstract final class SessionPlan {
                 item: item,
                 itemOrder: order,
                 setIndex: setIndex,
-                restAfterSeconds: item.restSecondsOverride ?? block.restSeconds,
+                restAfterSeconds:
+                    item.restSecondsOverride ?? block.restSeconds,
               ),
             );
           }

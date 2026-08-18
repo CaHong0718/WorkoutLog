@@ -179,20 +179,11 @@ void main() {
       final withTwo = await afterWrite(bloc);
 
       final straight = withTwo.blocks.firstWhere((b) => b.id == b2.id);
-      expect(
-        SessionPlan.fromDay(
-          withTwo.day!,
-        ).where((p) => p.blockLabel == 'B2').length,
-        6,
-      );
+      expect(SessionPlan.fromDay(withTwo.day!).where((p) => p.blockLabel == 'B2').length, 6);
 
       bloc.add(
         SaveBlock(
-          straight.copyWith(
-            type: BlockType.superset,
-            rounds: 4,
-            restSeconds: 75,
-          ),
+          straight.copyWith(type: BlockType.superset, rounds: 4, restSeconds: 75),
         ),
       );
       final asSuperset = await afterWrite(bloc);
@@ -206,23 +197,20 @@ void main() {
         reason: '슈퍼세트 슬롯의 세트 수는 라운드 수를 따른다',
       );
 
-      final plan = SessionPlan.fromDay(
-        asSuperset.day!,
-      ).where((p) => p.blockLabel == 'B2').toList();
+      final plan = SessionPlan.fromDay(asSuperset.day!)
+          .where((p) => p.blockLabel == 'B2')
+          .toList();
       expect(plan.length, 8);
-      expect(
-        plan.map((p) => '${p.item.exercise.name}/${p.setIndex}').toList(),
-        [
-          '티바로우/1',
-          '사이드 레터럴 라이즈/1',
-          '티바로우/2',
-          '사이드 레터럴 라이즈/2',
-          '티바로우/3',
-          '사이드 레터럴 라이즈/3',
-          '티바로우/4',
-          '사이드 레터럴 라이즈/4',
-        ],
-      );
+      expect(plan.map((p) => '${p.item.exercise.name}/${p.setIndex}').toList(), [
+        '티바로우/1',
+        '사이드 레터럴 라이즈/1',
+        '티바로우/2',
+        '사이드 레터럴 라이즈/2',
+        '티바로우/3',
+        '사이드 레터럴 라이즈/3',
+        '티바로우/4',
+        '사이드 레터럴 라이즈/4',
+      ]);
       expect(plan[0].restAfterSeconds, 0, reason: '라운드 중간에는 쉬지 않는다');
       expect(plan[1].restAfterSeconds, 75);
     });
@@ -458,9 +446,7 @@ void main() {
       expect(result.isErr, isTrue);
       expect(result.failureOrNull, isA<ValidationFailure>());
       expect(
-        (await exerciseRepo.getAll()).valueOrNull!.any(
-          (e) => e.id == pullUp.id,
-        ),
+        (await exerciseRepo.getAll()).valueOrNull!.any((e) => e.id == pullUp.id),
         isTrue,
         reason: '종목은 그대로 남는다',
       );
@@ -493,4 +479,5 @@ void main() {
       expect(state.exercises.any((e) => e.id == created.id), isFalse);
     });
   });
+
 }

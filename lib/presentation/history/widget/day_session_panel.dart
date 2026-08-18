@@ -39,7 +39,10 @@ class DaySessionPanel extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(AppStrings.pickDateHint, style: context.type.caption),
+              child: Text(
+                AppStrings.pickDateHint,
+                style: context.type.caption,
+              ),
             ),
           ],
         ),
@@ -75,7 +78,10 @@ class DaySessionPanel extends StatelessWidget {
             )
           else
             for (final session in sessions)
-              _SessionRow(session: session, onTap: () => onOpen(session)),
+              _SessionRow(
+                session: session,
+                onTap: () => onOpen(session),
+              ),
         ],
       ),
     );

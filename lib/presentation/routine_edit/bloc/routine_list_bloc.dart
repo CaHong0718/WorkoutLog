@@ -204,9 +204,7 @@ class RoutineListBloc
           contents: value.contents,
         );
         emit(state.copyWith(isBusy: false));
-        if (!shared) {
-          emitEffect(const ShowRoutineListMessage(AppStrings.exportFailed));
-        }
+        if (!shared) emitEffect(const ShowRoutineListMessage(AppStrings.exportFailed));
       case Err(:final failure):
         emit(state.copyWith(isBusy: false));
         emitEffect(ShowRoutineListMessage(failure.message));

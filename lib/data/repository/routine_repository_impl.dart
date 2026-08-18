@@ -28,14 +28,14 @@ class RoutineRepositoryImpl implements RoutineRepository {
       runCatching(_loadActiveRoutine, onError: classifyFailure);
 
   @override
-  Stream<Routine> watchActiveRoutine() =>
-      _watchRoutineGraph(_loadActiveRoutine);
+  Stream<Routine> watchActiveRoutine() => _watchRoutineGraph(_loadActiveRoutine);
 
   @override
   Future<Result<List<Routine>>> getRoutines() => runCatching(_loadRoutines);
 
   @override
-  Stream<List<Routine>> watchRoutines() => _watchRoutineGraph(_loadRoutines);
+  Stream<List<Routine>> watchRoutines() =>
+      _watchRoutineGraph(_loadRoutines);
 
   @override
   Stream<Routine> watchRoutine(int routineId) =>
@@ -407,7 +407,8 @@ class RoutineRepositoryImpl implements RoutineRepository {
     final nameById = <int, String>{
       for (final day in days)
         for (final block in day.blocks)
-          for (final item in block.items) item.exercise.id: item.exercise.name,
+          for (final item in block.items)
+            item.exercise.id: item.exercise.name,
       for (final exerciseRow in await _dao.exercisesByIds(alternativeIds))
         exerciseRow.id: exerciseRow.name,
     };
@@ -500,16 +501,16 @@ class RoutineRepositoryImpl implements RoutineRepository {
     for (final row in itemRows) {
       final exercise = exercises[row.exerciseId];
       if (exercise == null) continue;
-      itemsByBlock
-          .putIfAbsent(row.blockId, () => [])
-          .add(row.toEntity(exercise));
+      itemsByBlock.putIfAbsent(row.blockId, () => []).add(
+        row.toEntity(exercise),
+      );
     }
 
     final blocksByDay = <int, List<RoutineBlock>>{};
     for (final row in blockRows) {
-      blocksByDay
-          .putIfAbsent(row.dayId, () => [])
-          .add(row.toEntity(items: itemsByBlock[row.id] ?? const []));
+      blocksByDay.putIfAbsent(row.dayId, () => []).add(
+        row.toEntity(items: itemsByBlock[row.id] ?? const []),
+      );
     }
 
     return dayRows

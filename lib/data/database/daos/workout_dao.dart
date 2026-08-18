@@ -21,9 +21,10 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
             ..limit(1))
           .getSingleOrNull();
 
-  Future<WorkoutSessionRow?> findSession(int sessionId) => (select(
-    workoutSessions,
-  )..where((t) => t.id.equals(sessionId))).getSingleOrNull();
+  Future<WorkoutSessionRow?> findSession(int sessionId) =>
+      (select(workoutSessions)
+            ..where((t) => t.id.equals(sessionId)))
+          .getSingleOrNull();
 
   Future<int> insertSession(WorkoutSessionsCompanion companion) =>
       into(workoutSessions).insert(companion);

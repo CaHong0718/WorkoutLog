@@ -21,8 +21,9 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   });
 
   @override
-  Stream<List<Exercise>> watchAll() =>
-      _dao.watchAll().map((rows) => rows.map((row) => row.toEntity()).toList());
+  Stream<List<Exercise>> watchAll() => _dao.watchAll().map(
+    (rows) => rows.map((row) => row.toEntity()).toList(),
+  );
 
   @override
   Future<Result<List<Exercise>>> getByBodyPart(BodyPart bodyPart) =>

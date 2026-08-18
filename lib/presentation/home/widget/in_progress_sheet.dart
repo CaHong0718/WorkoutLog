@@ -48,10 +48,7 @@ class InProgressSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppStrings.sessionInProgress,
-              style: context.type.sectionTitle,
-            ),
+            Text(AppStrings.sessionInProgress, style: context.type.sectionTitle),
             const SizedBox(height: 4),
             Text(
               'DAY ${session.dayCode} · ${session.dayTitle} · '

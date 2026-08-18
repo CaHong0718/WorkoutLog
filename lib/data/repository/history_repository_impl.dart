@@ -43,15 +43,16 @@ class HistoryRepositoryImpl implements HistoryRepository {
       });
 
   @override
-  Future<Result<Map<BodyPart, int>>> getWeeklyVolume(DateTime anyDayInWeek) =>
-      runCatching(() async {
-        final range = DateRange.week(anyDayInWeek);
-        final raw = await _dao.volumeByBodyPart(range.start, range.end);
-        return {
-          for (final entry in raw.entries)
-            BodyPart.fromName(entry.key): entry.value,
-        };
-      });
+  Future<Result<Map<BodyPart, int>>> getWeeklyVolume(
+    DateTime anyDayInWeek,
+  ) => runCatching(() async {
+    final range = DateRange.week(anyDayInWeek);
+    final raw = await _dao.volumeByBodyPart(range.start, range.end);
+    return {
+      for (final entry in raw.entries)
+        BodyPart.fromName(entry.key): entry.value,
+    };
+  });
 
   @override
   Future<Result<List<ExerciseProgressPoint>>> getExerciseProgress(
@@ -97,7 +98,9 @@ class HistoryRepositoryImpl implements HistoryRepository {
   Future<Result<int>> getTotalSessionCount() =>
       runCatching(_dao.totalCompletedSessions);
 
-  Future<List<WorkoutSession>> _attachLogs(List<WorkoutSessionRow> rows) async {
+  Future<List<WorkoutSession>> _attachLogs(
+    List<WorkoutSessionRow> rows,
+  ) async {
     if (rows.isEmpty) return const [];
     final logs = await _dao.logsOfSessions(rows.map((r) => r.id).toList());
     final logsBySession = <int, List<SetLog>>{};

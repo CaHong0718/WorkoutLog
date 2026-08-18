@@ -209,12 +209,7 @@ const List<_ExerciseSpec> _exercises = [
     subTarget: '상부',
     equipment: '스미스머신',
   ),
-  _ExerciseSpec(
-    '인클라인 덤벨 프레스',
-    BodyPart.chest,
-    subTarget: '상부',
-    equipment: '덤벨',
-  ),
+  _ExerciseSpec('인클라인 덤벨 프레스', BodyPart.chest, subTarget: '상부', equipment: '덤벨'),
   _ExerciseSpec(
     '인클라인 벤치프레스 머신',
     BodyPart.chest,
@@ -230,12 +225,7 @@ const List<_ExerciseSpec> _exercises = [
   _ExerciseSpec('벡덱플라이', BodyPart.chest, subTarget: '고립', equipment: '머신'),
   _ExerciseSpec('딥스', BodyPart.chest, subTarget: '하부', equipment: '맨몸'),
   // 어깨
-  _ExerciseSpec(
-    '사이드 레터럴 라이즈',
-    BodyPart.shoulder,
-    subTarget: '측면',
-    equipment: '덤벨',
-  ),
+  _ExerciseSpec('사이드 레터럴 라이즈', BodyPart.shoulder, subTarget: '측면', equipment: '덤벨'),
   _ExerciseSpec(
     '케이블 사이드 레터럴',
     BodyPart.shoulder,
@@ -254,12 +244,7 @@ const List<_ExerciseSpec> _exercises = [
     subTarget: '전면',
     equipment: '스미스머신',
   ),
-  _ExerciseSpec(
-    '머신 숄더프레스',
-    BodyPart.shoulder,
-    subTarget: '전면',
-    equipment: '머신',
-  ),
+  _ExerciseSpec('머신 숄더프레스', BodyPart.shoulder, subTarget: '전면', equipment: '머신'),
   _ExerciseSpec(
     '벤트오버 레터럴 레이즈',
     BodyPart.shoulder,
@@ -275,12 +260,7 @@ const List<_ExerciseSpec> _exercises = [
   _ExerciseSpec('힙 어브덕션', BodyPart.legs, subTarget: '둔부', equipment: '머신'),
   _ExerciseSpec('힙 어덕션', BodyPart.legs, subTarget: '둔부', equipment: '머신'),
   // 팔
-  _ExerciseSpec(
-    '케이블 해머컬',
-    BodyPart.arms,
-    subTarget: '이두/상완근',
-    equipment: '케이블',
-  ),
+  _ExerciseSpec('케이블 해머컬', BodyPart.arms, subTarget: '이두/상완근', equipment: '케이블'),
   _ExerciseSpec('덤벨컬', BodyPart.arms, subTarget: '이두', equipment: '덤벨'),
   _ExerciseSpec('트라이셉스 푸시다운', BodyPart.arms, subTarget: '삼두', equipment: '케이블'),
   _ExerciseSpec('케이블 푸시다운', BodyPart.arms, subTarget: '삼두', equipment: '케이블'),
@@ -370,8 +350,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 15,
             repMax: 20,
-            note:
-                '인클라인 벤치에 가슴만 기대고. 등 7세트 직후라 후면이 이미 예열된 상태 — '
+            note: '인클라인 벤치에 가슴만 기대고. 등 7세트 직후라 후면이 이미 예열된 상태 — '
                 '가벼운 무게로 바로 유효 볼륨이 들어간다.',
             alternatives: ['리버스 펙덱'],
           ),
@@ -458,8 +437,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 12,
             repMax: 15,
-            note:
-                '풀리를 아래에 두고 위로 모은다. 상부 조준의 핵심. '
+            note: '풀리를 아래에 두고 위로 모은다. 상부 조준의 핵심. '
                 '벡덱플라이로 대체할 땐 시트를 낮춰 손 위치를 어깨선 위로.',
             alternatives: ['벡덱플라이'],
           ),
@@ -478,13 +456,7 @@ const List<_DaySpec> _days = [
             repMax: 10,
             note: '인클라인 프레스 7세트로 삼두는 이미 예열 완료. 고중량으로 턴다.',
           ),
-          _ItemSpec(
-            '케이블 푸시다운',
-            sets: 1,
-            repMin: 15,
-            repMax: 20,
-            note: '저중량으로 마무리.',
-          ),
+          _ItemSpec('케이블 푸시다운', sets: 1, repMin: 15, repMax: 20, note: '저중량으로 마무리.'),
         ],
       ),
       _absBlock,
@@ -512,8 +484,7 @@ const List<_DaySpec> _days = [
             sets: 4,
             repMin: 10,
             repMax: 15,
-            note:
-                '세션에서 가장 신선한 자리를 최대 약점에 준다. 프레스보다 앞이다. '
+            note: '세션에서 가장 신선한 자리를 최대 약점에 준다. 프레스보다 앞이다. '
                 '새끼손가락을 살짝 위로, 어깨선 이상 올리지 않는다. 격주로 케이블 사이드 레터럴과 교대.',
             alternatives: ['케이블 사이드 레터럴'],
           ),
@@ -530,8 +501,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 8,
             repMax: 12,
-            note:
-                '전면은 인클라인 11세트에서 이미 대량으로 받는다 — 여기선 3세트면 충분하고, '
+            note: '전면은 인클라인 11세트에서 이미 대량으로 받는다 — 여기선 3세트면 충분하고, '
                 '더 넣으면 측면 몫을 뺏는다. 2주마다 머신 숄더프레스와 교대.',
             alternatives: ['머신 숄더프레스'],
           ),
@@ -558,8 +528,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 10,
             repMax: 12,
-            note:
-                '등 주 3회 중 두 번째. 렛풀다운을 또 넣지 않는 이유는 DAY A 풀업이 이미 수직 당기기라서다 '
+            note: '등 주 3회 중 두 번째. 렛풀다운을 또 넣지 않는 이유는 DAY A 풀업이 이미 수직 당기기라서다 '
                 '— 여긴 수평으로 채운다.',
           ),
         ],
@@ -626,8 +595,7 @@ const List<_DaySpec> _days = [
             '딥스',
             sets: 3,
             repMode: RepMode.amrap,
-            note:
-                '인클라인만 6개월 하면 하부·전거근이 비어간다. 주 1회 딥스로 균형을 맞춘다. '
+            note: '인클라인만 6개월 하면 하부·전거근이 비어간다. 주 1회 딥스로 균형을 맞춘다. '
                 '상체를 앞으로 기울여 가슴 버전으로.',
           ),
         ],
@@ -665,8 +633,7 @@ const List<_DaySpec> _days = [
             sets: 3,
             repMin: 12,
             repMax: 15,
-            note:
-                '이두가 개입하지 않는 유일한 등 종목. DAY A에서 이두를 이미 털었으니, '
+            note: '이두가 개입하지 않는 유일한 등 종목. DAY A에서 이두를 이미 털었으니, '
                 '주 마지막 등 볼륨은 팔꿈치를 고정한 채 광배만 쓰는 쪽으로 채운다.',
           ),
           _ItemSpec(

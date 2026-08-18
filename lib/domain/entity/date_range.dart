@@ -6,7 +6,11 @@ class DateRange extends Equatable {
   const DateRange({required this.start, required this.end});
 
   factory DateRange.week(DateTime anyDayInWeek) {
-    final d = DateTime(anyDayInWeek.year, anyDayInWeek.month, anyDayInWeek.day);
+    final d = DateTime(
+      anyDayInWeek.year,
+      anyDayInWeek.month,
+      anyDayInWeek.day,
+    );
     final start = d.subtract(Duration(days: d.weekday - DateTime.monday));
     return DateRange(start: start, end: start.add(const Duration(days: 6)));
   }
@@ -19,7 +23,8 @@ class DateRange extends Equatable {
   final DateTime start;
   final DateTime end;
 
-  bool contains(DateTime date) => !date.isBefore(start) && !date.isAfter(end);
+  bool contains(DateTime date) =>
+      !date.isBefore(start) && !date.isAfter(end);
 
   @override
   List<Object?> get props => [start, end];

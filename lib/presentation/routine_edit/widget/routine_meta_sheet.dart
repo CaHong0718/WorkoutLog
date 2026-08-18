@@ -7,11 +7,7 @@ import 'edit_controls.dart';
 /// Edits what a routine *is*: its name, the idea behind it, and how long one
 /// session should take. Days are edited on their own screen.
 class RoutineMetaSheet extends StatefulWidget {
-  const RoutineMetaSheet({
-    required this.routine,
-    required this.isNew,
-    super.key,
-  });
+  const RoutineMetaSheet({required this.routine, required this.isNew, super.key});
 
   final Routine routine;
   final bool isNew;
