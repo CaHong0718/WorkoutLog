@@ -23,6 +23,7 @@
 | 11 | 하단 탭 좌우 스와이프 · 탭 전환 시 화면 갱신 | ✅ |
 | 12 | `design/DESIGN.md` 디자인 시스템 적용 | ✅ |
 | 13 | 드래그 프록시 모양 정리 · iOS 빌드 준비 | ✅ |
+| 14 | 운동 기록 백업 · 복원 · 공유 | 🚧 |
 
 ---
 
@@ -459,6 +460,106 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 
 ---
 
+## STEP 14 — 운동 기록 백업 · 복원 · 공유
+
+앱을 지우거나 폰을 바꾸면 운동 기록이 사라진다. 실제로 2026-08-18에 서명 키 문제로 하루치를
+잃었고(`06-ANDROID-SIGNING.md`), 그때 기기 자동 백업도 꺼져 있어 복구하지 못했다.
+**사용자가 스스로 파일을 뽑아 둘 수 있어야 한다.**
+
+포맷 명세는 [`07-BACKUP.md`](07-BACKUP.md)가 유일한 기준이다.
+
+STEP 10이 깔아 둔 길(코덱 → 파일 선택 → 미리보기 → 공유 시트)을 기록까지 늘리는 일이다.
+새 길을 내지 않는다. **DB 스키마는 바꾸지 않는다** — `schemaVersion`은 1 그대로다.
+
+정한 것 세 가지:
+
+| 갈림길 | 정한 것 | 이유 |
+|---|---|---|
+| 포맷 | JSON 전체 백업 | 두 기기 기록을 합칠 수 있고, 스키마가 바뀌어도 살아남고, 사람이 열어본다. `07` §1 |
+| 복원 | 합치기(기본) + 덮어쓰기 | 재설치 직후(빈 DB)와 두 기기 합치기를 한 경로로 덮는다 |
+| 진입점 | 기록 탭 앱바 → `/backup` | 백업 대상이 "운동 기록"이니 기록 탭에 둔다 |
+
+### STEP 14-1 — 도메인
+
+- [ ] `domain/entity/backup_package.dart` — `BackupPackage` / `BackupRoutineEntry` /
+      `SessionDraft` / `SetLogDraft`. 루틴 교환과 같은 규칙: **id가 없고 이름으로 참조한다**
+- [ ] `domain/entity/backup_package.dart` — `BackupParseResult` / `BackupImportReport` /
+      `BackupSummary` / `BackupRestoreMode`(`merge` | `replace`)
+- [ ] `domain/repository/backup_exchange.dart` — `decode` / `encode` / `fileNameFor` 포트
+- [ ] `domain/repository/backup_repository.dart` — `exportBackup` / `importBackup` / `summarize`
+- [ ] `domain/usecase/backup_usecases.dart` — `ParseBackupFile` `ExportBackup` `ImportBackup`
+      `GetBackupSummary`
+
+**`domain/`에 `package:flutter`·`package:drift`를 import하지 않는다.**
+
+### STEP 14-2 — 코덱
+
+- [ ] `RoutineCodec` 리팩터 — 루틴 **본문**(`routine` 객체)만 읽고 쓰는 경로를 노출한다.
+      백업 파일의 `routines[i]`가 그 객체와 글자 하나까지 같아야 하므로, 스키마를 두 벌로
+      적지 않고 같은 코드를 부른다. `RoutineExchange`에 `encodeRoutineBody` /
+      `decodeRoutineBody(json, path:)` 추가
+- [ ] `data/exchange/backup_codec.dart` — `07-BACKUP.md` §2~§6 구현.
+      **`dart:convert` + domain 말고는 import하지 않는다**(검증 CLI가 이 클래스를 그대로 쓴다)
+- [ ] 오류는 전부 모아 경로와 함께 보고(`07` §11). 루틴 쪽 경로는 `routine.` → `routines[i].`로 바꿔 붙인다
+- [ ] `inProgress` 세션은 오류로 거부한다
+- [ ] null 필드는 쓰지 않는다 — 세트가 수천 개라 파일 크기가 눈에 띄게 갈린다
+
+### STEP 14-3 — 데이터
+
+- [ ] `data/repository/backup_repository_impl.dart`
+- [ ] `exportBackup` — 종목 전체 + 루틴 전체(기존 `_exportRoutine` 재사용) + `inProgress`가 아닌 세션 전체
+- [ ] `importBackup(package, mode)` — **단일 트랜잭션**. 신원 규칙은 `07` §7.1
+      (종목·루틴은 이름, 세션은 `startedAt`)
+- [ ] 합치기 — 이름이 같은 루틴은 건너뛰고, 활성 루틴은 건드리지 않는다(`07` §7.2)
+- [ ] 덮어쓰기 — 진행 중 세션이 있으면 거부, 자식 표부터 비우고, 백업의 `isActive`를 따른다(`07` §7.3)
+- [ ] DAO 보강 — `sessionsByStartedAt` / `allSessions` / `allExercises` / 표 비우기
+- [ ] `dart run build_runner build`
+
+### STEP 14-4 — 플랫폼
+
+- [ ] `RoutineFileIo` → `JsonFileIo` 리네임(`PickedRoutineFile` → `PickedJsonFile`).
+      하는 일에 루틴 전용 로직이 하나도 없다. 백업이 "루틴 파일 IO"를 부르면 읽는 사람이 헷갈린다
+- [ ] `maxBytes`를 호출자가 정하게 한다 — 루틴 4MB, 백업 16MB(`07` §9)
+- [ ] `shareJsonFile`로 일반화
+
+### STEP 14-5 — UI
+
+- [ ] `presentation/backup/` — `BackupBloc` + intent/state/effect,
+      `page/backup_page.dart`, `widget/backup_preview_sheet.dart`
+- [ ] 라우트 `/backup`, 기록 탭 앱바에 진입 아이콘
+- [ ] 요약 카드 — 기록 횟수 · 세트 수 · 루틴 수 · 첫 기록 날짜
+- [ ] Primary는 **내보내기** 하나(`DESIGN.md`: 화면당 Primary 1개). 복원은 Secondary
+- [ ] 복원은 **미리보기 → 모드 선택 → 확인** 3단계. 덮어쓰기는 `danger` 색 확인 다이얼로그에
+      "기록 N개가 사라집니다"를 숫자로 적는다
+- [ ] DB에 쓰는 Intent 핸들러에 `transformer: sequential()`
+- [ ] 문자열은 전부 `app_strings.dart`
+
+### STEP 14-6 — 공유로 받기
+
+- [ ] `SharedRoutineReceiver`가 받은 JSON의 `format`을 보고 루틴이면 `/routines`,
+      백업이면 `/backup`으로 보낸다. 지금은 전부 루틴으로 보내 백업 파일이 거부당한다
+- [ ] 인텐트 필터는 이미 `application/json`이라 `AndroidManifest.xml`은 손대지 않는다
+
+### STEP 14-7 — 검증 CLI · 테스트 · 문서
+
+- [ ] `tools/validate_backup.dart` — `dart run tools/validate_backup.dart <파일.json>`
+- [ ] `test/backup_test.dart` — 인메모리 SQLite 위에서 실제로 돈다(목 없음)
+      - export → 새 DB에 덮어쓰기 복원 → 세션·세트·루틴·종목이 왕복 동일
+      - 같은 백업을 두 번 합치기 → 세션 수 그대로(`startedAt` 중복 차단)
+      - 합치기에서 이름이 같은 루틴을 새로 만들지 않는다
+      - `inProgress` 세션은 내보내지 않고, 들어오면 거부한다
+      - 진행 중 세션이 있으면 덮어쓰기를 거부한다
+      - 종목 이름 대조로 복원 뒤에도 무게 추이가 이어진다
+      - 루틴 파일을 백업으로 열면 `format` 오류, 경로가 붙은 오류 목록
+- [ ] `test/backup_bloc_test.dart` — 플랫폼 다이얼로그만 가짜, 나머지는 실물
+- [ ] `README.md`에 사용법 추가
+- [ ] `CLAUDE.md` 문서 표에 `07-BACKUP.md` 추가
+
+**완료 조건**: `flutter analyze` 무경고 · `flutter test` 통과(기존 103개 + 신규) ·
+`flutter build apk --debug` 성공 · 실기기에서 내보내기 → 앱 삭제 → 재설치 → 복원 왕복.
+
+---
+
 ## 이후 후보 (요청 시 착수)
 
 우선순위 순.
@@ -466,8 +567,6 @@ Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIV
 - [ ] **스플래시 화면** — `flutter_native_splash` 사용
 - [ ] **과거 기록 수정** — 삭제는 STEP 9에서 됐고, 세트별 무게·반복 수정은 아직.
       `UpdateSet`/`DeleteSet` UseCase는 이미 있다.
-- [ ] **데이터 백업/복원** — SQLite 파일 내보내기 또는 JSON export
-      (STEP 10의 코덱을 기록까지 확장하면 된다)
 - [ ] **4주 로테이션 알림** — 원문 설계의 "4주마다 종목 교체" 규칙을 앱이 알려주기
 - [ ] **그룹 리스트 패턴** — `design/DESIGN.md` 8장. 행을 카드로 묶고 내부 구분선을 없앤다.
       STEP 12에서 미룬 것 (루틴 DAY 목록 · 기록 세션 목록 · 종목 라이브러리)

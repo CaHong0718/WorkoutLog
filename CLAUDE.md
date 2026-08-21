@@ -63,6 +63,7 @@ push가 실패하면 커밋만 남기고 알려준다 — 자격증명 프롬프
 | [`docs/04-ROUTINE-EXCHANGE.md`](docs/04-ROUTINE-EXCHANGE.md) | 루틴 `.json` 가져오기/내보내기 포맷을 다룰 때. **HTML→JSON 변환 시 이 스키마가 유일한 기준** |
 | [`docs/05-IOS.md`](docs/05-IOS.md) | iOS 빌드를 다룰 때. 미리 해둔 설정과 맥에서만 할 수 있는 일 |
 | [`docs/06-ANDROID-SIGNING.md`](docs/06-ANDROID-SIGNING.md) | **다른 컴퓨터에서 안드로이드를 빌드하기 전에.** 서명 키를 안 옮기면 운동 기록이 지워진다 |
+| [`docs/07-BACKUP.md`](docs/07-BACKUP.md) | 운동 기록 백업 `.json`을 다룰 때. 포맷과 복원 규칙(합치기/덮어쓰기) |
 
 ## 루틴을 파일로 뽑아 달라고 하면
 
