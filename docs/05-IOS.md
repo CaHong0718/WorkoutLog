@@ -88,8 +88,9 @@ flutter run
 
 | | Android | iOS |
 |---|---|---|
-| 알림 권한 | `POST_NOTIFICATIONS` + 정확한 알람 | alert·sound (badge는 안 쓴다) |
+| 알림 권한 | `POST_NOTIFICATIONS`(운동 시작 시 요청) + `USE_EXACT_ALARM`(설치 시 부여, 프롬프트 없음) | alert·sound를 운동 시작 시 요청 (badge는 안 쓴다) |
 | 예약 방식 | `AlarmManager` exact → inexact 폴백 | `UNCalendarNotificationTrigger`. 폴백 개념이 없다 |
+| 알림을 실제로 띄우는 주체 | `AndroidManifest.xml`에 직접 선언한 `ScheduledNotificationReceiver`. **빠뜨리면 예약은 되는데 조용하다** (`docs/03-STEPS.md` STEP 9) | `UNUserNotificationCenter`. 받는 쪽을 선언할 필요가 없어 이 함정이 없다 — `AppDelegate.swift`의 delegate 지정이 전부다 |
 | 파일 공유 받기 | `AndroidManifest.xml`의 intent-filter | Share Extension (위 참조) |
 | 파일 고르기 | SAF | `UIDocumentPickerViewController` — 둘 다 `flutter_file_dialog` |
 | DB 경로 | `path_provider` | 같음. `path_provider_foundation`은 순수 Dart(FFI)라 등록이 필요 없다 |
