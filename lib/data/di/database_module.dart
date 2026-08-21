@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 
 import '../database/app_database.dart';
+import '../database/daos/backup_dao.dart';
 import '../database/daos/exercise_dao.dart';
 import '../database/daos/history_dao.dart';
 import '../database/daos/routine_dao.dart';
@@ -23,4 +24,7 @@ abstract class DatabaseModule {
 
   @lazySingleton
   HistoryDao historyDao(AppDatabase db) => db.historyDao;
+
+  @lazySingleton
+  BackupDao backupDao(AppDatabase db) => db.backupDao;
 }

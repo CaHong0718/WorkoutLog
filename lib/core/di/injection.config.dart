@@ -13,21 +13,27 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import '../../data/database/app_database.dart' as _i160;
+import '../../data/database/daos/backup_dao.dart' as _i381;
 import '../../data/database/daos/exercise_dao.dart' as _i248;
 import '../../data/database/daos/history_dao.dart' as _i615;
 import '../../data/database/daos/routine_dao.dart' as _i229;
 import '../../data/database/daos/workout_dao.dart' as _i535;
 import '../../data/di/database_module.dart' as _i883;
+import '../../data/exchange/backup_codec.dart' as _i341;
 import '../../data/exchange/routine_codec.dart' as _i480;
+import '../../data/repository/backup_repository_impl.dart' as _i513;
 import '../../data/repository/exercise_repository_impl.dart' as _i928;
 import '../../data/repository/history_repository_impl.dart' as _i916;
 import '../../data/repository/routine_repository_impl.dart' as _i64;
 import '../../data/repository/workout_repository_impl.dart' as _i1004;
+import '../../domain/repository/backup_exchange.dart' as _i276;
+import '../../domain/repository/backup_repository.dart' as _i362;
 import '../../domain/repository/exercise_repository.dart' as _i930;
 import '../../domain/repository/history_repository.dart' as _i148;
 import '../../domain/repository/routine_exchange.dart' as _i372;
 import '../../domain/repository/routine_repository.dart' as _i667;
 import '../../domain/repository/workout_repository.dart' as _i611;
+import '../../domain/usecase/backup_usecases.dart' as _i673;
 import '../../domain/usecase/exercise_usecases.dart' as _i628;
 import '../../domain/usecase/history_usecases.dart' as _i839;
 import '../../domain/usecase/routine_usecases.dart' as _i15;
@@ -61,6 +67,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i15.ParseRoutineFile>(
       () => _i15.ParseRoutineFile(gh<_i372.RoutineExchange>()),
     );
+    gh.lazySingleton<_i276.BackupExchange>(
+      () => _i341.BackupCodec(gh<_i372.RoutineExchange>()),
+    );
     gh.lazySingleton<_i229.RoutineDao>(
       () => databaseModule.routineDao(gh<_i160.AppDatabase>()),
     );
@@ -73,12 +82,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i615.HistoryDao>(
       () => databaseModule.historyDao(gh<_i160.AppDatabase>()),
     );
+    gh.lazySingleton<_i381.BackupDao>(
+      () => databaseModule.backupDao(gh<_i160.AppDatabase>()),
+    );
     gh.lazySingleton<_i235.SharedRoutineReceiver>(
       () => _i235.SharedRoutineReceiver(gh<_i358.RoutineFileIo>()),
       dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i148.HistoryRepository>(
       () => _i916.HistoryRepositoryImpl(gh<_i615.HistoryDao>()),
+    );
+    gh.factory<_i673.ParseBackupFile>(
+      () => _i673.ParseBackupFile(gh<_i276.BackupExchange>()),
     );
     gh.lazySingleton<_i930.ExerciseRepository>(
       () => _i928.ExerciseRepositoryImpl(gh<_i248.ExerciseDao>()),
@@ -93,6 +108,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i667.RoutineRepository>(
       () => _i64.RoutineRepositoryImpl(
         gh<_i229.RoutineDao>(),
+        gh<_i160.AppDatabase>(),
+      ),
+    );
+    gh.lazySingleton<_i362.BackupRepository>(
+      () => _i513.BackupRepositoryImpl(
+        gh<_i381.BackupDao>(),
+        gh<_i667.RoutineRepository>(),
         gh<_i160.AppDatabase>(),
       ),
     );
@@ -264,6 +286,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i250.SuggestProgression>(
       () => _i250.SuggestProgression(gh<_i611.WorkoutRepository>()),
     );
+    gh.factory<_i673.ExportBackup>(
+      () => _i673.ExportBackup(
+        gh<_i362.BackupRepository>(),
+        gh<_i276.BackupExchange>(),
+      ),
+    );
     gh.factory<_i937.RoutineBloc>(
       () => _i937.RoutineBloc(
         gh<_i15.WatchActiveRoutine>(),
@@ -286,6 +314,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i15.DeleteItem>(),
         gh<_i15.ReorderItems>(),
       ),
+    );
+    gh.factory<_i673.GetBackupSummary>(
+      () => _i673.GetBackupSummary(gh<_i362.BackupRepository>()),
+    );
+    gh.factory<_i673.ImportBackup>(
+      () => _i673.ImportBackup(gh<_i362.BackupRepository>()),
     );
     gh.factory<_i315.HomeBloc>(
       () => _i315.HomeBloc(

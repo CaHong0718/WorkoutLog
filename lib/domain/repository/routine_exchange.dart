@@ -17,4 +17,15 @@ abstract interface class RoutineExchange {
 
   /// `상하체 2분할_20260811.json`
   String fileNameFor(RoutinePackage package, DateTime now);
+
+  /// The `routine` object on its own, without the file envelope.
+  ///
+  /// A backup file (`docs/07-BACKUP.md`) stores routines in exactly this shape,
+  /// so both formats share one definition instead of drifting apart.
+  Map<String, Object?> encodeRoutineBody(RoutinePackage package);
+
+  /// Reads a bare `routine` object. [path] prefixes every problem reported, so
+  /// a backup can say `routines[2].days[0]` where a routine file says
+  /// `routine.days[0]`.
+  RoutineBodyParse decodeRoutineBody(Object? json, {required String path});
 }

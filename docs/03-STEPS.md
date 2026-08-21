@@ -481,39 +481,39 @@ STEP 10이 깔아 둔 길(코덱 → 파일 선택 → 미리보기 → 공유 �
 
 ### STEP 14-1 — 도메인
 
-- [ ] `domain/entity/backup_package.dart` — `BackupPackage` / `BackupRoutineEntry` /
+- [x] `domain/entity/backup_package.dart` — `BackupPackage` / `BackupRoutineEntry` /
       `SessionDraft` / `SetLogDraft`. 루틴 교환과 같은 규칙: **id가 없고 이름으로 참조한다**
-- [ ] `domain/entity/backup_package.dart` — `BackupParseResult` / `BackupImportReport` /
+- [x] `domain/entity/backup_package.dart` — `BackupParseResult` / `BackupImportReport` /
       `BackupSummary` / `BackupRestoreMode`(`merge` | `replace`)
-- [ ] `domain/repository/backup_exchange.dart` — `decode` / `encode` / `fileNameFor` 포트
-- [ ] `domain/repository/backup_repository.dart` — `exportBackup` / `importBackup` / `summarize`
-- [ ] `domain/usecase/backup_usecases.dart` — `ParseBackupFile` `ExportBackup` `ImportBackup`
+- [x] `domain/repository/backup_exchange.dart` — `decode` / `encode` / `fileNameFor` 포트
+- [x] `domain/repository/backup_repository.dart` — `exportBackup` / `importBackup` / `summarize`
+- [x] `domain/usecase/backup_usecases.dart` — `ParseBackupFile` `ExportBackup` `ImportBackup`
       `GetBackupSummary`
 
 **`domain/`에 `package:flutter`·`package:drift`를 import하지 않는다.**
 
 ### STEP 14-2 — 코덱
 
-- [ ] `RoutineCodec` 리팩터 — 루틴 **본문**(`routine` 객체)만 읽고 쓰는 경로를 노출한다.
+- [x] `RoutineCodec` 리팩터 — 루틴 **본문**(`routine` 객체)만 읽고 쓰는 경로를 노출한다.
       백업 파일의 `routines[i]`가 그 객체와 글자 하나까지 같아야 하므로, 스키마를 두 벌로
       적지 않고 같은 코드를 부른다. `RoutineExchange`에 `encodeRoutineBody` /
       `decodeRoutineBody(json, path:)` 추가
-- [ ] `data/exchange/backup_codec.dart` — `07-BACKUP.md` §2~§6 구현.
+- [x] `data/exchange/backup_codec.dart` — `07-BACKUP.md` §2~§6 구현.
       **`dart:convert` + domain 말고는 import하지 않는다**(검증 CLI가 이 클래스를 그대로 쓴다)
-- [ ] 오류는 전부 모아 경로와 함께 보고(`07` §11). 루틴 쪽 경로는 `routine.` → `routines[i].`로 바꿔 붙인다
-- [ ] `inProgress` 세션은 오류로 거부한다
-- [ ] null 필드는 쓰지 않는다 — 세트가 수천 개라 파일 크기가 눈에 띄게 갈린다
+- [x] 오류는 전부 모아 경로와 함께 보고(`07` §11). 루틴 쪽 경로는 `routine.` → `routines[i].`로 바꿔 붙인다
+- [x] `inProgress` 세션은 오류로 거부한다
+- [x] null 필드는 쓰지 않는다 — 세트가 수천 개라 파일 크기가 눈에 띄게 갈린다
 
 ### STEP 14-3 — 데이터
 
-- [ ] `data/repository/backup_repository_impl.dart`
-- [ ] `exportBackup` — 종목 전체 + 루틴 전체(기존 `_exportRoutine` 재사용) + `inProgress`가 아닌 세션 전체
-- [ ] `importBackup(package, mode)` — **단일 트랜잭션**. 신원 규칙은 `07` §7.1
+- [x] `data/repository/backup_repository_impl.dart`
+- [x] `exportBackup` — 종목 전체 + 루틴 전체(기존 `_exportRoutine` 재사용) + `inProgress`가 아닌 세션 전체
+- [x] `importBackup(package, mode)` — **단일 트랜잭션**. 신원 규칙은 `07` §7.1
       (종목·루틴은 이름, 세션은 `startedAt`)
-- [ ] 합치기 — 이름이 같은 루틴은 건너뛰고, 활성 루틴은 건드리지 않는다(`07` §7.2)
-- [ ] 덮어쓰기 — 진행 중 세션이 있으면 거부, 자식 표부터 비우고, 백업의 `isActive`를 따른다(`07` §7.3)
-- [ ] DAO 보강 — `sessionsByStartedAt` / `allSessions` / `allExercises` / 표 비우기
-- [ ] `dart run build_runner build`
+- [x] 합치기 — 이름이 같은 루틴은 건너뛰고, 활성 루틴은 건드리지 않는다(`07` §7.2)
+- [x] 덮어쓰기 — 진행 중 세션이 있으면 거부, 자식 표부터 비우고, 백업의 `isActive`를 따른다(`07` §7.3)
+- [x] DAO 보강 — `sessionsByStartedAt` / `allSessions` / `allExercises` / 표 비우기
+- [x] `dart run build_runner build`
 
 ### STEP 14-4 — 플랫폼
 

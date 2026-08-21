@@ -7,6 +7,7 @@ import '../../core/result/result.dart';
 import '../../domain/entity/enums.dart';
 import '../../domain/entity/routine_package.dart';
 import '../../domain/repository/routine_exchange.dart';
+import 'json_reader.dart';
 
 /// Reads and writes `docs/04-ROUTINE-EXCHANGE.md` documents.
 ///
@@ -59,14 +60,29 @@ class RoutineCodec implements RoutineExchange {
       'format': formatId,
       'version': formatVersion,
       if (exportedAt != null) 'exportedAt': exportedAt.toIso8601String(),
-      'routine': <String, Object?>{
+      'routine': encodeRoutineBody(package),
+    };
+    return const JsonEncoder.withIndent('  ').convert(document);
+  }
+
+  @override
+  Map<String, Object?> encodeRoutineBody(RoutinePackage package) =>
+      <String, Object?>{
         'name': package.name,
         if (package.description != null) 'description': package.description,
         'sessionMinutes': package.sessionMinutes,
         'days': [for (final day in package.days) _dayJson(day)],
-      },
-    };
-    return const JsonEncoder.withIndent('  ').convert(document);
+      };
+
+  @override
+  RoutineBodyParse decodeRoutineBody(Object? json, {required String path}) {
+    final decoder = _Decoder();
+    final package = decoder.readRoutine(json, path);
+    return RoutineBodyParse(
+      package: decoder.errors.isEmpty ? package : null,
+      errors: decoder.errors,
+      warnings: decoder.warnings,
+    );
   }
 
   @override
@@ -132,51 +148,59 @@ class RoutineCodec implements RoutineExchange {
 /// Collects *every* problem instead of throwing on the first one — a
 /// hand-written routine usually has more than one typo, and fixing them one
 /// round-trip at a time is miserable.
-class _Decoder {
-  final List<String> errors = [];
-  final List<String> warnings = [];
-
+class _Decoder extends JsonReader {
   /// Exercise definitions found anywhere in the file, keyed by name. Filled
   /// before the main pass so `"exercise": "랫 풀다운"` resolves even when the
   /// full definition appears later.
   final Map<String, ExerciseDraft> _defined = {};
 
   RoutinePackage? read(Object? root) {
-    final document = _object(root, '루트');
+    final document = object(root, '루트');
     if (document == null) return null;
 
     final format = document['format'];
     if (format != RoutineCodec.formatId) {
       errors.add(
-        'format: "${RoutineCodec.formatId}"이어야 합니다 (${_display(format)}). '
+        'format: "${RoutineCodec.formatId}"이어야 합니다 (${jsonDisplay(format)}). '
         '루틴 파일이 맞는지 확인하세요.',
       );
     }
 
-    final version = _integer(document['version']);
+    final version = jsonInteger(document['version']);
     if (version == null) {
-      errors.add('version: 정수여야 합니다 (${_display(document['version'])})');
+      errors.add('version: 정수여야 합니다 (${jsonDisplay(document['version'])})');
     } else if (version != RoutineCodec.formatVersion) {
       errors.add(
         'version: 이 앱은 ${RoutineCodec.formatVersion}만 읽을 수 있습니다 ($version)',
       );
     }
 
-    final routine = _object(document['routine'], 'routine');
+    return readRoutine(document['routine'], 'routine');
+  }
+
+  /// Reads a bare `routine` object — the body without the file envelope.
+  ///
+  /// A backup file embeds one of these per entry under `routines[]`, so both
+  /// formats come through here and `docs/04-ROUTINE-EXCHANGE.md` stays the only
+  /// definition of a routine's shape. [path] prefixes every problem reported,
+  /// which is why the caller decides whether it reads `routine` or
+  /// `routines[2]`.
+  RoutinePackage? readRoutine(Object? value, String path) {
+    final routine = object(value, path);
     if (routine == null) return null;
 
     _collectExercises(routine);
 
-    final name = _requiredString(routine, 'name', 'routine', maxLength: 120);
-    final description = _optionalString(routine, 'description', 'routine');
+    final name = requiredString(routine, 'name', path, maxLength: 120);
+    final description = optionalString(routine, 'description', path);
     final sessionMinutes =
-        _optionalInt(routine, 'sessionMinutes', 'routine', min: 1, max: 600) ??
+        optionalInt(routine, 'sessionMinutes', path, min: 1, max: 600) ??
         RoutinePackage.defaultSessionMinutes;
 
-    final rawDays = _requiredList(routine, 'days', 'routine', minLength: 1);
+    final rawDays = requiredList(routine, 'days', path, minLength: 1);
     final days = <RoutineDayDraft>[];
     for (var i = 0; i < (rawDays?.length ?? 0); i++) {
-      final day = _readDay(rawDays![i], 'routine.days[$i]');
+      final day = _readDay(rawDays![i], '$path.days[$i]');
       if (day != null) days.add(day);
     }
 
@@ -193,11 +217,11 @@ class _Decoder {
   /// be resolved regardless of where they appear. Reports nothing — the main
   /// pass is responsible for errors.
   void _collectExercises(Map<String, Object?> routine) {
-    for (final day in _asList(routine['days'])) {
+    for (final day in jsonList(routine['days'])) {
       if (day is! Map<String, Object?>) continue;
-      for (final block in _asList(day['blocks'])) {
+      for (final block in jsonList(day['blocks'])) {
         if (block is! Map<String, Object?>) continue;
-        for (final item in _asList(block['items'])) {
+        for (final item in jsonList(block['items'])) {
           if (item is! Map<String, Object?>) continue;
           final raw = item['exercise'];
           if (raw is! Map<String, Object?>) continue;
@@ -206,14 +230,14 @@ class _Decoder {
           final part = raw['bodyPart'];
           if (name is! String || name.trim().isEmpty) continue;
           if (part is! String) continue;
-          final bodyPart = _lookup(BodyPart.values, part, (e) => e.name);
+          final bodyPart = enumByName(BodyPart.values, part, (e) => e.name);
           if (bodyPart == null) continue;
 
           final draft = ExerciseDraft(
             name: name.trim(),
             bodyPart: bodyPart,
-            subTarget: _trimmed(raw['subTarget']),
-            equipment: _trimmed(raw['equipment']),
+            subTarget: jsonTrimmed(raw['subTarget']),
+            equipment: jsonTrimmed(raw['equipment']),
           );
           final existing = _defined[draft.name];
           if (existing == null) {
@@ -230,12 +254,12 @@ class _Decoder {
   }
 
   RoutineDayDraft? _readDay(Object? value, String path) {
-    final map = _object(value, path);
+    final map = object(value, path);
     if (map == null) return null;
 
-    final code = _requiredString(map, 'code', path, maxLength: 8);
-    final title = _requiredString(map, 'title', path, maxLength: 120);
-    final bodyPart = _requiredEnum(
+    final code = requiredString(map, 'code', path, maxLength: 8);
+    final title = requiredString(map, 'title', path, maxLength: 120);
+    final bodyPart = requiredEnum(
       map,
       'primaryBodyPart',
       path,
@@ -244,7 +268,7 @@ class _Decoder {
     );
 
     final blocks = <RoutineBlockDraft>[];
-    final rawBlocks = _optionalList(map, 'blocks', path);
+    final rawBlocks = optionalList(map, 'blocks', path);
     for (var i = 0; i < rawBlocks.length; i++) {
       final block = _readBlock(rawBlocks[i], '$path.blocks[$i]');
       if (block != null) blocks.add(block);
@@ -254,23 +278,23 @@ class _Decoder {
     return RoutineDayDraft(
       code: code,
       title: title,
-      subtitle: _optionalString(map, 'subtitle', path),
-      description: _optionalString(map, 'description', path),
+      subtitle: optionalString(map, 'subtitle', path),
+      description: optionalString(map, 'description', path),
       primaryBodyPart: bodyPart,
       blocks: blocks,
     );
   }
 
   RoutineBlockDraft? _readBlock(Object? value, String path) {
-    final map = _object(value, path);
+    final map = object(value, path);
     if (map == null) return null;
 
-    final label = _requiredString(map, 'label', path, maxLength: 20);
+    final label = requiredString(map, 'label', path, maxLength: 20);
     final type =
-        _optionalEnum(map, 'type', path, BlockType.values, (e) => e.name) ??
+        optionalEnum(map, 'type', path, BlockType.values, (e) => e.name) ??
         BlockType.straight;
-    final rounds = _optionalInt(map, 'rounds', path, min: 1, max: 50) ?? 1;
-    final restSeconds = _requiredInt(
+    final rounds = optionalInt(map, 'rounds', path, min: 1, max: 50) ?? 1;
+    final restSeconds = requiredInt(
       map,
       'restSeconds',
       path,
@@ -279,7 +303,7 @@ class _Decoder {
     );
 
     final items = <RoutineItemDraft>[];
-    final rawItems = _optionalList(map, 'items', path);
+    final rawItems = optionalList(map, 'items', path);
     for (var i = 0; i < rawItems.length; i++) {
       final item = _readItem(rawItems[i], '$path.items[$i]');
       if (item != null) items.add(item);
@@ -290,18 +314,18 @@ class _Decoder {
     final isSuperset = type == BlockType.superset;
     return RoutineBlockDraft(
       label: label,
-      name: _optionalString(map, 'name', path),
+      name: optionalString(map, 'name', path),
       type: type,
       rounds: isSuperset ? rounds : 1,
       restSeconds: restSeconds,
-      targetMinutes: _optionalInt(
+      targetMinutes: optionalInt(
         map,
         'targetMinutes',
         path,
         min: 1,
         max: 600,
       ),
-      isCuttable: _optionalBool(map, 'isCuttable', path) ?? true,
+      isCuttable: optionalBool(map, 'isCuttable', path) ?? true,
       items: isSuperset ? _alignRounds(items, rounds, label, path) : items,
     );
   }
@@ -331,13 +355,13 @@ class _Decoder {
   }
 
   RoutineItemDraft? _readItem(Object? value, String path) {
-    final map = _object(value, path);
+    final map = object(value, path);
     if (map == null) return null;
 
     final exercise = _readExercise(map['exercise'], '$path.exercise');
-    final sets = _requiredInt(map, 'sets', path, min: 1, max: 50);
+    final sets = requiredInt(map, 'sets', path, min: 1, max: 50);
     final repMode =
-        _optionalEnum(map, 'repMode', path, RepMode.values, (e) => e.name) ??
+        optionalEnum(map, 'repMode', path, RepMode.values, (e) => e.name) ??
         RepMode.range;
 
     int? repMin;
@@ -346,8 +370,8 @@ class _Decoder {
 
     switch (repMode) {
       case RepMode.range:
-        final min = _optionalInt(map, 'repMin', path, min: 1, max: 200);
-        final max = _optionalInt(map, 'repMax', path, min: 1, max: 200);
+        final min = optionalInt(map, 'repMin', path, min: 1, max: 200);
+        final max = optionalInt(map, 'repMax', path, min: 1, max: 200);
         if (min == null && max == null) {
           errors.add('$path: repMode "range"에는 repMin·repMax가 필요합니다.');
         } else {
@@ -361,7 +385,7 @@ class _Decoder {
       case RepMode.amrap:
         break;
       case RepMode.duration:
-        durationSeconds = _requiredInt(
+        durationSeconds = requiredInt(
           map,
           'durationSeconds',
           path,
@@ -383,15 +407,15 @@ class _Decoder {
       repMin: repMin,
       repMax: repMax,
       durationSeconds: durationSeconds,
-      restSecondsOverride: _optionalInt(
+      restSecondsOverride: optionalInt(
         map,
         'restSecondsOverride',
         path,
         min: 0,
         max: 3600,
       ),
-      targetRir: _optionalInt(map, 'targetRir', path, min: 0, max: 10),
-      note: _optionalString(map, 'note', path),
+      targetRir: optionalInt(map, 'targetRir', path, min: 0, max: 10),
+      note: optionalString(map, 'note', path),
       alternativeNames: alternatives,
     );
   }
@@ -414,11 +438,11 @@ class _Decoder {
       return defined;
     }
 
-    final map = _object(value, path);
+    final map = object(value, path);
     if (map == null) return null;
 
-    final name = _requiredString(map, 'name', path, maxLength: 120);
-    final bodyPart = _requiredEnum(
+    final name = requiredString(map, 'name', path, maxLength: 120);
+    final bodyPart = requiredEnum(
       map,
       'bodyPart',
       path,
@@ -433,8 +457,8 @@ class _Decoder {
         ExerciseDraft(
           name: name,
           bodyPart: bodyPart,
-          subTarget: _optionalString(map, 'subTarget', path),
-          equipment: _optionalString(map, 'equipment', path),
+          subTarget: optionalString(map, 'subTarget', path),
+          equipment: optionalString(map, 'equipment', path),
         );
   }
 
@@ -442,7 +466,7 @@ class _Decoder {
     final raw = map['alternatives'];
     if (raw == null) return const [];
     if (raw is! List) {
-      errors.add('$path.alternatives: 배열이어야 합니다 (${_display(raw)})');
+      errors.add('$path.alternatives: 배열이어야 합니다 (${jsonDisplay(raw)})');
       return const [];
     }
 
@@ -452,188 +476,9 @@ class _Decoder {
       if (entry is String && entry.trim().isNotEmpty) {
         names.add(entry.trim());
       } else {
-        errors.add('$path.alternatives[$i]: 종목 이름 문자열이어야 합니다 (${_display(entry)})');
+        errors.add('$path.alternatives[$i]: 종목 이름 문자열이어야 합니다 (${jsonDisplay(entry)})');
       }
     }
     return names;
   }
-
-  // ── primitives ────────────────────────────────────────────────────────────
-
-  Map<String, Object?>? _object(Object? value, String path) {
-    if (value is Map<String, Object?>) return value;
-    errors.add('$path: 객체여야 합니다 (${_display(value)})');
-    return null;
-  }
-
-  List<Object?>? _requiredList(
-    Map<String, Object?> map,
-    String key,
-    String path, {
-    int minLength = 0,
-  }) {
-    final value = map[key];
-    if (value is! List) {
-      errors.add('$path.$key: 배열이어야 합니다 (${_display(value)})');
-      return null;
-    }
-    if (value.length < minLength) {
-      errors.add('$path.$key: $minLength개 이상 필요합니다 (${value.length}개)');
-      return null;
-    }
-    return value;
-  }
-
-  List<Object?> _optionalList(
-    Map<String, Object?> map,
-    String key,
-    String path,
-  ) {
-    final value = map[key];
-    if (value == null) return const [];
-    if (value is! List) {
-      errors.add('$path.$key: 배열이어야 합니다 (${_display(value)})');
-      return const [];
-    }
-    return value;
-  }
-
-  String? _requiredString(
-    Map<String, Object?> map,
-    String key,
-    String path, {
-    required int maxLength,
-  }) {
-    final value = map[key];
-    if (value is! String || value.trim().isEmpty) {
-      errors.add('$path.$key: 비어 있지 않은 문자열이어야 합니다 (${_display(value)})');
-      return null;
-    }
-    final trimmed = value.trim();
-    if (trimmed.length > maxLength) {
-      errors.add('$path.$key: $maxLength자 이하여야 합니다 (${trimmed.length}자)');
-      return null;
-    }
-    return trimmed;
-  }
-
-  String? _optionalString(Map<String, Object?> map, String key, String path) {
-    final value = map[key];
-    if (value == null) return null;
-    if (value is! String) {
-      errors.add('$path.$key: 문자열이어야 합니다 (${_display(value)})');
-      return null;
-    }
-    return _trimmed(value);
-  }
-
-  int? _requiredInt(
-    Map<String, Object?> map,
-    String key,
-    String path, {
-    required int min,
-    required int max,
-  }) {
-    final value = _integer(map[key]);
-    if (value == null) {
-      errors.add('$path.$key: 정수여야 합니다 (${_display(map[key])})');
-      return null;
-    }
-    if (value < min || value > max) {
-      errors.add('$path.$key: $min–$max 범위여야 합니다 ($value)');
-      return null;
-    }
-    return value;
-  }
-
-  int? _optionalInt(
-    Map<String, Object?> map,
-    String key,
-    String path, {
-    required int min,
-    required int max,
-  }) {
-    if (map[key] == null) return null;
-    return _requiredInt(map, key, path, min: min, max: max);
-  }
-
-  bool? _optionalBool(Map<String, Object?> map, String key, String path) {
-    final value = map[key];
-    if (value == null) return null;
-    if (value is! bool) {
-      errors.add('$path.$key: true 또는 false여야 합니다 (${_display(value)})');
-      return null;
-    }
-    return value;
-  }
-
-  T? _requiredEnum<T>(
-    Map<String, Object?> map,
-    String key,
-    String path,
-    List<T> values,
-    String Function(T) nameOf,
-  ) {
-    final value = map[key];
-    if (value is! String) {
-      errors.add('$path.$key: 문자열이어야 합니다 (${_display(value)})');
-      return null;
-    }
-    final match = _lookup(values, value, nameOf);
-    if (match == null) {
-      errors.add(
-        '$path.$key: 알 수 없는 값 "$value" — '
-        '${values.map(nameOf).join(" · ")} 중 하나여야 합니다',
-      );
-      return null;
-    }
-    return match;
-  }
-
-  T? _optionalEnum<T>(
-    Map<String, Object?> map,
-    String key,
-    String path,
-    List<T> values,
-    String Function(T) nameOf,
-  ) {
-    if (map[key] == null) return null;
-    return _requiredEnum(map, key, path, values, nameOf);
-  }
-}
-
-// ── free helpers ──────────────────────────────────────────────────────────
-
-List<Object?> _asList(Object? value) => value is List ? value : const [];
-
-/// Accepts `40` and `40.0` alike; JSON writers disagree about whole numbers.
-int? _integer(Object? value) {
-  if (value is int) return value;
-  if (value is double && value == value.roundToDouble()) return value.toInt();
-  return null;
-}
-
-String? _trimmed(Object? value) {
-  if (value is! String) return null;
-  final trimmed = value.trim();
-  return trimmed.isEmpty ? null : trimmed;
-}
-
-T? _lookup<T>(List<T> values, String name, String Function(T) nameOf) {
-  final needle = name.trim();
-  for (final value in values) {
-    if (nameOf(value) == needle) return value;
-  }
-  return null;
-}
-
-String _display(Object? value) {
-  if (value == null) return '없음';
-  if (value is Map) return '객체';
-  if (value is List) return '배열';
-  if (value is String) {
-    final text = value.length > 30 ? '${value.substring(0, 30)}…' : value;
-    return '"$text"';
-  }
-  return '$value';
 }

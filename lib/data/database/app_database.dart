@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import 'daos/backup_dao.dart';
 import 'daos/exercise_dao.dart';
 import 'daos/history_dao.dart';
 import 'daos/routine_dao.dart';
@@ -20,7 +21,7 @@ part 'app_database.g.dart';
     WorkoutSessions,
     SetLogs,
   ],
-  daos: [RoutineDao, ExerciseDao, WorkoutDao, HistoryDao],
+  daos: [RoutineDao, ExerciseDao, WorkoutDao, HistoryDao, BackupDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])

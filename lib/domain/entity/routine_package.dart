@@ -267,6 +267,28 @@ class RoutineParseResult extends Equatable {
   List<Object?> get props => [package, warnings];
 }
 
+/// A `routine` object read on its own, outside a routine file's envelope.
+///
+/// A backup embeds one of these per entry under `routines[]`. Errors and
+/// warnings come back separately rather than as a `Failure` so the caller can
+/// fold them into the problems it found elsewhere in its own file.
+class RoutineBodyParse extends Equatable {
+  const RoutineBodyParse({
+    this.package,
+    this.errors = const [],
+    this.warnings = const [],
+  });
+
+  /// Null when [errors] is not empty.
+  final RoutinePackage? package;
+
+  final List<String> errors;
+  final List<String> warnings;
+
+  @override
+  List<Object?> get props => [package, errors, warnings];
+}
+
 /// A serialized routine ready to be written to disk and shared.
 class RoutineExportFile extends Equatable {
   const RoutineExportFile({required this.fileName, required this.contents});
