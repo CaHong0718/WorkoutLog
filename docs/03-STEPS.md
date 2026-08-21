@@ -244,8 +244,40 @@ DB에 쓰는 Intent 핸들러는 전부 `transformer: sequential()`. 블록 순�
 권한은 앱 시작이 아니라 **세션 진입 시점**에 요청한다 — 랙 앞에 선 순간이 사용자가
 "왜 알림이 필요한지" 이해하는 시점이기 때문.
 
-Android 설정: `POST_NOTIFICATIONS`·`SCHEDULE_EXACT_ALARM`·`VIBRATE`·`RECEIVE_BOOT_COMPLETED` 권한,
+Android 설정: `POST_NOTIFICATIONS`·`VIBRATE`·`USE_EXACT_ALARM` 권한,
 `isCoreLibraryDesugaringEnabled = true` + `desugar_jdk_libs`(`zonedSchedule` 요구사항).
+
+#### 알림이 안 울렸던 진짜 이유 (2026-08-21)
+
+위 설계는 처음부터 맞았는데 **알림이 한 번도 뜨지 않았다.** 원인은 Dart 쪽이 아니라
+`AndroidManifest.xml`이었다.
+
+`flutter_local_notifications`는 16 버전부터 **자기 매니페스트에 receiver를 더 이상 선언하지
+않는다.** 앱이 직접 `<application>` 안에 적어야 한다.
+
+```xml
+<receiver
+    android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+    android:exported="false"/>
+```
+
+이게 없으면 `AlarmManager`는 예약대로 정확히 울리지만 그 브로드캐스트를 **받을 클래스가
+없어서** 아무 일도 일어나지 않는다. 예약도 성공하고 예외도 안 나서 로그로는 멀쩡해 보인다.
+증상은 딱 하나 — 휴식이 끝나도 조용하다.
+
+같이 고친 것:
+
+- **`USE_EXACT_ALARM`으로 교체.** `SCHEDULE_EXACT_ALARM`은 API 33+에서 기본 거부라
+  `requestExactAlarmsPermission()`이 세션에 들어갈 때마다 사용자를 "알람 및 리마인더"
+  설정 화면으로 던졌다. 휴식 알림은 1분 늦으면 의미가 없는 알람이므로 설치 시점에
+  받아 둔다. API 32 이하는 `SCHEDULE_EXACT_ALARM`(기본 허용)을 `maxSdkVersion="32"`로 남겼다.
+  플레이스토어에 올리면 `USE_EXACT_ALARM`은 별도 심사 대상이다 — 이 앱은 사이드로드다.
+- **`RECEIVE_BOOT_COMPLETED`와 `ScheduledNotificationBootReceiver`는 일부러 뺐다.**
+  재부팅 후 예약을 되살리는 receiver라, 휴식 타이머에는 "재부팅하느라 끊긴 휴식"을
+  부팅 직후에 울려 주는 동작이 된다. 휴식은 재부팅을 넘겨서 이어질 것이 아니다.
+- **상태바 아이콘 `res/drawable/ic_stat_rest.xml` 추가.** 안드로이드는 small icon을 알파
+  실루엣으로만 그려서 컬러 런처 아이콘을 넣으면 잠금화면에 **흰 사각형**이 뜬다.
+  런처 마크(오름차순 막대)를 흰색 벡터로 다시 그렸다.
 
 ---
 

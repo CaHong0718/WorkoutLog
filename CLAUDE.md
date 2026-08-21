@@ -146,14 +146,15 @@ Dart 패키지명은 `workout_log`(`package:workout_log/...`), Drift DB 파일�
 `무분할 40분`은 앱 이름이 아니라 **시드 루틴의 이름**이다. DB에 들어 있고 사용자가 바꿀 수 있으며,
 루틴은 여러 개를 두고 갈아 끼운다(STEP 10). 앱은 루틴을 담는 그릇이지 특정 루틴 전용이 아니다.
 
-### 건드리면 빌드가 깨지는 안드로이드 설정
+### 건드리면 빌드나 기능이 깨지는 안드로이드 설정
 
-둘 다 이유가 있어 들어간 것이다. 정리한다고 지우지 말 것.
+셋 다 이유가 있어 들어간 것이다. 정리한다고 지우지 말 것.
 
 | 설정 | 이유 |
 |---|---|
 | `app/build.gradle.kts`의 `compileSdk = 37` (`flutter.compileSdkVersion` 아님) | `receive_sharing_intent` 1.9.0이 API 37을 요구한다. 1.8.0으로 내리면 JVM 타깃이 Java 11 / Kotlin 21로 어긋나 컴파일이 깨진다 |
 | `gradle.properties`의 `kotlin.incremental=false` | share_plus·flutter_file_dialog·receive_sharing_intent가 각자 Kotlin Gradle Plugin을 적용해 증분 캐시가 충돌한다(`Storage for [...] is already registered`). 빼면 세 플러그인 모두 빌드가 깨진다 |
+| `AndroidManifest.xml`의 `ScheduledNotificationReceiver` 선언 | flutter_local_notifications 16+는 이 receiver를 자기 매니페스트에 넣지 않는다. 지우면 **빌드는 되는데 휴식 종료 알림이 조용히 사라진다** — 예약도 성공하고 예외도 안 난다. 자세한 건 `docs/03-STEPS.md`의 STEP 9 |
 
 `file_picker`는 쓰지 않는다 — `share_plus`와 `win32` 버전이 충돌해 2020년 버전으로 강등된다.
 파일 선택은 `flutter_file_dialog`다.

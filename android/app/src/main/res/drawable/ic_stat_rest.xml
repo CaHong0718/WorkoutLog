@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar icon for the rest-timer notification.
+
+     Android draws a small icon as a silhouette from its alpha channel, so the
+     launcher mipmap would land on the lock screen as a solid white square.
+     This is the same ascending-bars mark (tools/generate_icon.py), redrawn flat
+     white on transparent. Hand-written, not generated: it is the only vector in
+     res/drawable besides the launch background. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3.75,11.16 h1.5 a1,1 0 0 1 1,1 v6.84 a1,1 0 0 1 -1,1 h-1.5 a1,1 0 0 1 -1,-1 v-6.84 a1,1 0 0 1 1,-1 z"/>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8.75,8.21 h1.5 a1,1 0 0 1 1,1 v9.79 a1,1 0 0 1 -1,1 h-1.5 a1,1 0 0 1 -1,-1 v-9.79 a1,1 0 0 1 1,-1 z"/>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M13.75,7.47 h1.5 a1,1 0 0 1 1,1 v10.53 a1,1 0 0 1 -1,1 h-1.5 a1,1 0 0 1 -1,-1 v-10.53 a1,1 0 0 1 1,-1 z"/>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M18.75,6 h1.5 a1,1 0 0 1 1,1 v12 a1,1 0 0 1 -1,1 h-1.5 a1,1 0 0 1 -1,-1 v-12 a1,1 0 0 1 1,-1 z"/>
+</vector>

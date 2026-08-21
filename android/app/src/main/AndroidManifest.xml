@@ -3,8 +3,15 @@
          the alert must fire even in Doze. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- The rest alert is an alarm: it is worthless a minute late. On API 33+
+         USE_EXACT_ALARM grants that at install time, so the athlete is never
+         thrown into "알람 및 리마인더" settings mid-workout. Below 33 the
+         SCHEDULE_EXACT_ALARM flavour is granted by default anyway.
+         (Play Store distribution would need a declaration for USE_EXACT_ALARM;
+         this app is sideloaded — see docs/06-ANDROID-SIGNING.md.) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
+                     android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
     <application
         android:label="Workout Log"
@@ -52,6 +59,20 @@
                 <data android:scheme="file" android:mimeType="application/json"/>
             </intent-filter>
         </activity>
+        <!-- Posts the scheduled rest alert when AlarmManager fires. Since
+             flutter_local_notifications 16 the plugin no longer declares this
+             in its own manifest, and without it the alarm goes off into
+             nothing: the countdown ends and no notification ever appears.
+
+             Its sibling ScheduledNotificationBootReceiver is deliberately left
+             out. It re-arms pending alarms after a reboot, which for a rest
+             timer means buzzing "휴식 완료" on the boot that interrupted it. A
+             rest does not survive a reboot; RECEIVE_BOOT_COMPLETED is gone with
+             it. -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+            android:exported="false"/>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

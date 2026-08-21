@@ -35,7 +35,10 @@ class RestNotifier {
 
       await _plugin.initialize(
         settings: const InitializationSettings(
-          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          // Not the launcher mipmap: Android reduces a small icon to its
+          // alpha silhouette, which turns the full-colour launcher into a
+          // white square. `ic_stat_rest` is drawn for that treatment.
+          android: AndroidInitializationSettings('@drawable/ic_stat_rest'),
           // iOS would otherwise put the permission prompt on the very first
           // frame. Asking is [ensurePermissions]' job, at the moment the user
           // starts a workout and the request explains itself.
@@ -73,7 +76,9 @@ class RestNotifier {
       if (_android case final android?) {
         _permissionGranted =
             await android.requestNotificationsPermission() ?? false;
-        // Exact alarms may be denied; scheduling falls back to inexact below.
+        // A no-op wherever USE_EXACT_ALARM applies (API 33+, see the
+        // manifest); on 31–32 it only opens settings if the user revoked
+        // the permission. Either way scheduling falls back to inexact below.
         await android.requestExactAlarmsPermission();
       } else if (_ios case final ios?) {
         // No badge: the app counts sets, not unread items.
@@ -109,7 +114,10 @@ class RestNotifier {
         category: AndroidNotificationCategory.alarm,
         playSound: true,
         enableVibration: true,
-        // Wakes the screen; the phone is usually face-down on the bench.
+        // Off on purpose. A full-screen intent would take over the lock
+        // screen, and since Android 14 it is reserved for calls and alarm
+        // clocks — a plain build cannot get the permission. `Importance.max`
+        // on the channel already gives a heads-up banner with sound.
         fullScreenIntent: false,
         ongoing: false,
         autoCancel: true,
