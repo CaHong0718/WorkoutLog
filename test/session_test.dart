@@ -523,4 +523,113 @@ void main() {
       expect(after.session!.setLogs.single.setIndex, 2);
     });
   });
+
+  group('SessionBloc — 같은 종목의 값 이어받기', () {
+    test('직전 세트의 무게와 횟수를 다음 세트가 이어받는다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      bloc.add(const CompleteCurrentSet(weight: 60, reps: 10, rir: 1));
+      final after = await bloc.stream.firstWhere((s) => s.currentIndex == 1);
+
+      final carried = after.carryOverFor(after.currentSet!);
+      expect(carried?.weight, 60);
+      expect(carried?.reps, 10);
+    });
+
+    test('종목이 바뀌면 앞 종목의 무게를 이어받지 않는다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      // B1 풀업 4세트를 끝내면 다음은 B2의 다른 종목이다.
+      for (var i = 0; i < 4; i++) {
+        bloc.add(const CompleteCurrentSet(weight: 60, reps: 10));
+      }
+      final after = await bloc.stream.firstWhere((s) => s.currentIndex == 4);
+
+      expect(after.currentSet?.blockLabel, 'B2');
+      expect(after.carryOverFor(after.currentSet!), isNull);
+    });
+
+    test('건너뛴 세트는 이어받을 값이 없다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      bloc.add(const SkipCurrentSet());
+      final after = await bloc.stream.firstWhere((s) => s.currentIndex == 1);
+
+      expect(after.carryOverFor(after.currentSet!), isNull, reason: '기록이 없는 세트다');
+    });
+
+    test('뒤 세트에만 기록이 있으면 앞 세트로 끌려오지 않는다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      // 1·2세트를 건너뛴 채 3세트부터 기록한 뒤 1세트 자리로 돌아온다.
+      bloc.add(const JumpToSet(2));
+      await bloc.stream.firstWhere((s) => s.currentIndex == 2);
+      bloc.add(const CompleteCurrentSet(weight: 70, reps: 6));
+      await bloc.stream.firstWhere((s) => s.currentIndex == 3);
+
+      bloc.add(const JumpToSet(0));
+      final back = await bloc.stream.firstWhere((s) => s.currentIndex == 0);
+
+      expect(back.carryOverFor(back.currentSet!), isNull);
+    });
+
+    test('세션 대체 종목은 원래 종목의 무게를 이어받지 않는다', () async {
+      final session = (await workoutRepo.startSession(
+        dayOf('A').id,
+      )).valueOrNull!;
+      final bloc = makeBloc(session.id);
+      addTearDown(bloc.close);
+
+      bloc.add(const LoadSession());
+      final loaded = await bloc.stream.firstWhere((s) => !s.isLoading);
+
+      final b2Index = loaded.plan.indexWhere((p) => p.blockLabel == 'B2');
+      bloc.add(JumpToSet(b2Index));
+      await bloc.stream.firstWhere((s) => s.currentIndex == b2Index);
+
+      bloc.add(const CompleteCurrentSet(weight: 50, reps: 10));
+      await bloc.stream.firstWhere((s) => s.currentIndex == b2Index + 1);
+
+      final planned = loaded.plan[b2Index];
+      final substitute = loaded.alternatives[planned.item.id]!.single;
+      bloc.add(SubstituteExercise(planned.item.id, substitute));
+      final after = await bloc.stream.firstWhere(
+        (s) => s.substitutions.containsKey(planned.item.id),
+      );
+
+      expect(
+        after.carryOverFor(after.currentSet!),
+        isNull,
+        reason: '기구가 바뀌었으니 앞 종목의 50kg를 가져오면 안 된다',
+      );
+    });
+  });
 }

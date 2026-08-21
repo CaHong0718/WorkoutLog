@@ -118,6 +118,7 @@ class _SessionView extends StatelessWidget {
                   previousLogs:
                       state.lastLogs[state.exerciseFor(state.currentSet!).id] ??
                       const [],
+                  carryOver: state.carryOverFor(state.currentSet!),
                   existingLog: state.logFor(state.currentSet!),
                   onComplete: (values) => bloc.add(
                     CompleteCurrentSet(

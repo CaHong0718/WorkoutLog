@@ -35,6 +35,7 @@ class CurrentSetCard extends StatefulWidget {
     required this.onComplete,
     required this.onSkip,
     required this.onSubstitute,
+    this.carryOver,
     this.existingLog,
     super.key,
   });
@@ -44,6 +45,9 @@ class CurrentSetCard extends StatefulWidget {
 
   /// Logs of the same exercise from previous sessions, newest first.
   final List<SetLog> previousLogs;
+
+  /// The nearest set of this exercise already done in the current session.
+  final SetLog? carryOver;
 
   /// This set's own log when it was already performed — the athlete jumped
   /// back to fix it. Saving overwrites that row instead of adding a new one.
@@ -73,6 +77,9 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
   @override
   void didUpdateWidget(covariant CurrentSetCard oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Deliberately blind to [carryOver]: it moves whenever a set elsewhere in
+    // the session is edited, and re-seeding then would wipe numbers the
+    // athlete is in the middle of typing. Every set gets a fresh card anyway.
     final changed =
         oldWidget.planned.item.id != widget.planned.item.id ||
         oldWidget.planned.setIndex != widget.planned.setIndex ||
@@ -81,12 +88,17 @@ class _CurrentSetCardState extends State<CurrentSetCard> {
     if (changed) _prefill();
   }
 
-  /// Seeds the inputs from this set's own log when there is one, otherwise
-  /// from the matching set of the previous session so the common case is a
-  /// single tap.
+  /// Seeds the inputs so the common case is a single tap, in order of how
+  /// well each source predicts what is about to happen:
+  ///
+  /// 1. this set's own log — the athlete came back to correct it,
+  /// 2. the last set of the same exercise in this session — the bar is still
+  ///    loaded with exactly that,
+  /// 3. the matching set of the previous session, then any of it.
   void _prefill() {
     final match =
         widget.existingLog ??
+        widget.carryOver ??
         widget.previousLogs
             .where((l) => l.setIndex == widget.planned.setIndex)
             .firstOrNull ??

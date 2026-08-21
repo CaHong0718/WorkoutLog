@@ -154,6 +154,38 @@ class SessionState extends MviState {
       )
       .firstOrNull;
 
+  /// The set of the same exercise the athlete already performed earlier in
+  /// *this* session — what the bar is loaded with right now.
+  ///
+  /// The inputs seed from this before falling back to [lastLogs]: within one
+  /// exercise the weight rarely moves between sets, so re-typing it every set
+  /// was pure friction. Matching is by exercise id, not routine item, so a
+  /// session substitution carries its own numbers rather than the replaced
+  /// movement's.
+  ///
+  /// Only sets that come *before* [planned] in the plan count — jumping ahead
+  /// must not drag a later set's numbers backwards. [WorkoutSession.setLogs]
+  /// already arrives in plan order, so the last match is the nearest one.
+  SetLog? carryOverFor(PlannedSet planned) {
+    final logs = session?.setLogs;
+    if (logs == null) return null;
+
+    final exerciseId = exerciseFor(planned).id;
+    return logs
+        .where(
+          (l) =>
+              l.isCompleted &&
+              l.exerciseId == exerciseId &&
+              _precedes(l, planned),
+        )
+        .lastOrNull;
+  }
+
+  static bool _precedes(SetLog log, PlannedSet planned) =>
+      log.itemOrder < planned.itemOrder ||
+      (log.itemOrder == planned.itemOrder &&
+          log.setIndex < planned.setIndex);
+
   SessionState copyWith({
     bool? isLoading,
     bool? isFinishing,
