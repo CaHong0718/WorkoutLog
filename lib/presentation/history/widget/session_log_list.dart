@@ -8,7 +8,7 @@ import '../../../domain/entity/set_log.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/common_widgets.dart';
 import '../bloc/session_detail_state.dart';
-import 'history_metrics.dart';
+import '../../common/metric_tile.dart';
 
 /// The session's sets, grouped exactly as they were performed:
 /// `block → exercise → set`. Skipped sets stay visible but struck through.

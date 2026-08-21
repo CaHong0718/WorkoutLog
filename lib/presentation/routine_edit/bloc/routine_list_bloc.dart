@@ -4,7 +4,7 @@ import 'package:injectable/injectable.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/error/failure.dart';
 import '../../../core/mvi/mvi_bloc.dart';
-import '../../../core/platform/routine_file_io.dart';
+import '../../../core/platform/json_file_io.dart';
 import '../../../core/result/result.dart';
 import '../../../domain/entity/routine.dart';
 import '../../../domain/usecase/routine_usecases.dart';
@@ -52,7 +52,7 @@ class RoutineListBloc
   final ParseRoutineFile _parseRoutineFile;
   final ImportRoutine _importRoutine;
   final ExportRoutine _exportRoutine;
-  final RoutineFileIo _fileIo;
+  final JsonFileIo _fileIo;
 
   /// The stream handler never completes, so a second [LoadRoutines] would open
   /// a duplicate subscription.
@@ -141,7 +141,7 @@ class RoutineListBloc
     if (state.isBusy) return;
 
     emit(state.copyWith(isBusy: true));
-    final picked = await _fileIo.pickRoutineFile();
+    final picked = await _fileIo.pickJsonFile();
     emit(state.copyWith(isBusy: false));
 
     if (picked == null) return; // cancelled, or unreadable — already logged
@@ -199,7 +199,7 @@ class RoutineListBloc
     final result = await _exportRoutine(intent.routineId);
     switch (result) {
       case Ok(:final value):
-        final shared = await _fileIo.shareRoutineFile(
+        final shared = await _fileIo.shareJsonFile(
           fileName: value.fileName,
           contents: value.contents,
         );

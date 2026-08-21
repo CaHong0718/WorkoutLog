@@ -18,7 +18,7 @@ import 'json_reader.dart';
 class RoutineCodec implements RoutineExchange {
   const RoutineCodec();
 
-  static const String formatId = 'workout-log.routine';
+  static const String formatId = RoutineExchange.formatId;
   static const int formatVersion = 1;
 
   @override

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/common/app_shell.dart';
+import '../../presentation/backup/page/backup_page.dart';
 import '../../presentation/common/branch_pager.dart';
-import '../platform/routine_file_io.dart';
+import '../platform/json_file_io.dart';
 import '../../presentation/history/page/history_page.dart';
 import '../../presentation/history/page/session_detail_page.dart';
 import '../../presentation/home/page/home_page.dart';
@@ -26,6 +27,9 @@ abstract final class Routes {
 
   /// One routine by id, active or not.
   static const routineDetail = 'routineDetail';
+
+  /// Record backup and restore, reached from the 기록 tab.
+  static const backup = 'backup';
 
   static const session = 'session';
   static const sessionDetail = 'sessionDetail';
@@ -81,6 +85,18 @@ final GoRouter appRouter = GoRouter(
       ],
     ),
     GoRoute(
+      path: '/backup',
+      name: Routes.backup,
+      parentNavigatorKey: _rootNavigatorKey,
+      // `extra` carries a backup shared from another app; the page turns it
+      // straight into a restore preview.
+      builder: (context, state) => BackupPage(
+        pendingRestore: state.extra is PickedJsonFile
+            ? state.extra! as PickedJsonFile
+            : null,
+      ),
+    ),
+    GoRoute(
       path: '/session/:sessionId',
       name: Routes.session,
       parentNavigatorKey: _rootNavigatorKey,
@@ -102,8 +118,8 @@ final GoRouter appRouter = GoRouter(
       // `extra` carries a file shared from another app; the page turns it
       // straight into an import preview.
       builder: (context, state) => RoutineListPage(
-        pendingImport: state.extra is PickedRoutineFile
-            ? state.extra! as PickedRoutineFile
+        pendingImport: state.extra is PickedJsonFile
+            ? state.extra! as PickedJsonFile
             : null,
       ),
       routes: [

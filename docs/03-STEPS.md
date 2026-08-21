@@ -23,7 +23,7 @@
 | 11 | 하단 탭 좌우 스와이프 · 탭 전환 시 화면 갱신 | ✅ |
 | 12 | `design/DESIGN.md` 디자인 시스템 적용 | ✅ |
 | 13 | 드래그 프록시 모양 정리 · iOS 빌드 준비 | ✅ |
-| 14 | 운동 기록 백업 · 복원 · 공유 | 🚧 |
+| 14 | 운동 기록 백업 · 복원 · 공유 | ✅ |
 
 ---
 
@@ -517,46 +517,67 @@ STEP 10이 깔아 둔 길(코덱 → 파일 선택 → 미리보기 → 공유 �
 
 ### STEP 14-4 — 플랫폼
 
-- [ ] `RoutineFileIo` → `JsonFileIo` 리네임(`PickedRoutineFile` → `PickedJsonFile`).
+- [x] `RoutineFileIo` → `JsonFileIo` 리네임(`PickedRoutineFile` → `PickedJsonFile`).
       하는 일에 루틴 전용 로직이 하나도 없다. 백업이 "루틴 파일 IO"를 부르면 읽는 사람이 헷갈린다
-- [ ] `maxBytes`를 호출자가 정하게 한다 — 루틴 4MB, 백업 16MB(`07` §9)
-- [ ] `shareJsonFile`로 일반화
+- [x] `maxBytes`를 호출자가 정하게 한다 — 루틴 4MB, 백업 16MB(`07` §9)
+- [x] `shareJsonFile`로 일반화
+- [x] `PickedJsonFile.format` — 공유받은 파일이 어느 화면으로 갈지 정하는 데만 쓰는 얕은 판별
 
 ### STEP 14-5 — UI
 
-- [ ] `presentation/backup/` — `BackupBloc` + intent/state/effect,
-      `page/backup_page.dart`, `widget/backup_preview_sheet.dart`
-- [ ] 라우트 `/backup`, 기록 탭 앱바에 진입 아이콘
-- [ ] 요약 카드 — 기록 횟수 · 세트 수 · 루틴 수 · 첫 기록 날짜
-- [ ] Primary는 **내보내기** 하나(`DESIGN.md`: 화면당 Primary 1개). 복원은 Secondary
-- [ ] 복원은 **미리보기 → 모드 선택 → 확인** 3단계. 덮어쓰기는 `danger` 색 확인 다이얼로그에
+- [x] `presentation/backup/` — `BackupBloc` + intent/state/effect,
+      `page/backup_page.dart`, `widget/restore_preview_sheet.dart`
+- [x] 라우트 `/backup`, 기록 탭 앱바에 진입 아이콘
+- [x] 요약 카드 — 기록 횟수 · 세트 수 · 루틴 수 · 종목 수 · 기록 기간
+- [x] Primary는 **내보내기** 하나(`DESIGN.md`: 화면당 Primary 1개). 복원은 Secondary
+- [x] 복원은 **미리보기 → 모드 선택 → 확인** 3단계. 덮어쓰기는 `error` 색 확인 다이얼로그에
       "기록 N개가 사라집니다"를 숫자로 적는다
-- [ ] DB에 쓰는 Intent 핸들러에 `transformer: sequential()`
-- [ ] 문자열은 전부 `app_strings.dart`
+- [x] DB에 쓰는 Intent 핸들러에 `transformer: sequential()`
+- [x] 문자열은 전부 `app_strings.dart`
+
+**공용으로 끌어올린 것 3가지.** 백업 화면이 루틴 화면의 위젯을 가로질러 import하지 않도록.
+
+| 옮긴 것 | 어디로 | 왜 |
+|---|---|---|
+| `_SheetFrame` · 오류 시트 | `common/sheet_frame.dart` (`SheetFrame` · `showFileErrorSheet`) | 두 포맷이 같은 판독기를 쓰니 오류 화면도 같다. 제목만 다르다 |
+| `_WarningList` | 같은 파일 (`WarningBox`) | 경고 목록 모양이 동일 |
+| `MetricTile` · `formatKg` | `common/metric_tile.dart` | 기록 화면 전용이 아니다 |
+
+`ChoiceTile`은 이미 있던 것을 그대로 썼다 — "결과가 다른 두 선택지는 같은 무게의 버튼 두 개보다
+문장 두 줄이 낫다"는 그 위젯의 존재 이유가 합치기/덮어쓰기에 정확히 맞는다.
 
 ### STEP 14-6 — 공유로 받기
 
-- [ ] `SharedRoutineReceiver`가 받은 JSON의 `format`을 보고 루틴이면 `/routines`,
-      백업이면 `/backup`으로 보낸다. 지금은 전부 루틴으로 보내 백업 파일이 거부당한다
-- [ ] 인텐트 필터는 이미 `application/json`이라 `AndroidManifest.xml`은 손대지 않는다
+- [x] `SharedRoutineReceiver` → `SharedFileReceiver`. 받은 JSON의 `format`을 보고
+      루틴이면 `/routines`, 백업이면 `/backup`으로 보낸다
+- [x] 포맷 id를 도메인 포트(`RoutineExchange.formatId` · `BackupExchange.formatId`)로 올렸다.
+      `app.dart`가 코덱 구현을 알 필요가 없다
+- [x] 인텐트 필터는 이미 `application/json`이라 `AndroidManifest.xml`은 손대지 않았다
 
 ### STEP 14-7 — 검증 CLI · 테스트 · 문서
 
-- [ ] `tools/validate_backup.dart` — `dart run tools/validate_backup.dart <파일.json>`
-- [ ] `test/backup_test.dart` — 인메모리 SQLite 위에서 실제로 돈다(목 없음)
-      - export → 새 DB에 덮어쓰기 복원 → 세션·세트·루틴·종목이 왕복 동일
-      - 같은 백업을 두 번 합치기 → 세션 수 그대로(`startedAt` 중복 차단)
-      - 합치기에서 이름이 같은 루틴을 새로 만들지 않는다
-      - `inProgress` 세션은 내보내지 않고, 들어오면 거부한다
+- [x] `tools/validate_backup.dart` — 루틴·종목·세션·세트 수, 기록 기간, 부위별 세트 합계
+- [x] `test/backup_test.dart` (18개) — 인메모리 SQLite 위에서 실제로 돈다(목 없음)
+      - export → 새 기기에 덮어쓰기 복원 → 세션·세트·루틴·종목이 왕복 동일
+      - 재설치 시나리오: 시드만 있는 기기에 합치면 루틴은 재사용되고 기록만 들어온다
+      - 같은 백업을 두 번 합쳐도 세션 수 그대로(`startedAt` 중복 차단)
+      - `inProgress`는 내보내지 않고, 파일에 들어 있으면 거부한다
       - 진행 중 세션이 있으면 덮어쓰기를 거부한다
-      - 종목 이름 대조로 복원 뒤에도 무게 추이가 이어진다
-      - 루틴 파일을 백업으로 열면 `format` 오류, 경로가 붙은 오류 목록
-- [ ] `test/backup_bloc_test.dart` — 플랫폼 다이얼로그만 가짜, 나머지는 실물
-- [ ] `README.md`에 사용법 추가
-- [ ] `CLAUDE.md` 문서 표에 `07-BACKUP.md` 추가
+      - 기록에만 있는 종목을 만들어 붙여 주간 볼륨에 잡힌다
+      - 루틴 파일을 백업으로 열면 어디로 가야 하는지 알려준다
+- [x] `test/backup_bloc_test.dart` (7개) — 플랫폼 다이얼로그만 가짜, 나머지는 실물.
+      **확인 전에는 아무것도 쓰지 않는다**를 명시적으로 검증한다
+- [x] `test/fake_file_io.dart` — 두 bloc 테스트가 공유하는 유일한 가짜
+- [x] `README.md`에 사용법 추가, 문서 표에 05·06·07 채움
+- [x] `CLAUDE.md` 문서 표에 `07-BACKUP.md` 추가
 
-**완료 조건**: `flutter analyze` 무경고 · `flutter test` 통과(기존 103개 + 신규) ·
-`flutter build apk --debug` 성공 · 실기기에서 내보내기 → 앱 삭제 → 재설치 → 복원 왕복.
+**집계 컬럼이 UTC로 돌아온다(테스트가 잡았다).** `date.min()`/`max()`는 drift의 컬럼 컨버터를
+타지 않아 저장된 텍스트를 그대로 UTC 인스턴트로 준다. 로컬 자정으로 저장한 날짜가 전날로 읽혀
+요약 카드의 "첫 기록"이 하루 밀렸다. `BackupDao.counts()`에서 `.toLocal()`로 되돌린다.
+
+**완료 조건**: `flutter analyze` 무경고 · `flutter test` 162개 통과 · `flutter build apk --debug` 성공.
+
+남은 것: **실기기 왕복 확인** — 내보내기 → 앱 삭제 → 재설치 → 복원. 이건 폰에서만 된다.
 
 ---
 

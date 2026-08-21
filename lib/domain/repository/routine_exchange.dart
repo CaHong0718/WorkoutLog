@@ -6,6 +6,9 @@ import '../entity/routine_package.dart';
 /// A port rather than a plain utility so the domain can depend on it: the
 /// implementation lives in `data/exchange/routine_codec.dart`.
 abstract interface class RoutineExchange {
+  /// The `format` field every routine file carries.
+  static const String formatId = 'workout-log.routine';
+
   /// Parses an exchange document.
   ///
   /// Fails with `RoutineFormatFailure` carrying every problem found, so the

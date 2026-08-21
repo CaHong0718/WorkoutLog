@@ -6,6 +6,10 @@ import '../entity/backup_package.dart';
 /// A port rather than a plain utility so the domain can depend on it: the
 /// implementation lives in `data/exchange/backup_codec.dart`.
 abstract interface class BackupExchange {
+  /// The `format` field every backup file carries. Lives on the port so a
+  /// caller can tell a shared file apart without reaching into the codec.
+  static const String formatId = 'workout-log.backup';
+
   /// Parses a backup document.
   ///
   /// Fails with `RoutineFormatFailure` carrying every problem found — the same

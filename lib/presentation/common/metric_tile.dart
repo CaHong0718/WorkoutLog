@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_palette.dart';
-import '../../../core/theme/app_typography.dart';
+import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_typography.dart';
 
 /// `2,350` — tonnage rounded to whole kilos, grouped in thousands.
 ///

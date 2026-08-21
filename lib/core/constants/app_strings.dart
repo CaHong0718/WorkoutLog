@@ -221,6 +221,29 @@ abstract final class AppStrings {
   static const noTrendExercise = '무게를 기록한 종목이 아직 없습니다';
   static const latestRecord = '최근 기록';
 
+  // Backup / restore  (docs/07-BACKUP.md)
+  static const backup = '백업';
+  static const backupTitle = '기록 백업';
+  static const backupHint = '앱을 지우거나 폰을 바꾸면 기록도 함께 사라집니다. 파일로 뽑아 두면 새 기기에서 되돌릴 수 있습니다.';
+  static const backupOnThisPhone = '이 기기에 있는 것';
+  static const backupExport = '백업 파일 내보내기';
+  static const backupRestore = '백업 파일에서 복원';
+  static const backupNothingToExport = '아직 기록이 없습니다. 운동을 한 번 마치면 백업할 것이 생깁니다.';
+  static const backupSessions = '운동';
+  static const backupSets = '세트';
+  static const backupRoutines = '루틴';
+  static const backupExercises = '종목';
+
+  static const restorePreview = '복원할 백업';
+  static const restoreErrorTitle = '백업 파일을 읽을 수 없습니다';
+  static const restoreChooseMode = '어떻게 되돌릴까요?';
+  static const restoreMerge = '합치기';
+  static const restoreMergeHint = '지금 있는 기록은 그대로 두고 빠진 것만 채웁니다. 겹치는 기록은 건너뜁니다.';
+  static const restoreReplace = '덮어쓰기';
+  static const restoreReplaceHint = '지금 있는 것을 모두 지우고 백업 내용만 남깁니다.';
+  static const restoreReplaceTitle = '정말 덮어쓸까요?';
+  static const restoreDone = '복원했습니다.';
+
   // Rules surfaced in the UI (from the reference document)
   static const cutRuleHint = '시간이 부족하면 뒤 블록부터 자릅니다. B1은 자르지 않습니다.';
   static const progressionHint =

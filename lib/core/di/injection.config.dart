@@ -38,6 +38,7 @@ import '../../domain/usecase/exercise_usecases.dart' as _i628;
 import '../../domain/usecase/history_usecases.dart' as _i839;
 import '../../domain/usecase/routine_usecases.dart' as _i15;
 import '../../domain/usecase/workout_usecases.dart' as _i250;
+import '../../presentation/backup/bloc/backup_bloc.dart' as _i33;
 import '../../presentation/history/bloc/history_bloc.dart' as _i1045;
 import '../../presentation/history/bloc/session_detail_bloc.dart' as _i918;
 import '../../presentation/history/bloc/stats_bloc.dart' as _i122;
@@ -49,8 +50,8 @@ import '../../presentation/routine_edit/bloc/routine_bloc.dart' as _i937;
 import '../../presentation/routine_edit/bloc/routine_list_bloc.dart' as _i191;
 import '../../presentation/session/bloc/session_bloc.dart' as _i373;
 import '../notification/rest_notifier.dart' as _i204;
-import '../platform/routine_file_io.dart' as _i358;
-import '../platform/shared_routine_receiver.dart' as _i235;
+import '../platform/json_file_io.dart' as _i162;
+import '../platform/shared_file_receiver.dart' as _i504;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -61,11 +62,15 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final databaseModule = _$DatabaseModule();
     gh.lazySingleton<_i204.RestNotifier>(() => _i204.RestNotifier());
-    gh.lazySingleton<_i358.RoutineFileIo>(() => const _i358.RoutineFileIo());
+    gh.lazySingleton<_i162.JsonFileIo>(() => const _i162.JsonFileIo());
     gh.lazySingleton<_i160.AppDatabase>(() => databaseModule.database);
     gh.lazySingleton<_i372.RoutineExchange>(() => const _i480.RoutineCodec());
     gh.factory<_i15.ParseRoutineFile>(
       () => _i15.ParseRoutineFile(gh<_i372.RoutineExchange>()),
+    );
+    gh.lazySingleton<_i504.SharedFileReceiver>(
+      () => _i504.SharedFileReceiver(gh<_i162.JsonFileIo>()),
+      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i276.BackupExchange>(
       () => _i341.BackupCodec(gh<_i372.RoutineExchange>()),
@@ -84,10 +89,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i381.BackupDao>(
       () => databaseModule.backupDao(gh<_i160.AppDatabase>()),
-    );
-    gh.lazySingleton<_i235.SharedRoutineReceiver>(
-      () => _i235.SharedRoutineReceiver(gh<_i358.RoutineFileIo>()),
-      dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i148.HistoryRepository>(
       () => _i916.HistoryRepositoryImpl(gh<_i615.HistoryDao>()),
@@ -231,6 +232,20 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i839.GetExerciseProgress>(),
       ),
     );
+    gh.factory<_i191.RoutineListBloc>(
+      () => _i191.RoutineListBloc(
+        gh<_i15.WatchRoutines>(),
+        gh<_i15.SetActiveRoutine>(),
+        gh<_i15.CreateRoutine>(),
+        gh<_i15.UpdateRoutine>(),
+        gh<_i15.DeleteRoutine>(),
+        gh<_i15.DuplicateRoutine>(),
+        gh<_i15.ParseRoutineFile>(),
+        gh<_i15.ImportRoutine>(),
+        gh<_i15.ExportRoutine>(),
+        gh<_i162.JsonFileIo>(),
+      ),
+    );
     gh.factory<_i628.GetAllExercises>(
       () => _i628.GetAllExercises(gh<_i930.ExerciseRepository>()),
     );
@@ -339,18 +354,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i628.DeleteExercise>(),
       ),
     );
-    gh.factory<_i191.RoutineListBloc>(
-      () => _i191.RoutineListBloc(
-        gh<_i15.WatchRoutines>(),
-        gh<_i15.SetActiveRoutine>(),
-        gh<_i15.CreateRoutine>(),
-        gh<_i15.UpdateRoutine>(),
-        gh<_i15.DeleteRoutine>(),
-        gh<_i15.DuplicateRoutine>(),
-        gh<_i15.ParseRoutineFile>(),
-        gh<_i15.ImportRoutine>(),
-        gh<_i15.ExportRoutine>(),
-        gh<_i358.RoutineFileIo>(),
+    gh.factory<_i33.BackupBloc>(
+      () => _i33.BackupBloc(
+        gh<_i673.GetBackupSummary>(),
+        gh<_i673.ParseBackupFile>(),
+        gh<_i673.ExportBackup>(),
+        gh<_i673.ImportBackup>(),
+        gh<_i162.JsonFileIo>(),
       ),
     );
     gh.factoryParam<_i918.SessionDetailBloc, int, dynamic>(

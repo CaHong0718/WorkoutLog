@@ -265,7 +265,8 @@ sessions[7].startedAt: ISO8601 날짜여야 합니다 ("어제")
 routines[0].days[1].blocks[0].items[2].repMax: repMin(12)보다 작습니다 (8)
 ```
 
-루틴 쪽 경로는 `RoutineCodec`이 만든 `routine.days[...]`를 `routines[i].days[...]`로 바꿔 붙인 것이다.
+루틴 쪽 경로도 `RoutineCodec`이 직접 만든다 — 백업 코덱이 `routines[i]`를 경로로 넘겨주기 때문에
+문자열을 고쳐 붙이는 단계가 없다.
 
 경고는 복원을 막지 않고 미리보기에 뜬다.
 

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_strings.dart';
-import '../../../core/error/failure.dart';
-import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../domain/entity/routine_package.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/common_widgets.dart';
+import '../../common/sheet_frame.dart';
 import '../../common/volume_rail.dart';
 
 /// What a routine file contains, shown before anything is written.
@@ -42,7 +41,7 @@ class _ImportPreviewSheetState extends State<ImportPreviewSheet> {
     final package = widget.parsed.package;
     final warnings = widget.parsed.warnings;
 
-    return _SheetFrame(
+    return SheetFrame(
       title: AppStrings.importPreview,
       subtitle: widget.fileName,
       footer: Column(
@@ -98,7 +97,7 @@ class _ImportPreviewSheetState extends State<ImportPreviewSheet> {
         for (final day in package.days) _DayRow(day: day),
         if (warnings.isNotEmpty) ...[
           const SizedBox(height: 18),
-          _WarningList(warnings: warnings),
+          WarningBox(warnings: warnings),
         ],
       ],
     );
@@ -184,163 +183,6 @@ class _DayRow extends StatelessWidget {
                   ],
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WarningList extends StatelessWidget {
-  const _WarningList({required this.warnings});
-
-  final List<String> warnings;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: p.warn.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: p.warn.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline, size: 16, color: p.warn),
-              const SizedBox(width: 6),
-              Text(
-                AppStrings.importWarningTitle,
-                style: context.type.label.copyWith(color: p.warn),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          for (final warning in warnings)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text('· $warning', style: context.type.caption),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Lists every problem found in a file, each with its path inside the
-/// document. All of them at once — fixing typos one round-trip at a time is
-/// what this screen exists to avoid.
-Future<void> showImportErrorSheet(
-  BuildContext context, {
-  required RoutineFormatFailure failure,
-  String? fileName,
-}) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (sheetContext) {
-      final p = sheetContext.palette;
-      return _SheetFrame(
-        title: AppStrings.importErrorTitle,
-        subtitle: fileName,
-        footer: SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: () => Navigator.of(sheetContext).pop(),
-            child: const Text(AppStrings.close),
-          ),
-        ),
-        children: [
-          Text(failure.message, style: sheetContext.type.body),
-          const SizedBox(height: 6),
-          Text(AppStrings.importErrorHint, style: sheetContext.type.caption),
-          const SizedBox(height: 14),
-          for (final error in failure.errors)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Icon(Icons.close, size: 13, color: p.warn),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: SelectableText(
-                      error,
-                      style: sheetContext.type.caption.copyWith(
-                        color: p.ink2,
-                        height: 1.45,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      );
-    },
-  );
-}
-
-/// Bottom-sheet frame with a free-form footer.
-///
-/// [EditSheet] is not reused here: these sheets are not forms, and their
-/// footers are a checkbox plus two buttons rather than cancel / save.
-class _SheetFrame extends StatelessWidget {
-  const _SheetFrame({
-    required this.title,
-    required this.children,
-    required this.footer,
-    this.subtitle,
-  });
-
-  final String title;
-  final String? subtitle;
-  final List<Widget> children;
-  final Widget footer;
-
-  @override
-  Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-
-    return SafeArea(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: media.size.height * 0.88),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: context.type.sectionTitle),
-                  if (subtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(subtitle!, style: context.type.caption),
-                    ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
-                children: children,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
-              child: footer,
             ),
           ],
         ),

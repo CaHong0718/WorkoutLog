@@ -25,7 +25,7 @@ class BackupCodec implements BackupExchange {
 
   final RoutineExchange _routines;
 
-  static const String formatId = 'workout-log.backup';
+  static const String formatId = BackupExchange.formatId;
   static const int formatVersion = 1;
 
   /// A broken export can produce one problem per set. The preview lists this

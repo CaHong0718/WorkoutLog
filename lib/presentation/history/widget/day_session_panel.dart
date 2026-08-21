@@ -8,7 +8,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../domain/entity/enums.dart';
 import '../../../domain/entity/workout_session.dart';
 import '../../common/common_widgets.dart';
-import 'history_metrics.dart';
+import '../../common/metric_tile.dart';
 
 /// Sessions recorded on the day the user tapped in the calendar.
 class DaySessionPanel extends StatelessWidget {

@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:workout_log/core/platform/routine_file_io.dart';
+
+import 'fake_file_io.dart';
+import 'package:workout_log/core/platform/json_file_io.dart';
 import 'package:workout_log/data/database/app_database.dart';
 import 'package:workout_log/data/exchange/routine_codec.dart';
 import 'package:workout_log/data/repository/routine_repository_impl.dart';
@@ -19,7 +19,7 @@ import 'package:workout_log/presentation/routine_edit/bloc/routine_list_state.da
 void main() {
   late AppDatabase db;
   late RoutineRepositoryImpl repository;
-  late _FakeFileIo fileIo;
+  late FakeFileIo fileIo;
   late RoutineListBloc bloc;
 
   const codec = RoutineCodec();
@@ -50,7 +50,7 @@ void main() {
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     repository = RoutineRepositoryImpl(db.routineDao, db);
-    fileIo = _FakeFileIo();
+    fileIo = FakeFileIo();
 
     bloc = RoutineListBloc(
       WatchRoutines(repository),
@@ -125,7 +125,7 @@ void main() {
   group('가져오기', () {
     test('파일을 고르면 미리보기 이펙트가 나온다 — DB는 아직 그대로', () async {
       final before = await loaded();
-      fileIo.nextPick = const PickedRoutineFile(
+      fileIo.nextPick = const PickedJsonFile(
         fileName: '상하체.json',
         contents: validFile,
       );
@@ -169,7 +169,7 @@ void main() {
 
     test('형식이 틀린 파일은 오류 목록을 이펙트로 돌려준다', () async {
       await loaded();
-      fileIo.nextPick = const PickedRoutineFile(
+      fileIo.nextPick = const PickedJsonFile(
         fileName: '오타.json',
         contents:
             '{"format": "workout-log.routine", "version": 1, "routine": '
@@ -273,29 +273,4 @@ void main() {
     expect(preview.fileName, '카톡에서.json');
     expect(preview.parsed.package.name, '상하체 2분할');
   });
-}
-
-/// Stands in for the system file picker and share sheet.
-class _FakeFileIo implements RoutineFileIo {
-  PickedRoutineFile? nextPick;
-  bool shareSucceeds = true;
-
-  String? sharedFileName;
-  String? sharedContents;
-
-  @override
-  Future<PickedRoutineFile?> pickRoutineFile() async => nextPick;
-
-  @override
-  Future<PickedRoutineFile?> readFile(File file) async => nextPick;
-
-  @override
-  Future<bool> shareRoutineFile({
-    required String fileName,
-    required String contents,
-  }) async {
-    sharedFileName = fileName;
-    sharedContents = contents;
-    return shareSucceeds;
-  }
 }

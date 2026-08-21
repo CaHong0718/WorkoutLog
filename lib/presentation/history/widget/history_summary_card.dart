@@ -4,7 +4,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../common/common_widgets.dart';
-import 'history_metrics.dart';
+import '../../common/metric_tile.dart';
 
 /// All-time totals plus the running weekly streak.
 class HistorySummaryCard extends StatelessWidget {

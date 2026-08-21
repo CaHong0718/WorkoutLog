@@ -10,7 +10,7 @@ import '../../../domain/entity/workout_session.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/common_widgets.dart';
 import '../../common/volume_rail.dart';
-import 'history_metrics.dart';
+import '../../common/metric_tile.dart';
 
 /// Headline of one recorded session: what was trained, for how long, how much.
 class SessionSummaryHeader extends StatelessWidget {

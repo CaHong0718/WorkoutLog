@@ -91,13 +91,16 @@ class BackupDao extends DatabaseAccessor<AppDatabase> with _$BackupDaoMixin {
     final range = await (selectOnly(workoutSessions)..addColumns([min, max]))
         .getSingleOrNull();
 
+    // `min`/`max` come back as UTC instants: the aggregate skips the column
+    // converter that normally maps stored text to local time. Left alone, a
+    // date saved as local midnight reads back as the previous day.
     return (
       routines: routineCount,
       exercises: exerciseCount,
       sessions: sessionCount,
       sets: setCount,
-      first: range?.read(min),
-      last: range?.read(max),
+      first: range?.read(min)?.toLocal(),
+      last: range?.read(max)?.toLocal(),
     );
   }
 

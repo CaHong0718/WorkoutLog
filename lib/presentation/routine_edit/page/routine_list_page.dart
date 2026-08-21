@@ -5,13 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/mvi/effect_listener.dart';
-import '../../../core/platform/routine_file_io.dart';
+import '../../../core/platform/json_file_io.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../domain/entity/routine.dart';
 import '../../common/body_part_ui.dart';
 import '../../common/common_widgets.dart';
+import '../../common/sheet_frame.dart';
 import '../../common/volume_rail.dart';
 import '../bloc/routine_list_bloc.dart';
 import '../bloc/routine_list_effect.dart';
@@ -30,7 +31,7 @@ class RoutineListPage extends StatelessWidget {
 
   /// A file shared into the app from elsewhere. Parsed on open, so the user
   /// lands directly on the import preview.
-  final PickedRoutineFile? pendingImport;
+  final PickedJsonFile? pendingImport;
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +121,7 @@ class _RoutineListView extends StatelessWidget {
         });
 
       case ShowImportErrors(:final failure, :final fileName):
-        showImportErrorSheet(context, failure: failure, fileName: fileName);
+        showFileErrorSheet(context, failure: failure, fileName: fileName);
 
       case OpenRoutineEditor(:final routineId):
         context.pushNamed(

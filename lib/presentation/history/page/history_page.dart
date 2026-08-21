@@ -74,7 +74,18 @@ class _HistoryViewState extends State<_HistoryView> {
           stream: statsBloc.effects,
           onEffect: _handleStatsEffect,
           child: Scaffold(
-            appBar: AppBar(title: const Text(AppStrings.history)),
+            appBar: AppBar(
+              title: const Text(AppStrings.history),
+              actions: [
+                IconButton(
+                  // The record is what a backup holds, so its way out sits on
+                  // the screen that shows it.
+                  onPressed: () => context.pushNamed(Routes.backup),
+                  icon: const Icon(Icons.backup_outlined),
+                  tooltip: AppStrings.backupTitle,
+                ),
+              ],
+            ),
             body: Column(
               children: [
                 Padding(
